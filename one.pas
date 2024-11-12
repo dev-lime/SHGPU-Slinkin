@@ -17,39 +17,50 @@ var
 procedure AddPerson;
 var
   Person: TPerson;
-  ChildID: string;
+  ChildrenInput, ChildID: string;
+  CommaPos: Integer;
 begin
-  WriteLn('Введите данные для нового человека (двойной Enter для завершения ввода):');
-
-  // Ввод ФИО
+  // Ввод данных для одного человека
   Write('ФИО: ');
   ReadLn(Person.FullName);
-  if Person.FullName = '' then Exit;
+  if Person.FullName = '' then Exit;  // Если пусто, прекращаем ввод
 
-  // Ввод пола
   Write('Пол: ');
   ReadLn(Person.Gender);
 
-  // Ввод даты рождения
   Write('Дата рождения: ');
   ReadLn(Person.BirthDate);
 
-  // Ввод уникального ID
   Write('Уникальный ID: ');
   ReadLn(Person.IDNumber);
 
-  // Ввод ID детей
-  WriteLn('ID детей (через пробел, пустой ввод завершает список детей):');
+  // Ввод ID детей через запятую
+  Write('ID детей (через запятую, оставьте пустым, если детей нет): ');
+  ReadLn(ChildrenInput);
   SetLength(Person.ChildrenIDs, 0);
-  while True do
+
+  while Length(ChildrenInput) > 0 do
   begin
-    ReadLn(ChildID);
-    if ChildID = '' then Break;
-    SetLength(Person.ChildrenIDs, Length(Person.ChildrenIDs) + 1);
-    Person.ChildrenIDs[High(Person.ChildrenIDs)] := ChildID;
+    CommaPos := Pos(',', ChildrenInput);
+    if CommaPos > 0 then
+    begin
+      ChildID := Trim(Copy(ChildrenInput, 1, CommaPos - 1));
+      Delete(ChildrenInput, 1, CommaPos);
+    end
+    else
+    begin
+      ChildID := Trim(ChildrenInput);
+      ChildrenInput := '';
+    end;
+    
+    if ChildID <> '' then
+    begin
+      SetLength(Person.ChildrenIDs, Length(Person.ChildrenIDs) + 1);
+      Person.ChildrenIDs[High(Person.ChildrenIDs)] := ChildID;
+    end;
   end;
 
-  // Добавляем человека в базу данных
+  // Добавляем текущего человека в массив People
   SetLength(People, Length(People) + 1);
   People[High(People)] := Person;
 end;
@@ -65,14 +76,19 @@ begin
     WriteLn('Дата рождения: ', People[i].BirthDate);
     WriteLn('Уникальный ID: ', People[i].IDNumber);
     Write('Дети: ');
-    
+
     if Length(People[i].ChildrenIDs) = 0 then
       WriteLn('Нет детей')
     else
+    begin
       for j := 0 to High(People[i].ChildrenIDs) do
-        Write(People[i].ChildrenIDs[j], ' ');
-        
-    WriteLn;
+      begin
+        Write(People[i].ChildrenIDs[j]);
+        if j < High(People[i].ChildrenIDs) then
+          Write(', ');
+      end;
+      WriteLn;
+    end;
     WriteLn;
   end;
 end;
@@ -81,15 +97,13 @@ var
   Input: string;
 
 begin
-  WriteLn('Начинайте ввод данных. Для завершения ввода нажмите два раза Enter.');
+  WriteLn('Начинайте ввод данных. Чтобы завершить ввод и вывести базу данных, нажмите дважды Enter.');
+
   repeat
     AddPerson;
-    WriteLn;
-    
-    // Проверка на двойной Enter
     Write('Нажмите Enter для продолжения или снова Enter для завершения: ');
     ReadLn(Input);
-  until Input = '';
+  until Input = '';  // Выход из цикла при двойном Enter
 
   WriteLn;
   WriteLn('Все данные:');
