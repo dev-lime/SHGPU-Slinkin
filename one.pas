@@ -1,223 +1,109 @@
-program DynamicDatabase;
-uses sysutils;
+program DatabaseFromFile;
+
+uses SysUtils;
 
 type
-    TStringArray = array of string;
-    TPerson = record
-        FIO: string;
-		Gender: char; // 'M' - мужчина, 'F' - женщина
-		BirthDate: TDateTime;
-		ID: string;
-		ChildrenIDs: TStringArray;
-	end;
+  TPerson = record
+    FullName: string;
+    Gender: string;
+    BirthDate: string;
+    IDNumber: string;
+    ChildrenIDs: array of string;
+  end;
 
 var
-	People: array of TPerson;
-	line: string;
-	numPeople: integer;
+  People: array of TPerson;
 
-procedure AddPerson(person: TPerson);
-begin
-	SetLength(People, numPeople + 1);
-	People[numPeople] := person;
-	Inc(numPeople);
-end;
-
-function FindPersonByID(ID: string): integer;
+procedure LoadDataFromFile(const FileName: string);
 var
-	i: integer;
+  F: Text;
+  Line: string;
+  CurrentPerson: TPerson;
+  ChildID: string;
 begin
-	for i := 0 to numPeople - 1 do
-	begin
-		if People[i].ID = ID then
-		begin
-			FindPersonByID := i;
-			Exit;
-		end;
-	end;
-	FindPersonByID := -1;
-end;
+  Assign(F, FileName);  // Исправлено AssignFile на Assign
+  Reset(F);
+  SetLength(People, 0);
 
-procedure ReadInput();
-var
-	person: TPerson;
-	childrenCount, i: integer;
-	childID: string;
-begin
-	numPeople := 0;
-    while True do
-	begin
-		ReadLn(line);
-		if line = '' then
-			Break;
+  while not Eof(F) do
+  begin
+    Readln(F, Line);
     
-		person.FIO := line;
-		ReadLn(person.Gender);
-		ReadLn(line);
-		person.BirthDate := StrToDate(line);
-		ReadLn(person.ID);
-
-		// Вводим информацию о детях
-		ReadLn(childrenCount);
-		SetLength(person.ChildrenIDs, childrenCount);
-		for i := 0 to childrenCount - 1 do
-     	begin
-			ReadLn(childID);
-		person.ChildrenIDs[i] := childID;
-		end;
-
-		AddPerson(person);
-    end;
-end;
-
-procedure PrintPersonInfo(index: integer);
-var
-    i, childIndex: integer;
-    childID: string;
-begin
-    with People[index] do
+    if Line <> '' then
     begin
-		WriteLn('ФИО: ', FIO);
-		WriteLn('Пол: ', Gender);
-		WriteLn('Дата рождения: ', DateToStr(BirthDate));
-		WriteLn('Номер удостоверения личности: ', ID);
-		WriteLn('Дети:');
-		for i := 0 to Length(ChildrenIDs) - 1 do
-		begin
-			childID := ChildrenIDs[i];
-			childIndex := FindPersonByID(childID);
-			if childIndex <> -1 then
-				WriteLn(' ', childID, ' - ', People[childIndex].FIO)
-			else
-				WriteLn(' ', childID, ' - - -');
-		end;
+      // Чтение ФИО
+      CurrentPerson.FullName := Line;
+      
+      // Чтение пола
+      Readln(F, Line);
+      CurrentPerson.Gender := Line;
+      
+      // Чтение даты рождения
+      Readln(F, Line);
+      CurrentPerson.BirthDate := Line;
+      
+      // Чтение номера удостоверения личности
+      Readln(F, Line);
+      CurrentPerson.IDNumber := Line;
+
+      // Чтение номеров детей
+      SetLength(CurrentPerson.ChildrenIDs, 0);
+      while not Eof(F) do
+      begin
+        Readln(F, Line);
+        if Line = '---' then Break;
+
+        SetLength(CurrentPerson.ChildrenIDs, Length(CurrentPerson.ChildrenIDs) + 1);
+        CurrentPerson.ChildrenIDs[High(CurrentPerson.ChildrenIDs)] := Line;
+      end;
+
+      SetLength(People, Length(People) + 1);
+      People[High(People)] := CurrentPerson;
     end;
+  end;
+  
+  Close(F);  // Исправлено CloseFile на Close
 end;
 
-procedure PrintAllPeople();
+function FindPersonByID(const ID: string): string;
 var
-    i: integer;
+  i: Integer;
 begin
-    for i := 0 to numPeople - 1 do
+  FindPersonByID := '- - -';  // Задаем начальное значение Result
+  for i := 0 to High(People) do
+    if People[i].IDNumber = ID then
     begin
-		PrintPersonInfo(i);
-		WriteLn;
+      FindPersonByID := People[i].FullName;
+      Exit;
     end;
 end;
 
-procedure FindWomenByBirthDate(date: TDateTime);
+procedure PrintDatabase;
 var
-    i: integer;
+  i, j: Integer;
+  ChildName: string;
 begin
-    for i := 0 to numPeople - 1 do
-    begin
-		if (People[i].Gender = 'F') and (People[i].BirthDate = date) then
-		begin
-		    WriteLn(People[i].FIO);
-		end;
-    end;
-end;
-
-procedure FindParentsByChildID(childID: string);
-var
-    i, j: integer;
-begin
-    for i := 0 to numPeople - 1 do
-    begin
-        for j := 0 to Length(People[i].ChildrenIDs) - 1 do
-        begin
-		    if People[i].ChildrenIDs[j] = childID then
-		    begin
-			    WriteLn(People[i].FIO);
-            end;
-	    end;
-    end;
-end;
-
-procedure FindGrandfathers();
-var
-    i, j: integer;
-    parentIndex, grandparentIndex: integer;
-begin
-    for i := 0 to numPeople - 1 do
-    begin
-	    if People[i].Gender = 'M' then
-	    begin
-		    for j := 0 to Length(People[i].ChildrenIDs) - 1 do
-		    begin
-			    parentIndex := FindPersonByID(People[i].ChildrenIDs[j]);
-			    if parentIndex <> -1 then
-			    begin
-				    if Length(People[parentIndex].ChildrenIDs) > 0 then
-				    begin
-					    WriteLn(People[i].FIO);
-					    Break;
-				    end;
-			    end;
-		    end;
-		end;
-    end;
-end;
-
-procedure FindOrphans();
-var
-    i, j, found: integer;
-begin
-    for i := 0 to numPeople - 1 do
-    begin
-		found := 0;
-       	for j := 0 to numPeople - 1 do
-begin
-		    if i <> j then
-		    begin
-			    if FindPersonByID(People[i].ID) <> -1 then
-			    begin
-				    Inc(found);
-				    Break;
-			    end;
-        	end;
-	    end;
-	    if found = 0 then
-		    WriteLn(People[i].FIO);
-    end;
-end;
-
-procedure ValidateDatabase();
-var
-    i, j, k, parentIndex, childIndex: integer;
-begin
-    for i := 0 to numPeople - 1 do
-    begin
-	    // Проверка детей
-		for j := 0 to Length(People[i].ChildrenIDs) - 1 do
-       	begin
-		    childIndex := FindPersonByID(People[i].ChildrenIDs[j]);
-		    if childIndex = -1 then
-			    WriteLn('Ошибка: ребенок с ID ', People[i].ChildrenIDs[j], ' не найден.');
-           	// Проверка возраста детей
-           	if (YearsBetween(People[i].BirthDate, People[childIndex].BirthDate) < 10) or
-			   (YearsBetween(People[i].BirthDate, People[childIndex].BirthDate) > 70) then
-			    WriteLn('Ошибка возраста у ', People[i].FIO, ' и ребенка ', People[childIndex].FIO);
-        end;
-    end;
-end;
-
-begin
-    ReadInput();
-    PrintAllPeople();
-    // Пример задач
-    WriteLn('Женщины, родившиеся 01.01.1990:');
-    FindWomenByBirthDate(StrToDate('01.01.1990'));
+  for i := 0 to High(People) do
+  begin
+    WriteLn('ФИО: ', People[i].FullName);
+    WriteLn('Пол: ', People[i].Gender);
+    WriteLn('Дата рождения: ', People[i].BirthDate);
+    WriteLn('Номер удостоверения личности: ', People[i].IDNumber);
+    WriteLn('Дети:');
     
-    WriteLn('Родители ребенка с ID 12345:');
-    FindParentsByChildID('12345');
-    
-    WriteLn('Дедушки:');
-    FindGrandfathers();
-    
-    WriteLn('Сироты:');
-    FindOrphans();
-    
-    WriteLn('Проверка БД:');
-    ValidateDatabase();
+    if Length(People[i].ChildrenIDs) = 0 then
+      WriteLn('  Нет детей')
+    else
+      for j := 0 to High(People[i].ChildrenIDs) do
+      begin
+        ChildName := FindPersonByID(People[i].ChildrenIDs[j]);
+        WriteLn('  Номер удостоверения: ', People[i].ChildrenIDs[j], ' ФИО: ', ChildName);
+      end;
+    WriteLn;
+  end;
+end;
+
+begin
+  LoadDataFromFile('data.txt');
+  PrintDatabase;
 end.
