@@ -1,47 +1,3 @@
-{
-begin
- setLength(humanBasicMass,0);
- while True do
- begin
-  writeln('Enter last name, frist name, patronymic');
-  readln(name1);
-  if (name1 = '') then 
-  begin
-   break;
-  end;
-  readln(humanPlus.name2);
-  readln(humanPlus.name3);
-  humanPlus.name1:=name1;
-  writeln('gender: ');
-  readln(humanPlus.gender);
-  writeln('day, month, year of birth');
-  readln(humanPlus.day);
-  readln(humanPlus.month);
-  readln(humanPlus.year);
-  writeln('ID number: ');
-  readln(humanPlus.personNumber);
-  i:=1;
-  SetLength(humanPlus.child,i);
-  while True do
-  begin
-   writeln('ID number ',i,' child: ');
-   readln(personNumberChild);
-   if (personNumberChild = '') then
-   begin
-    if (i=1) then
-    begin
-     humanPlus.child[i-1]:='---';
-    end;
-    break;
-   end;
-   humanPlus.child[i - 1]:=personNumberChild;
-   i:=i+1;
-   SetLength(humanPlus.child,i);
-  end;
-  setLength(humanBasicMass,Length(humanBasicMass)+1);
-  humanBasicMass[Length(humanBasicMass)-1]:=humanPlus;
- end;
-}
 program DynamicDatabase;
 
 uses SysUtils;
@@ -64,10 +20,11 @@ var
   ChildrenInput, ChildID: string;
   CommaPos: Integer;
 begin
-  // Ввод данных для одного человека
+  while True do
+  begin
   Write('ФИО: ');
   ReadLn(Person.FullName);
-  if Person.FullName = '' then Exit;  // Если пусто, прекращаем ввод
+  if Person.FullName = '' then exit;
 
   Write('Пол: ');
   ReadLn(Person.Gender);
@@ -78,7 +35,6 @@ begin
   Write('Уникальный ID: ');
   ReadLn(Person.IDNumber);
 
-  // Ввод ID детей через запятую
   Write('ID детей (через запятую, оставьте пустым, если детей нет): ');
   ReadLn(ChildrenInput);
   SetLength(Person.ChildrenIDs, 0);
@@ -104,9 +60,9 @@ begin
     end;
   end;
 
-  // Добавляем текущего человека в массив People
   SetLength(People, Length(People) + 1);
   People[High(People)] := Person;
+  end;
 end;
 
 procedure PrintDatabase;
@@ -142,12 +98,7 @@ var
 
 begin
   WriteLn('Начинайте ввод данных. Чтобы завершить ввод и вывести базу данных, нажмите дважды Enter.');
-
-  repeat
-    AddPerson;
-    Write('Нажмите Enter для продолжения или снова Enter для завершения: ');
-    ReadLn(Input);
-  until Input = '';  // Выход из цикла при двойном Enter
+  AddPerson;
 
   WriteLn;
   WriteLn('Все данные:');
