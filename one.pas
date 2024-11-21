@@ -93,8 +93,86 @@ begin
   end;
 end;
 
+procedure FindDateFemale;
 var
   Input: string;
+  i: Integer;
+begin
+  ReadLn(Input);
+  for i := 0 to High(People) do
+  begin
+	if (People[i].Gender = 'Женский') then
+	begin
+      if (Input = People[i].BirthDate) then
+      begin
+        WriteLn;
+        WriteLn('НАЙДЕНО СОВПАДЕНИЕ ПО ДАТЕ');
+	    WriteLn('ФИО: ', People[i].FullName);
+		WriteLn('Пол: ', People[i].Gender);
+		WriteLn('Дата рождения: ', People[i].BirthDate);
+		WriteLn('Уникальный ID: ', People[i].IDNumber);
+	  end;
+	end;
+  end;
+end;
+
+procedure FindParents;
+var
+  Input: string;
+  i, j: Integer;
+begin
+  ReadLn(Input);
+  for i := 0 to High(People) do
+  begin
+	if Length(People[i].ChildrenIDs) <> 0 then
+	begin
+      for j := 0 to High(People[i].ChildrenIDs) do
+      begin
+        if (People[i].ChildrenIDs[j] = Input) then
+        begin
+          WriteLn;
+          WriteLn('НАЙДЕНО СОВПАДЕНИЕ ПО ДЕТЯМ');
+	      WriteLn('ФИО: ', People[i].FullName);
+		  WriteLn('Пол: ', People[i].Gender);
+		  WriteLn('Дата рождения: ', People[i].BirthDate);
+		  WriteLn('Уникальный ID: ', People[i].IDNumber);
+	      Write('Дети: ');
+		  Write(People[i].ChildrenIDs[j]);
+          if j < High(People[i].ChildrenIDs) then
+            Write(', ');
+          WriteLn;
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure FindGrandfathers;
+var
+  i, j, k: Integer;
+begin
+  for i := 0 to High(People) do
+  begin
+	if (People[i].Gender = 'Мужской') and (Length(People[i].ChildrenIDs) <> 0) then
+	begin
+      for j := 0 to High(People[i].ChildrenIDs) do
+      begin
+	    for k := 0 to High(People) do
+		begin
+	      if (People[k].IDNumber = People[i].ChildrenIDs[j]) and (Length(People[k].ChildrenIDs) <> 0) then
+	      begin
+			WriteLn;
+			WriteLn('ВЫ НАПУГАЛИ ДЕДА');
+			WriteLn('ФИО: ', People[i].FullName);
+			WriteLn('Пол: ', People[i].Gender);
+			WriteLn('Дата рождения: ', People[i].BirthDate);
+			WriteLn('Уникальный ID: ', People[i].IDNumber);
+		  end;
+		end;
+      end;
+    end;
+  end;
+end;
 
 begin
   WriteLn('Начинайте ввод данных. Чтобы завершить ввод и вывести базу данных, нажмите дважды Enter.');
@@ -103,4 +181,15 @@ begin
   WriteLn;
   WriteLn('Все данные:');
   PrintDatabase;
+  
+  WriteLn('------------------------------');
+  FindDateFemale;
+  WriteLn;
+  WriteLn('------------------------------');
+  FindParents;
+  WriteLn;
+  WriteLn('------------------------------');
+  FindGrandfathers;
+  WriteLn;
+  WriteLn('------------------------------');
 end.
