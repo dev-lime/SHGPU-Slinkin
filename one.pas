@@ -149,28 +149,76 @@ end;
 
 procedure FindGrandfathers;
 var
-  i, j, k: Integer;
+  i, j, k, l: Integer;
 begin
   for i := 0 to High(People) do
   begin
-	if (People[i].Gender = 'Мужской') and (Length(People[i].ChildrenIDs) <> 0) then
+	if (People[i].Gender = 'Мужской') and (Length(People[i].ChildrenIDs) > 0) then
 	begin
       for j := 0 to High(People[i].ChildrenIDs) do
       begin
 	    for k := 0 to High(People) do
 		begin
-	      if (People[k].IDNumber = People[i].ChildrenIDs[j]) and (Length(People[k].ChildrenIDs) <> 0) then
+	      if (People[k].IDNumber = People[i].ChildrenIDs[j]) and (Length(People[k].ChildrenIDs) > 0) then
 	      begin
 			WriteLn;
 			WriteLn('ВЫ НАПУГАЛИ ДЕДА');
-			WriteLn('ФИО: ', People[i].FullName);
-			WriteLn('Пол: ', People[i].Gender);
-			WriteLn('Дата рождения: ', People[i].BirthDate);
-			WriteLn('Уникальный ID: ', People[i].IDNumber);
+			WriteLn('> ФИО: ', People[i].FullName);
+			WriteLn('> Уникальный ID: ', People[i].IDNumber);
+			WriteLn('И ЕГО ДЕТЕЙ');
+			WriteLn('> ФИО: ', People[k].FullName);
+			WriteLn('> Уникальный ID: ', People[k].IDNumber);
+			WriteLn('И ЕГО ВНУКОВ');
+	        Write('> Внуки: ');
+			for l := 0 to High(People[k].ChildrenIDs) do
+			begin
+			  Write(People[k].ChildrenIDs[l]);
+			  if j < High(People[k].ChildrenIDs) then
+				Write(', ');
+			end;
+			WriteLn;
 		  end;
 		end;
       end;
     end;
+  end;
+end;
+
+procedure FindOrphan;
+var
+  i, j, k: Integer;
+  flag: boolean;
+begin
+  ReadLn(Input);
+  flag := False;
+  for i := 0 to High(People) do
+  begin
+	for j := 0 to High(People) do
+	begin
+	  if Length(People[j].ChildrenIDs) <> 0 then
+	  begin
+		for k := 0 to High(People[j].ChildrenIDs) do
+		begin
+		  if People[i].IDNumber = People[j].ChildrenIDs[k] then
+		  begin
+		    flag := True;
+          end;
+        end;
+      end;
+    end;
+    if flag then
+    begin
+      flag := False;
+    end
+    else
+    begin
+      WriteLn;
+	  WriteLn('НАЙДЕН СИРОТА');
+	  WriteLn('ФИО: ', People[i].FullName);
+	  WriteLn('Пол: ', People[i].Gender);
+	  WriteLn('Дата рождения: ', People[i].BirthDate);
+	  WriteLn('Уникальный ID: ', People[i].IDNumber);
+	end;
   end;
 end;
 
@@ -192,4 +240,6 @@ begin
   FindGrandfathers;
   WriteLn;
   WriteLn('------------------------------');
+  FindOrphan;
+  WriteLn;
 end.
