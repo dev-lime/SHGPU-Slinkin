@@ -1,5 +1,3 @@
-#Модуль funcs
-
 unit funcs;
 
 interface
@@ -26,44 +24,44 @@ uses testFuncs;
 function getMax(a, b: Integer): Integer;
 begin
   if a > b then
-    Result := a
+    getMax := a
   else
-    Result := b;
+    getMax := b;
 end;
 
 function getMax(a, b, c: Integer): Integer;
 begin
-  Result := getMax(getMax(a, b), c);
+  getMax := getMax(getMax(a, b), c);
 end;
 
 function getMax(a, b, c, d: Integer): Integer;
 begin
-  Result := getMax(getMax(a, b, c), d);
+  getMax := getMax(getMax(a, b, c), d);
 end;
 
 function getMax(a, b, c, d, e: Integer): Integer;
 begin
-  Result := getMax(getMax(a, b, c, d), e);
+  getMax := getMax(getMax(a, b, c, d), e);
 end;
 
 function getType(a: Integer): string;
 begin
-  Result := 'integer';
+  getType := 'integer';
 end;
 
 function getType(a: Real): string;
 begin
-  Result := 'real';
+  getType := 'real';
 end;
 
 function getType(a: string): string;
 begin
-  Result := 'string';
+  getType := 'string';
 end;
 
 function getType(a: Boolean): string;
 begin
-  Result := 'boolean';
+  getType := 'boolean';
 end;
 
 procedure getIntFrac(value: Real; var intPart: Integer; var fracPart: Real);
@@ -92,7 +90,7 @@ end;
 
 function validatedAll: Boolean;
 begin
-  Result := testFuncs.successFuncs;
+  validatedAll := testFuncs.successFuncs;
 end;
 
 end.
