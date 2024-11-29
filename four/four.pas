@@ -60,7 +60,7 @@ begin
   begin
     writeln('Тип данных: ', getType(realValue));
   end
-  else if (input = '0') or (input = '1') then
+  else if (input = 'True') or (input = 'False') then
   begin
     boolValue := input = '1';
     writeln('Тип данных: ', getType(boolValue));
