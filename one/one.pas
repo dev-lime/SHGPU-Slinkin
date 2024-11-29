@@ -67,7 +67,8 @@ end;
 
 procedure PrintDatabase;
 var
-  i, j: Integer;
+  name: string;
+  i, j, k: Integer;
 begin
   for i := 0 to High(People) do
   begin
@@ -83,7 +84,16 @@ begin
     begin
       for j := 0 to High(People[i].ChildrenIDs) do
       begin
-        Write(People[i].ChildrenIDs[j]);
+		for k := 0 to High(People) do
+		begin
+		  name := '---';
+		  if People[k].IDNumber = People[i].ChildrenIDs[j] then
+		  begin
+		    name := People[k].FullName;
+		    break;
+		  end
+		end;
+		Write(People[i].ChildrenIDs[j], ' (', name, ')');
         if j < High(People[i].ChildrenIDs) then
           Write(', ');
       end;
@@ -120,15 +130,16 @@ procedure FindParents;
 var
   Input: string;
   i, j: Integer;
+  flag: boolean = False;
 begin
   ReadLn(Input);
   for i := 0 to High(People) do
   begin
-	if Length(People[i].ChildrenIDs) <> 0 then
+	if (Length(People[i].ChildrenIDs) <> 0) then
 	begin
       for j := 0 to High(People[i].ChildrenIDs) do
       begin
-        if (People[i].ChildrenIDs[j] = Input) then
+        if (People[i].ChildrenIDs[j] = Input) and (People[i].Gender = 'Мужской') then
         begin
           WriteLn;
           WriteLn('НАЙДЕНО СОВПАДЕНИЕ ПО ДЕТЯМ');
@@ -141,9 +152,46 @@ begin
           if j < High(People[i].ChildrenIDs) then
             Write(', ');
           WriteLn;
+          flag := True;
+          break;
         end;
       end;
     end;
+    if flag then
+    begin
+	  flag := False;
+	  break;
+	end;
+  end;
+  for i := 0 to High(People) do
+  begin
+	if (Length(People[i].ChildrenIDs) <> 0) then
+	begin
+      for j := 0 to High(People[i].ChildrenIDs) do
+      begin
+        if (People[i].ChildrenIDs[j] = Input) and (People[i].Gender = 'Женский') then
+        begin
+          WriteLn;
+          WriteLn('НАЙДЕНО СОВПАДЕНИЕ ПО ДЕТЯМ');
+	      WriteLn('ФИО: ', People[i].FullName);
+		  WriteLn('Пол: ', People[i].Gender);
+		  WriteLn('Дата рождения: ', People[i].BirthDate);
+		  WriteLn('Уникальный ID: ', People[i].IDNumber);
+	      Write('Дети: ');
+		  Write(People[i].ChildrenIDs[j]);
+          if j < High(People[i].ChildrenIDs) then
+            Write(', ');
+          WriteLn;
+          flag := True;
+          break;
+        end;
+      end;
+    end;
+    if flag then
+    begin
+	  flag := False;
+	  break;
+	end;
   end;
 end;
 

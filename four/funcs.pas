@@ -67,7 +67,7 @@ end;
 procedure getIntFrac(value: Real; var intPart: Integer; var fracPart: Real);
 begin
   intPart := Trunc(value);
-  fracPart := Abs(Frac(value));
+  fracPart := Frac(value);
 end;
 
 procedure getStrChr(const s: string; var digits, spaces, others: Integer);
