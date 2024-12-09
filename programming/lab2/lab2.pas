@@ -78,7 +78,11 @@ begin
   for i := 0 to len - 1 do
   begin
     if i < Length(set1) then
+    begin
       subSet[i] := set1[i];
+    end else begin
+      destroySet(subSet); { Нейтрализация загрязнения памяти }
+    end;
     if i < Length(set2) then
       subSet[i] := subSet[i] - set2[i];
   end;
@@ -196,6 +200,12 @@ begin
   { Разность множеств }
   resultSet := subSet(set1, set2); { Разность set1 - set2 }
   writeln('Элементы множества после разности set1 - set2:');
+  for i := 0 to 500 do
+    if inSet(resultSet, i) then
+      write(i, ' ');
+  writeln;
+  resultSet := subSet(set2, set1); { Разность set2 - set1 }
+  writeln('Элементы множества после разности set2 - set1:');
   for i := 0 to 500 do
     if inSet(resultSet, i) then
       write(i, ' ');
