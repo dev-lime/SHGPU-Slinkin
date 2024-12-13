@@ -1,3 +1,4 @@
+{$R+}
 uses math;
 
 type
@@ -50,6 +51,18 @@ begin
     inSet := False;
 end;
 
+{ Аналог функции include (добавление элемента) }
+procedure includeSet(var dstSet: TLongSet; e: integer);
+var
+  index, bitPos: integer;
+begin
+  index := e div 256;
+  bitPos := e mod 256;
+  if index >= Length(dstSet) then
+    SetLength(dstSet, index + 1);
+  Include(dstSet[index], byte(bitPos));
+end;
+
 { Аналог операции + (объединение), возвращает новое множество }
 function sumSet(set1, set2: TLongSet): TLongSet;
 var
@@ -75,13 +88,13 @@ begin
   subSet := nil;
   len := Max(Length(set1), Length(set2));
   SetLength(subSet, len);
+  for i := 0 to Length(subSet)-1 do // очистка
+    subSet[i] := [];
   for i := 0 to len - 1 do
   begin
     if i < Length(set1) then
     begin
       subSet[i] := set1[i];
-    end else begin
-      destroySet(subSet); { Нейтрализация загрязнения памяти }
     end;
     if i < Length(set2) then
       subSet[i] := subSet[i] - set2[i];
@@ -101,18 +114,6 @@ begin
     if (i < Length(set1)) and (i < Length(set2)) then
       mulSet[i] := set1[i] * set2[i];
   end;
-end;
-
-{ Аналог функции include (добавление элемента) }
-procedure includeSet(var dstSet: TLongSet; e: integer);
-var
-  index, bitPos: integer;
-begin
-  index := e div 256;
-  bitPos := e mod 256;
-  if index >= Length(dstSet) then
-    SetLength(dstSet, index + 1);
-  Include(dstSet[index], byte(bitPos));
 end;
 
 { Аналог функции exclude (удаление элемента) }
@@ -145,6 +146,17 @@ begin
   end;
 end;
 
+{ Вывод множества }
+procedure printSet(printSet: TLongSet);
+var
+  i: integer;
+begin
+  for i := 0 to getSize(printSet) do
+    if inSet(printSet, i) then
+      write(i, ' ');
+  writeln;
+end;
+
 var
   set1, set2, resultSet: TLongSet;
   i: integer;
@@ -175,49 +187,39 @@ begin
     writeln('Элемент 150 успешно удалён из множества set1.');
 
   { Изменение размера множества }
-  setSize(set1, 500); { Изменяем размер множества на 500 элементов }
+  setSize(set1, 300); { Изменяем размер множества на 500 элементов }
 
   { Создание второго множества и объединение }
-  set2 := createSet(300);
+  set2 := createSet(1024);
   includeSet(set2, 290);
   includeSet(set2, 100);
   resultSet := sumSet(set1, set2); { Объединение set1 и set2 }
-
   writeln('Элементы множества после объединения:');
-  for i := 0 to 500 do
-    if inSet(resultSet, i) then
-      write(i, ' ');
-  writeln;
+  printSet(resultSet);
 
   { Пересечение множеств }
   resultSet := mulSet(set1, set2); { Пересечение set1 и set2 }
-  writeln('Элементы множества после пересечения:');
-  for i := 0 to 500 do
-    if inSet(resultSet, i) then
-      write(i, ' ');
-  writeln;
+  printSet(resultSet);
+
+  { print }
+  includeSet(set1, 289);
+  writeln('set1: ');
+  printSet(set1);
+  writeln('set2: ');
+  printSet(set2);
 
   { Разность множеств }
   resultSet := subSet(set1, set2); { Разность set1 - set2 }
   writeln('Элементы множества после разности set1 - set2:');
-  for i := 0 to 500 do
-    if inSet(resultSet, i) then
-      write(i, ' ');
-  writeln;
+  printSet(resultSet);
   resultSet := subSet(set2, set1); { Разность set2 - set1 }
   writeln('Элементы множества после разности set2 - set1:');
-  for i := 0 to 500 do
-    if inSet(resultSet, i) then
-      write(i, ' ');
-  writeln;
+  printSet(resultSet);
 
   { Симметрическая разность }
   resultSet := symDiffSet(set1, set2); { Симметрическая разность set1 и set2 }
   writeln('Элементы множества после симметрической разности:');
-  for i := 0 to 500 do
-    if inSet(resultSet, i) then
-      write(i, ' ');
-  writeln;
+  printSet(resultSet);
 
   { Уничтожение множества }
   destroySet(set1);
