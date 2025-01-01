@@ -71,6 +71,8 @@ begin
   sumSet := nil;
   len := Max(Length(set1), Length(set2));
   SetLength(sumSet, len);
+  for i := 0 to Length(sumSet)-1 do { Очистка, предотвращение загрязнения памяти }
+    sumSet[i] := [];
   for i := 0 to len - 1 do
   begin
     if i < Length(set1) then
@@ -88,7 +90,7 @@ begin
   subSet := nil;
   len := Max(Length(set1), Length(set2));
   SetLength(subSet, len);
-  for i := 0 to Length(subSet)-1 do // очистка
+  for i := 0 to Length(subSet)-1 do { Очистка, предотвращение загрязнения памяти }
     subSet[i] := [];
   for i := 0 to len - 1 do
   begin
@@ -109,6 +111,8 @@ begin
   mulSet := nil;
   len := Max(Length(set1), Length(set2));
   SetLength(mulSet, len);
+  for i := 0 to Length(mulSet)-1 do { Очистка, предотвращение загрязнения памяти }
+    mulSet[i] := [];
   for i := 0 to len - 1 do
   begin
     if (i < Length(set1)) and (i < Length(set2)) then
@@ -135,6 +139,8 @@ begin
   symDiffSet := nil;
   len := Max(Length(set1), Length(set2));
   SetLength(symDiffSet, len);
+  for i := 0 to Length(symDiffSet)-1 do { Очистка, предотвращение загрязнения памяти }
+    symDiffSet[i] := [];
   for i := 0 to len - 1 do
   begin
     if (i < Length(set1)) and (i < Length(set2)) then
