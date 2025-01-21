@@ -29,7 +29,10 @@ end;
 { Функция получения размера множества }
 function getSize(bSet: TLongSet): integer;
 begin
-  getSize := Length(bSet) * 256;
+  if (getSize(bSet > 0) then
+    getSize := Length(bSet) * 256 - 256
+  else
+    getSize := Length(bSet) * 256;
 end;
 
 { Функция уничтожения множества }
@@ -85,10 +88,11 @@ end;
 { Аналог операции - (разность), возвращает новое множество }
 function subSet(set1, set2: TLongSet): TLongSet;
 var
-  i, len: integer;
+  i, k, len: integer;
 begin
+  k := 0;
   subSet := nil;
-  len := Max(Length(set1), Length(set2));
+  len := Min(Length(set1), Length(set2));
   SetLength(subSet, len);
   for i := 0 to Length(subSet)-1 do { Очистка, предотвращение загрязнения памяти }
     subSet[i] := [];
@@ -101,6 +105,14 @@ begin
     if i < Length(set2) then
       subSet[i] := subSet[i] - set2[i];
   end;
+  for i := 0 to Length(subSet)-1 do
+    if (subSet[i] = []) then
+      k += 1;
+  
+  if (Length(subSet) = k) then
+    setSize(subSet, 0);
+  {else
+    setSize(subSet, Length(subSet));}
 end;
 
 { Аналог операции * (пересечение), возвращает новое множество }
@@ -196,9 +208,11 @@ begin
   setSize(set1, 300); { Изменяем размер множества на 500 элементов }
 
   { Создание второго множества и объединение }
-  set2 := createSet(1024);
+  set2 := createSet(0);
   includeSet(set2, 290);
-  includeSet(set2, 100);
+  //includeSet(set2, 100);
+  //includeSet(set2, 255);
+  //includeSet(set2, 256);
   resultSet := sumSet(set1, set2); { Объединение set1 и set2 }
   writeln('Элементы множества после объединения:');
   printSet(resultSet);
@@ -221,6 +235,7 @@ begin
   resultSet := subSet(set2, set1); { Разность set2 - set1 }
   writeln('Элементы множества после разности set2 - set1:');
   printSet(resultSet);
+  writeln(getSize(resultSet));
 
   { Симметрическая разность }
   resultSet := symDiffSet(set1, set2); { Симметрическая разность set1 и set2 }
