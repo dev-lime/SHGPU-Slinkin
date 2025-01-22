@@ -1,123 +1,198 @@
-program OverloadedOperators;
+program OperatorOverloadingExample;
 
-{$mode objfpc}{$H+}
+{$mode objfpc}
+{$WARN 6058 OFF}
 
-uses
-  SysUtils, Variants;
+uses sysutils, variants;
 
-function StrToDbl(const S: string): Double;
+// Перегрузка операторов для приведения типов и арифметических операций.
+
+// Преобразование string в double
+operator := (strValue: string): double;
 begin
-  if not TryStrToFloat(S, Result) then
-    Result := 0.0;
+  result := StrToFloatDef(strValue, 0.0); // Если строка содержит число, преобразуем, иначе возвращаем 0.0
 end;
 
-// Перегрузка оператора "+" для комбинаций string и double
-operator + (A: string; B: Double) Res: Double;
+// Преобразование double в string
+operator := (numValue: double): string;
 begin
-  Res := StrToDbl(A) + B;
+  result := FloatToStrF(numValue, ffFixed, 6, 6); // Преобразуем число в строку с 6 знаками после запятой
 end;
 
-operator + (A: Double; B: string) Res: Double;
+// Явное преобразование string в double
+operator explicit (strValue: string): double;
 begin
-  Res := A + StrToDbl(B);
+  result := StrToFloatDef(strValue, 0.0);
 end;
 
-operator + (A: Variant; B: Variant) Res: Double;
+// Явное преобразование double в string
+operator explicit (numValue: double): string;
 begin
-  Res := Double(A) + Double(B);
+  result := FloatToStrF(numValue, ffFixed, 0, 6); // Без экспоненциальной нотации
 end;
 
-// Перегрузка оператора "-" для комбинаций string и double
-operator - (A: string; B: Double) Res: Double;
+// Перегрузка оператора сложения для разных типов
+operator + (numValue: double; strValue: string): double;
 begin
-  Res := StrToDbl(A) - B;
+  result := numValue + StrToFloatDef(strValue, 0.0);
 end;
 
-operator - (A: Double; B: string) Res: Double;
+operator + (strValue: string; numValue: double): double;
 begin
-  Res := A - StrToDbl(B);
+  result := StrToFloatDef(strValue, 0.0) + numValue;
 end;
 
-operator - (A: Variant; B: string) Res: Double;
+operator + (varValue: variant; strValue: string): double;
 begin
-  Res := StrToDbl(A) - StrToDbl(B);
+  result := StrToFloatDef(varValue, 0.0) + StrToFloatDef(strValue, 0.0);
 end;
 
-operator - (A: string; B: Variant) Res: Double;
+operator + (strValue: string; varValue: variant): double;
 begin
-  Res := Double(A) - Double(B);
+  result := StrToFloatDef(strValue, 0.0) + StrToFloatDef(varValue, 0.0);
 end;
 
-// Перегрузка оператора "*" для комбинаций string и double
-operator * (A: string; B: Double) Res: Double;
+operator + (varValue: variant; numValue: double): double;
 begin
-  Res := StrToDbl(A) * B;
+  result := StrToFloatDef(varValue, 0.0) + numValue;
 end;
 
-operator * (A: Double; B: string) Res: Double;
+operator + (numValue: double; varValue: variant): double;
 begin
-  Res := A * StrToDbl(B);
+  result := numValue + StrToFloatDef(varValue, 0.0);
 end;
 
-operator * (A: Variant; B: string) Res: Double;
+operator + (varValue1, varValue2: variant): double;
 begin
-  Res := StrToDbl(A) * StrToDbl(B);
+  result := StrToFloatDef(varValue1, 0.0) + StrToFloatDef(varValue2, 0.0);
 end;
 
-operator * (A: string; B: Variant) Res: Double;
+// Перегрузка оператора вычитания
+operator - (numValue: double; strValue: string): double;
 begin
-  Res := Double(A) * Double(B);
+  result := numValue - StrToFloatDef(strValue, 0.0);
 end;
 
-// Перегрузка оператора "/" для комбинаций string и double
-operator / (A: string; B: Double) Res: Double;
+operator - (strValue: string; numValue: double): double;
 begin
-  if B = 0.0 then
-    raise Exception.Create('Division by zero');
-  Res := StrToDbl(A) / B;
+  result := StrToFloatDef(strValue, 0.0) - numValue;
 end;
 
-operator / (A: Double; B: string) Res: Double;
+operator - (varValue: variant; strValue: string): double;
 begin
-  if StrToDbl(B) = 0.0 then
-    raise Exception.Create('Division by zero');
-  Res := A / StrToDbl(B);
+  result := StrToFloatDef(varValue, 0.0) - StrToFloatDef(strValue, 0.0);
 end;
 
-operator / (A: string; B: string) Res: Double;
+operator - (strValue: string; varValue: variant): double;
 begin
-  if StrToDbl(B) = 0.0 then
-    raise Exception.Create('Division by zero');
-  Res := StrToDbl(A) / StrToDbl(B);
+  result := StrToFloatDef(strValue, 0.0) - StrToFloatDef(varValue, 0.0);
 end;
 
-operator / (A: Variant; B: Variant) Res: Double;
+operator - (varValue: variant; numValue: double): double;
 begin
-  if Double(B) = 0.0 then
-    raise Exception.Create('Division by zero');
-  Res := Double(A) / Double(B);
+  result := StrToFloatDef(varValue, 0.0) - numValue;
 end;
 
+operator - (numValue: double; varValue: variant): double;
+begin
+  result := numValue - StrToFloatDef(varValue, 0.0);
+end;
+
+operator - (varValue1, varValue2: variant): double;
+begin
+  result := StrToFloatDef(varValue1, 0.0) - StrToFloatDef(varValue2, 0.0);
+end;
+
+// Перегрузка оператора умножения
+operator * (numValue: double; strValue: string): double;
+begin
+  result := numValue * StrToFloatDef(strValue, 0.0);
+end;
+
+operator * (strValue: string; numValue: double): double;
+begin
+  result := StrToFloatDef(strValue, 0.0) * numValue;
+end;
+
+operator * (varValue: variant; strValue: string): double;
+begin
+  result := StrToFloatDef(varValue, 0.0) * StrToFloatDef(strValue, 0.0);
+end;
+
+operator * (strValue: string; varValue: variant): double;
+begin
+  result := StrToFloatDef(strValue, 0.0) * StrToFloatDef(varValue, 0.0);
+end;
+
+operator * (varValue: variant; numValue: double): double;
+begin
+  result := StrToFloatDef(varValue, 0.0) * numValue;
+end;
+
+operator * (numValue: double; varValue: variant): double;
+begin
+  result := numValue * StrToFloatDef(varValue, 0.0);
+end;
+
+operator * (varValue1, varValue2: variant): double;
+begin
+  result := StrToFloatDef(varValue1, 0.0) * StrToFloatDef(varValue2, 0.0);
+end;
+
+// Перегрузка оператора деления
+operator / (numValue: double; strValue: string): double;
+begin
+  result := numValue / StrToFloatDef(strValue, 0.0);
+end;
+
+operator / (strValue: string; numValue: double): double;
+begin
+  result := StrToFloatDef(strValue, 0.0) / numValue;
+end;
+
+operator / (varValue: variant; strValue: string): double;
+begin
+  result := StrToFloatDef(varValue, 0.0) / StrToFloatDef(strValue, 0.0);
+end;
+
+operator / (strValue: string; varValue: variant): double;
+begin
+  result := StrToFloatDef(strValue, 0.0) / StrToFloatDef(varValue, 0.0);
+end;
+
+operator / (varValue: variant; numValue: double): double;
+begin
+  result := StrToFloatDef(varValue, 0.0) / numValue;
+end;
+
+operator / (numValue: double; varValue: variant): double;
+begin
+  result := numValue / StrToFloatDef(varValue, 0.0);
+end;
+
+operator / (varValue1, varValue2: variant): double;
+begin
+  result := StrToFloatDef(varValue1, 0.0) / StrToFloatDef(varValue2, 0.0);
+end;
+
+// Пример использования операторов
 var
-  V1, V2: Variant;
-  S1, S2: string;
-  D1, D2: Double;
-  Res: Double;
+  st: string;
+  d, d_else: double;
+  vr: variant;
 begin
-  WriteLn('Сложение');
-  ReadLn(S1);
-  ReadLn(S2);
-  WriteLn((S1+StrToDbl(S2)));
-  WriteLn('Вычитание');
-  V1 := 6.0;
-  ReadLn(S2);
-  WriteLn(V1-S2);
-  WriteLn('Умножение');
-  ReadLn(S1);
-  V2 := 8.0;
-  WriteLn(S1*V2);
-  WriteLn('Деление');
-  ReadLn(S1);
-  D2 := 10.0;
-  WriteLn(StrToDbl(S1)/D2);
+  d := '3.0'; // Присваивание строкового значения числу
+  d_else := 'wr'; // Некорректная строка, преобразуется в 0.0
+  st := 8.0; // Преобразование числа в строку
+  vr := '21.0'; // Присваивание строкового значения переменной variant
+
+  // Тестирование перегрузок
+  writeln('d - из строки в число: ', d:0:6);
+  writeln('иначе в 0.0: ', d_else:0:6);
+  writeln('st - из числа в строку: ', st);
+  writeln;
+  writeln('string(d) + string(d) = ', string(d) + string(d));
+  writeln('double(st) + double(st) = ', double(st) + double(st):0:6);
+  writeln('variants = ', double(vr) + double(vr):0:6);
+  writeln;
 end.

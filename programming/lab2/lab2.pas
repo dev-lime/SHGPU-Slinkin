@@ -29,10 +29,20 @@ end;
 { Функция получения размера множества }
 function getSize(bSet: TLongSet): integer;
 begin
-  if (getSize(bSet > 0) then
-    getSize := Length(bSet) * 256 - 256
-  else
-    getSize := Length(bSet) * 256;
+  getSize := Length(bSet) * 256;
+end;
+
+{ Функция очистки множества }
+procedure setClean(var mySet:TLongSet; newLen: integer);
+var 
+  i, oldLen: integer;
+begin
+  oldLen := length(mySet);
+  setLength(mySet, newLen);
+  for i := oldLen + 1 to newLen - 1 do
+  begin
+    mySet[i] := [];
+  end;
 end;
 
 { Функция уничтожения множества }
@@ -69,50 +79,62 @@ end;
 { Аналог операции + (объединение), возвращает новое множество }
 function sumSet(set1, set2: TLongSet): TLongSet;
 var
-  i, len: integer;
+  i, lenSet: integer;
+  resSet: TLongSet;
 begin
-  sumSet := nil;
-  len := Max(Length(set1), Length(set2));
-  SetLength(sumSet, len);
-  for i := 0 to Length(sumSet)-1 do { Очистка, предотвращение загрязнения памяти }
-    sumSet[i] := [];
-  for i := 0 to len - 1 do
+  if length(set1) <= length(set2) then
   begin
-    if i < Length(set1) then
-      sumSet[i] := set1[i];
-    if i < Length(set2) then
-      sumSet[i] := sumSet[i] + set2[i];
+    setClean(resSet,length(set2));
+    for i := 0 to length(resSet)-1 do
+    begin
+      resSet[i] += set2[i]; 
+    end;
+    for i := 0 to length(set1)-1 do
+    begin
+      resSet[i] += set1[i]; 
+    end;
+    sumSet := resSet;
+  end
+  else
+  begin
+    setClean(resSet, length(set1));
+    for i := 0 to length(resSet)-1 do
+    begin
+      resSet[i] += set1[i]; 
+    end;
+    for i := 0 to length(set2)-1 do
+    begin
+      resSet[i] += set2[i]; 
+    end;
+    sumSet := resSet;
   end;
 end;
 
 { Аналог операции - (разность), возвращает новое множество }
 function subSet(set1, set2: TLongSet): TLongSet;
 var
-  i, k, len: integer;
+  resSet: TLongSet;
+  i, j, lenSet: integer;
 begin
-  k := 0;
-  subSet := nil;
-  len := Min(Length(set1), Length(set2));
-  SetLength(subSet, len);
-  for i := 0 to Length(subSet)-1 do { Очистка, предотвращение загрязнения памяти }
-    subSet[i] := [];
-  for i := 0 to len - 1 do
+  if length(set1) <= length(set2) then
   begin
-    if i < Length(set1) then
-    begin
-      subSet[i] := set1[i];
-    end;
-    if i < Length(set2) then
-      subSet[i] := subSet[i] - set2[i];
+    lenSet := length(set2);
+    setClean(set1, lenSet);
+  end
+  else 
+  begin
+    lenSet := length(set1);
+    setClean(set2, lenSet);
   end;
-  for i := 0 to Length(subSet)-1 do
-    if (subSet[i] = []) then
-      k += 1;
-  
-  if (Length(subSet) = k) then
-    setSize(subSet, 0);
-  {else
-    setSize(subSet, Length(subSet));}
+  setClean(resSet, lenSet);
+  j := 0;
+  for i := 0 to lenSet-1 do
+    begin
+      resSet[i] := set1[i] - set2[i];
+      if resSet[i] <> [] then j := i;
+    end;
+    setLength(resSet, j + 1);
+  subSet := resSet;
 end;
 
 { Аналог операции * (пересечение), возвращает новое множество }
@@ -146,22 +168,28 @@ end;
 { Симметричная разность (объединение минус пересечение) }
 function symDiffSet(set1, set2: TLongSet): TLongSet;
 var
-  i, len: integer;
+  resSet: TLongSet;
+  i, j, lenSet: integer;
 begin
-  symDiffSet := nil;
-  len := Max(Length(set1), Length(set2));
-  SetLength(symDiffSet, len);
-  for i := 0 to Length(symDiffSet)-1 do { Очистка, предотвращение загрязнения памяти }
-    symDiffSet[i] := [];
-  for i := 0 to len - 1 do
+  if length(set1) <= length(set2) then
   begin
-    if (i < Length(set1)) and (i < Length(set2)) then
-      symDiffSet[i] := (set1[i] + set2[i]) - (set1[i] * set2[i])
-    else if i < Length(set1) then
-      symDiffSet[i] := set1[i]
-    else
-      symDiffSet[i] := set2[i];
+    lenSet := length(set2);
+    setClean(set1, lenSet);
+  end
+  else 
+  begin
+    lenSet := length(set1);
+    setClean(set2, lenSet);
   end;
+  setClean(resSet, lenSet);
+  j := 0;
+  for i := 0 to lenSet-1 do
+    begin
+      resSet[i] := set1[i] >< set2[i];
+      if resSet[i] <> [] then j := i;
+    end;
+    setClean(resSet, j + 1);
+  symDiffSet := resSet;
 end;
 
 { Вывод множества }
