@@ -19,36 +19,47 @@ end;
 { Функция изменения размера множества }
 procedure setSize(var dstSet: TLongSet; newCount: integer);
 var
-  setSize: integer;
+  setSize, i: integer;
 begin
-  { Размер множества всегда кратен 256 }
-  setSize := ((newCount + 255) div 256);
-  SetLength(dstSet, setSize);
+  setSize := (newCount + 255) div 256;
+  if setSize > Length(dstSet) then
+  begin
+    SetLength(dstSet, setSize);
+    for i := Length(dstSet) to setSize - 1 do
+      dstSet[i] := [];
+  end
+  else
+    SetLength(dstSet, setSize);
 end;
 
 { Функция получения размера множества }
 function getSize(bSet: TLongSet): integer;
+var
+  i, count: integer;
+  element: byte;
 begin
-  getSize := Length(bSet) * 256;
+  count := 0;
+  for i := 0 to High(bSet) do
+    for element in bSet[i] do
+      Inc(count);
+  getSize := count * 256;
 end;
 
 { Функция очистки множества }
-procedure setClean(var mySet:TLongSet; newLen: integer);
-var 
-  i, oldLen: integer;
+procedure setClean(var mySet: TLongSet; newLen: integer);
+var
+  i: integer;
 begin
-  oldLen := length(mySet);
-  setLength(mySet, newLen);
-  for i := oldLen + 1 to newLen - 1 do
-  begin
+  SetLength(mySet, newLen);
+  for i := 0 to newLen - 1 do
     mySet[i] := [];
-  end;
 end;
 
 { Функция уничтожения множества }
 procedure destroySet(var dstSet: TLongSet);
 begin
-  SetLength(dstSet, 0);
+  if Length(dstSet) > 0 then
+    SetLength(dstSet, 0);
 end;
 
 { Аналог операции in }
@@ -58,10 +69,7 @@ var
 begin
   index := e div 256;
   bitPos := e mod 256;
-  if index < Length(bSet) then
-    inSet := byte(bitPos) in bSet[index]
-  else
-    inSet := False;
+  inSet := (index < Length(bSet)) and (byte(bitPos) in bSet[index]);
 end;
 
 { Аналог функции include (добавление элемента) }
@@ -79,79 +87,54 @@ end;
 { Аналог операции + (объединение), возвращает новое множество }
 function sumSet(set1, set2: TLongSet): TLongSet;
 var
-  i, lenSet: integer;
+  i, maxLen: integer;
   resSet: TLongSet;
 begin
-  if length(set1) <= length(set2) then
+  maxLen := Max(Length(set1), Length(set2));
+  SetLength(resSet, maxLen);
+
+  for i := 0 to maxLen - 1 do
   begin
-    setClean(resSet,length(set2));
-    for i := 0 to length(resSet)-1 do
-    begin
-      resSet[i] += set2[i]; 
-    end;
-    for i := 0 to length(set1)-1 do
-    begin
-      resSet[i] += set1[i]; 
-    end;
-    sumSet := resSet;
-  end
-  else
-  begin
-    setClean(resSet, length(set1));
-    for i := 0 to length(resSet)-1 do
-    begin
-      resSet[i] += set1[i]; 
-    end;
-    for i := 0 to length(set2)-1 do
-    begin
-      resSet[i] += set2[i]; 
-    end;
-    sumSet := resSet;
+    if i < Length(set1) then
+      resSet[i] := set1[i];
+    if i < Length(set2) then
+      resSet[i] := resSet[i] + set2[i];
   end;
+
+  sumSet := resSet;
 end;
 
 { Аналог операции - (разность), возвращает новое множество }
 function subSet(set1, set2: TLongSet): TLongSet;
 var
+  i: integer;
   resSet: TLongSet;
-  i, j, lenSet: integer;
 begin
-  if length(set1) <= length(set2) then
+  SetLength(resSet, Length(set1));
+
+  for i := 0 to High(set1) do
   begin
-    lenSet := length(set2);
-    setClean(set1, lenSet);
-  end
-  else 
-  begin
-    lenSet := length(set1);
-    setClean(set2, lenSet);
+    resSet[i] := set1[i];
+    if i < Length(set2) then
+      resSet[i] := resSet[i] - set2[i];
   end;
-  setClean(resSet, lenSet);
-  j := 0;
-  for i := 0 to lenSet-1 do
-    begin
-      resSet[i] := set1[i] - set2[i];
-      if resSet[i] <> [] then j := i;
-    end;
-    setLength(resSet, j + 1);
+
   subSet := resSet;
 end;
 
 { Аналог операции * (пересечение), возвращает новое множество }
 function mulSet(set1, set2: TLongSet): TLongSet;
 var
-  i, len: integer;
+  i, minLen: integer;
+  resSet: TLongSet;
 begin
-  mulSet := nil;
-  len := Max(Length(set1), Length(set2));
-  SetLength(mulSet, len);
-  for i := 0 to Length(mulSet)-1 do { Очистка, предотвращение загрязнения памяти }
-    mulSet[i] := [];
-  for i := 0 to len - 1 do
-  begin
-    if (i < Length(set1)) and (i < Length(set2)) then
-      mulSet[i] := set1[i] * set2[i];
-  end;
+  minLen := Min(Length(set1), Length(set2));
+  SetLength(resSet, minLen);
+
+  for i := 0 to minLen - 1 do
+    resSet[i] := set1[i] * set2[i];
+
+  mulSet := resSet;
 end;
 
 { Аналог функции exclude (удаление элемента) }
@@ -168,38 +151,32 @@ end;
 { Симметричная разность (объединение минус пересечение) }
 function symDiffSet(set1, set2: TLongSet): TLongSet;
 var
+  i, maxLen: integer;
   resSet: TLongSet;
-  i, j, lenSet: integer;
 begin
-  if length(set1) <= length(set2) then
+  maxLen := Max(Length(set1), Length(set2));
+  SetLength(resSet, maxLen);
+
+  for i := 0 to maxLen - 1 do
   begin
-    lenSet := length(set2);
-    setClean(set1, lenSet);
-  end
-  else 
-  begin
-    lenSet := length(set1);
-    setClean(set2, lenSet);
+    if i < Length(set1) then
+      resSet[i] := set1[i];
+    if i < Length(set2) then
+      resSet[i] := resSet[i] >< set2[i];
   end;
-  setClean(resSet, lenSet);
-  j := 0;
-  for i := 0 to lenSet-1 do
-    begin
-      resSet[i] := set1[i] >< set2[i];
-      if resSet[i] <> [] then j := i;
-    end;
-    setClean(resSet, j + 1);
+
   symDiffSet := resSet;
 end;
 
 { Вывод множества }
 procedure printSet(printSet: TLongSet);
 var
-  i: integer;
+  i, j: integer;
 begin
-  for i := 0 to getSize(printSet) do
-    if inSet(printSet, i) then
-      write(i, ' ');
+  for i := 0 to High(printSet) do
+    for j := 0 to 255 do
+      if byte(j) in printSet[i] then
+        write(i * 256 + j, ' ');
   writeln;
 end;
 
