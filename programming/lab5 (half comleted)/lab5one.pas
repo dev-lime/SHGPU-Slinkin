@@ -187,12 +187,43 @@ begin
   vr := '21.0'; // Присваивание строкового значения переменной variant
 
   // Тестирование перегрузок
-  writeln('d - из строки в число: ', d:0:6);
-  writeln('иначе в 0.0: ', d_else:0:6);
-  writeln('st - из числа в строку: ', st);
-  writeln;
-  writeln('string(d) + string(d) = ', string(d) + string(d));
-  writeln('double(st) + double(st) = ', double(st) + double(st):0:6);
-  writeln('variants = ', double(vr) + double(vr):0:6);
-  writeln;
+  writeln('Деление');
+  writeln('d + st = ', d + st:0:6);
+  writeln('st + d = ', st + d:0:6);
+  writeln('vr + st = ', vr + st:0:6);
+  writeln('st + vr = ', st + vr:0:6);
+  writeln('vr + d = ', vr + d:0:6);
+  writeln('d + vr = ', d + vr:0:6);
+  writeln('vr + vr = ', vr + vr:0:6);
+  writeln();
+  
+  writeln('Вычитание');
+  writeln('d - st = ', d - st:0:6);
+  writeln('st - d = ', st - d:0:6);
+  writeln('vr - st = ', vr - st:0:6);
+  writeln('st - vr = ', st - vr:0:6);
+  writeln('vr - d = ', vr - d:0:6);
+  writeln('d - vr = ', d - vr:0:6);
+  writeln('vr - vr = ', vr - vr:0:6);
+  writeln();
+  
+  writeln('Умножение');
+  writeln('d * st = ', d * st:0:6);
+  writeln('st * d = ', st * d:0:6);
+  writeln('vr * st = ', vr * st:0:6);
+  writeln('st * vr = ', st * vr:0:6);
+  writeln('vr * d = ', vr * d:0:6);
+  writeln('d * vr = ', d * vr:0:6);
+  writeln('vr * vr = ', vr * vr:0:6);
+  writeln();
+  
+  writeln('Деление');
+  writeln('d / st = ', d / st:0:6);
+  writeln('st / d = ', st / d:0:6);
+  writeln('vr / st = ', vr / st:0:6);
+  writeln('st / vr = ', st / vr:0:6);
+  writeln('vr / d = ', vr / d:0:6);
+  writeln('d / vr = ', d / vr:0:6);
+  writeln('vr / vr = ', vr / vr:0:6);
+  writeln();
 end.
