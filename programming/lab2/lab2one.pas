@@ -1,265 +1,244 @@
+{$mode objfpc}
 {$R+}
 uses math;
 
 type
-  TSingleSet = set of byte;
-  TLongSet = array of TSingleSet;
+	TSingleSet = set of byte;
+	TLongSet = array of TSingleSet;
 
 { Функция создания множества }
-function createSet(count: integer): TLongSet;
+function createSet(count:integer):TLongSet;
 var
-  setSize: integer;
+	rSet: TLongSet;
+	len: integer;
 begin
-  createSet := nil;
-  { Размер множества всегда кратен 256 }
-  setSize := ((count + 255) div 256);
-  SetLength(createSet, setSize);
+	len := (count + 256) div 256;
+	setLength(rSet, len);
+	result := rSet;
 end;
 
 { Функция изменения размера множества }
-procedure setSize(var dstSet: TLongSet; newCount: integer);
+procedure setSize(var dstSet:TLongSet; newCount:integer);
 var
-  setSize, i: integer;
-begin
-  setSize := (newCount + 255) div 256;
-  if setSize > Length(dstSet) then
-  begin
-    SetLength(dstSet, setSize);
-    for i := Length(dstSet) to setSize - 1 do
-      dstSet[i] := [];
-  end
-  else
-    SetLength(dstSet, setSize);
+	newLen: integer;
+begin 
+	newLen := ((newCount + 256) div 256);
+	setLength(dstSet, newLen);
 end;
 
 { Функция получения размера множества }
-function getSize(bSet: TLongSet): integer;
-var
-  i: integer;
+function getSize(bSet:TLongSet): integer;
 begin
-  for i := High(bSet) downto 0 do
-    if bSet[i] <> [] then
-    begin
-      getSize := (i + 1) * 256;
-      Exit;
-    end;
-  getSize := 0;
-end;
-
-{ Функция коррекции размера множества }
-function resizeSet(bSet: TLongSet): integer;
-var
-  i, count: integer;
-  element: byte;
-begin
-  count := 0;
-  for i := 0 to High(bSet) do
-    for element in bSet[i] do
-      Inc(count);
-  resizeSet := count * 256;
+	result := length(bSet) * 256;
 end;
 
 { Функция уничтожения множества }
-procedure destroySet(var dstSet: TLongSet);
+procedure destroySet(var dstSet:TLongSet);
 begin
-  if Length(dstSet) > 0 then
-    SetLength(dstSet, 0);
+	setLength(dstSet, 0);
 end;
 
 { Аналог операции in }
-function inSet(bSet: TLongSet; e: integer): boolean;
+function inSet(bSet:TLongSet; e:integer):boolean;
 var
-  index, bitPos: integer;
+	i: integer;
 begin
-  index := e div 256;
-  bitPos := e mod 256;
-  inSet := (index < Length(bSet)) and (byte(bitPos) in bSet[index]);
+	i := ((e + 256) div 256)-1;
+	e := (e mod 256);
+	if i > length(bSet) then
+		result := false
+	else
+	begin
+		if e in bSet[i] then 
+			result := true
+		else
+			result := false;
+	end;
 end;
 
 { Аналог функции include (добавление элемента) }
-procedure includeSet(var dstSet: TLongSet; e: integer);
+procedure includeSet(var dstSet:TLongSet; e:integer);
 var
-  index, bitPos: integer;
+	i, minLen: integer;
 begin
-  index := e div 256;
-  bitPos := e mod 256;
-  if index >= Length(dstSet) then
-    SetLength(dstSet, index + 1);
-  Include(dstSet[index], byte(bitPos));
+	minLen := (e + 256) div 256;
+	if (Length(dstSet) < minLen) then setLength(dstSet, minLen);
+	i := minLen - 1;
+	e := (e + 256) mod 256;
+	Include(dstSet[i], e);
 end;
 
 { Аналог операции + (объединение), возвращает новое множество }
-function sumSet(set1, set2: TLongSet): TLongSet;
+function sumSet(set1,set2:TLongSet):TLongSet; 
 var
-  i, maxLen: integer;
-  resSet: TLongSet;
+	rSet: TLongSet;
+	i, len: integer;
 begin
-  maxLen := Max(Length(set1), Length(set2));
-  SetLength(resSet, maxLen);
-
-  for i := 0 to maxLen - 1 do
-  begin
-    if i < Length(set1) then
-      resSet[i] := set1[i];
-    if i < Length(set2) then
-      resSet[i] := resSet[i] + set2[i];
-  end;
-  
-  setSize(resSet, resizeSet(resSet));
-  sumSet := resSet;
+	if length(set1) >= length(set2) then
+		len := length(set1)
+	else
+		len := length(set2);
+	setLength(rSet, len);
+	for i := 0 to length(set1)-1 do
+	begin
+		rSet[i] += set1[i];
+	end;
+	for i := 0 to length(set2)-1 do
+	begin
+		rSet[i] += set2[i];
+	end;
+	result := rSet;
 end;
 
 { Аналог операции - (разность), возвращает новое множество }
-function subSet(set1, set2: TLongSet): TLongSet;
+function subSet(set1,set2:TLongSet):TLongSet;
 var
-  i: integer;
-  resSet: TLongSet;
+	rSet: TLongSet;
+	i, len, count: integer;
 begin
-  SetLength(resSet, Length(set1));
+	if length(set1) >= length(set2) then
+	begin
+		len := length(set1);
+		setLength(set2, len);
+	end
+	else
+	begin
+		len := length(set2);
+		setLength(set1, len);
+	end;
+	setLength(rSet, len);
+	count := 0;
+	for i := 0 to len-1 do
+	begin
+		rSet[i] := set1[i] - set2[i];
 
-  for i := 0 to High(set1) do
-  begin
-    resSet[i] := set1[i];
-    if i < Length(set2) then
-      resSet[i] := resSet[i] - set2[i];
-  end;
-
-  setSize(resSet, resizeSet(resSet));
-  subSet := resSet;
+		if rSet[i] <> [] then count := i + 1;
+	end;
+	if count = 0 then
+		setLength(rSet, count)
+	else
+		setLength(rSet, count);
+	result := rSet;
 end;
 
 { Аналог операции * (пересечение), возвращает новое множество }
-function mulSet(set1, set2: TLongSet): TLongSet;
+function mulSet(set1,set2:TLongSet):TLongSet;
 var
-  i, minLen: integer;
-  resSet: TLongSet;
+	rSet: TLongSet;
+	i, len, count: integer;
 begin
-  minLen := Min(Length(set1), Length(set2));
-  SetLength(resSet, minLen);
-
-  for i := 0 to minLen - 1 do
-    resSet[i] := set1[i] * set2[i];
-
-  setSize(resSet, resizeSet(resSet));
-  mulSet := resSet;
-end;
-
-{ Аналог функции exclude (удаление элемента) }
-procedure excludeSet(var dstSet: TLongSet; e: integer);
-var
-  index, bitPos: integer;
-begin
-  index := e div 256;
-  bitPos := e mod 256;
-  if index < Length(dstSet) then
-    Exclude(dstSet[index], byte(bitPos));
+	if length(set1) >= length(set2) then
+		len := length(set2)
+	else
+		len := length(set1);
+	setLength(rSet, len);
+	count := 0;
+	for i := 0 to len-1 do
+	begin
+		rSet[i] := set1[i] * set2[i];
+		if rSet[i] <> [] then count := i + 1;
+	end;
+	if count = 0 then
+		setLength(rSet, count)
+	else
+		setLength(rSet, count);
+	result := rSet;
 end;
 
 { Симметричная разность (объединение минус пересечение) }
-function symDiffSet(set1, set2: TLongSet): TLongSet;
+function symDiffSet(set1,set2:TLongSet):TLongSet;
 var
-  i, maxLen: integer;
-  resSet: TLongSet;
+	rSet: TLongSet;
+	i, len, count: integer;
 begin
-  maxLen := Max(Length(set1), Length(set2));
-  SetLength(resSet, maxLen);
+	if length(set1) >= length(set2) then
+	begin
+		len := length(set1);
+		setLength(set2, len);
+	end
+	else
+	begin
+		len := length(set2);
+		setLength(set1, len);
+	end;
+	setLength(rSet, len);
+	count := 0;
+	for i := 0 to len-1 do
+	begin
+		rSet[i] := set1[i] >< set2[i];
+		if rSet[i] <> [] then count := i + 1;
+	end;
+	if count = 0 then
+			setLength(rSet, count)
+		else
+			setLength(rSet, count);
+	setLength(rSet, count+1);
+	result := rSet;
+end;
 
-  for i := 0 to maxLen - 1 do
-  begin
-    if i < Length(set1) then
-      resSet[i] := set1[i];
-    if i < Length(set2) then
-      resSet[i] := resSet[i] >< set2[i];
-  end;
-
-  setSize(resSet, resizeSet(resSet));
-  symDiffSet := resSet;
+{ Аналог функции exclude (удаление элемента) }
+procedure excludeSet(var dstSet:TLongSet; e:integer);
+var
+	i: integer;
+begin
+	i := ((e + 256) div 256) - 1;
+	e := (e + 256) mod 256;
+	exclude(dstSet[i], e);
 end;
 
 { Вывод множества }
 procedure printSet(printSet: TLongSet);
 var
-  i, j: integer;
+  	i, j: integer;
 begin
-  for i := 0 to High(printSet) do
-    for j := 0 to 255 do
-      if byte(j) in printSet[i] then
-        write(i * 256 + j, ' ');
-  writeln;
+	for i := 0 to High(printSet) do
+		for j := 0 to 255 do
+		if byte(j) in printSet[i] then
+			write(i * 256 + j, ' ');
+	writeln;
 end;
 
 var
-  set1, set2, resultSet: TLongSet;
+  	set1, set2, resultSet: TLongSet;
 begin
-  { Создание множества }
-  set1 := createSet(300); { Создаёт множество, способное содержать элементы от 0 до 299 }
+	set1 := createSet(300);
+	includeSet(set1, 5);
+	includeSet(set1, 150);
+	includeSet(set1, 290);
+	includeSet(set1, 2900);
 
-  { Добавление элементов }
-  includeSet(set1, 5);    { Добавляем элемент 5 }
-  includeSet(set1, 150);  { Добавляем элемент 150 }
-  includeSet(set1, 290);  { Добавляем элемент 290 }
+	set2 := createSet(0);
+	includeSet(set2, 5);
+	includeSet(set2, 100);
+	includeSet(set2, 150);
+	includeSet(set2, 255);
+	//includeSet(set2, 256);
+	//includeSet(set2, 289);
+	includeSet(set2, 290);
+	includeSet(set2, 2900);
 
-  { Проверка наличия элемента }
-  if inSet(set1, 150) then
-    writeln('Элемент 150 есть в множестве set1.')
-  else
-    writeln('Элемента 150 нет в множестве set1.');
+	write('set1: ');
+	printSet(set1);
+	write('set2: ');
+	printSet(set2);
+	writeln();
 
-  if inSet(set1, 10) then
-    writeln('Элемент 10 есть в множестве set1.')
-  else
-    writeln('Элемента 10 нет в множестве set1.');
+	resultSet := subSet(set1, set2);
+	write('set1 - set2: ');
+	printSet(resultSet);
 
-  { Удаление элемента }
-  excludeSet(set1, 150); { Удаляем элемент 150 }
-  if not inSet(set1, 150) then
-    writeln('Элемент 150 успешно удалён из множества set1.');
+	write('size: ');
+	writeln(getSize(resultSet));
+	write('length: ');
+	writeln(Length(resultSet));
+	writeln();
 
-  { Изменение размера множества }
-  setSize(set1, 300); { Изменяем размер множества на 500 элементов }
+	resultSet := subSet(set2, set1);
+	write('set2 - set1: ');
+	printSet(resultSet);
 
-  { Создание второго множества и объединение }
-  set2 := createSet(0);
-  includeSet(set2, 290);
-  includeSet(set2, 100);
-  includeSet(set2, 255);
-  includeSet(set2, 256);
-  resultSet := sumSet(set1, set2); { Объединение set1 и set2 }
-  writeln('Элементы множества после объединения:');
-  printSet(resultSet);
-
-  { Пересечение множеств }
-  resultSet := mulSet(set1, set2); { Пересечение set1 и set2 }
-  printSet(resultSet);
-
-  { print }
-  includeSet(set1, 289);
-  writeln('set1: ');
-  printSet(set1);
-  writeln('set2: ');
-  printSet(set2);
-
-  { Разность множеств }
-  resultSet := subSet(set1, set2); { Разность set1 - set2 }
-  writeln('Элементы множества после разности set1 - set2:');
-  printSet(resultSet);
-  resultSet := subSet(set2, set1); { Разность set2 - set1 }
-  writeln('Элементы множества после разности set2 - set1:');
-  printSet(resultSet);
-  write('size: ');
-  writeln(getSize(resultSet));
-  write('length: ');
-  writeln(Length(resultSet));
-
-  { Симметрическая разность }
-  resultSet := symDiffSet(set1, set2); { Симметрическая разность set1 и set2 }
-  writeln('Элементы множества после симметрической разности:');
-  printSet(resultSet);
-
-  { Уничтожение множества }
-  destroySet(set1);
-  destroySet(set2);
-  destroySet(resultSet);
-
-  writeln('Множества уничтожены.');
+	write('size: ');
+	writeln(getSize(resultSet));
+	write('length: ');
+	writeln(Length(resultSet));
 end.
