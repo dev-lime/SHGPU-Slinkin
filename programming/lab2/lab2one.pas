@@ -35,6 +35,20 @@ end;
 { Функция получения размера множества }
 function getSize(bSet: TLongSet): integer;
 var
+  i: integer;
+begin
+  for i := High(bSet) downto 0 do
+    if bSet[i] <> [] then
+    begin
+      getSize := (i + 1) * 256;
+      Exit;
+    end;
+  getSize := 0;
+end;
+
+{ Функция коррекции размера множества }
+function resizeSet(bSet: TLongSet): integer;
+var
   i, count: integer;
   element: byte;
 begin
@@ -42,17 +56,7 @@ begin
   for i := 0 to High(bSet) do
     for element in bSet[i] do
       Inc(count);
-  getSize := count * 256;
-end;
-
-{ Функция очистки множества }
-procedure setClean(var mySet: TLongSet; newLen: integer);
-var
-  i: integer;
-begin
-  SetLength(mySet, newLen);
-  for i := 0 to newLen - 1 do
-    mySet[i] := [];
+  resizeSet := count * 256;
 end;
 
 { Функция уничтожения множества }
@@ -100,7 +104,8 @@ begin
     if i < Length(set2) then
       resSet[i] := resSet[i] + set2[i];
   end;
-
+  
+  setSize(resSet, resizeSet(resSet));
   sumSet := resSet;
 end;
 
@@ -119,6 +124,7 @@ begin
       resSet[i] := resSet[i] - set2[i];
   end;
 
+  setSize(resSet, resizeSet(resSet));
   subSet := resSet;
 end;
 
@@ -134,6 +140,7 @@ begin
   for i := 0 to minLen - 1 do
     resSet[i] := set1[i] * set2[i];
 
+  setSize(resSet, resizeSet(resSet));
   mulSet := resSet;
 end;
 
@@ -165,6 +172,7 @@ begin
       resSet[i] := resSet[i] >< set2[i];
   end;
 
+  setSize(resSet, resizeSet(resSet));
   symDiffSet := resSet;
 end;
 
@@ -182,8 +190,6 @@ end;
 
 var
   set1, set2, resultSet: TLongSet;
-  i: integer;
-
 begin
   { Создание множества }
   set1 := createSet(300); { Создаёт множество, способное содержать элементы от 0 до 299 }
@@ -215,9 +221,9 @@ begin
   { Создание второго множества и объединение }
   set2 := createSet(0);
   includeSet(set2, 290);
-  //includeSet(set2, 100);
-  //includeSet(set2, 255);
-  //includeSet(set2, 256);
+  includeSet(set2, 100);
+  includeSet(set2, 255);
+  includeSet(set2, 256);
   resultSet := sumSet(set1, set2); { Объединение set1 и set2 }
   writeln('Элементы множества после объединения:');
   printSet(resultSet);
@@ -240,7 +246,10 @@ begin
   resultSet := subSet(set2, set1); { Разность set2 - set1 }
   writeln('Элементы множества после разности set2 - set1:');
   printSet(resultSet);
+  write('size: ');
   writeln(getSize(resultSet));
+  write('length: ');
+  writeln(Length(resultSet));
 
   { Симметрическая разность }
   resultSet := symDiffSet(set1, set2); { Симметрическая разность set1 и set2 }
