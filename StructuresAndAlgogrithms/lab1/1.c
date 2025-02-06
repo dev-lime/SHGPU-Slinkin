@@ -1,38 +1,79 @@
-{$mode objfpc}
-const MAX=10;
-	  MIN=1;	
-var a:array[1..10]of string=
-(
-'0001001000',
-'0010010000',
-'0001010111',
-'0000001100',
-'0001100000',
-'0000101111',
-'0000101000',
-'0000101000',
-'0001101100',
-'0010000100'
-);
+#include <stdio.h>
 
-procedure fill(x,y:integer);
-begin
-	if (x<MIN)or(x>MAX)or(y<MIN)or(y>MAX)or(a[y][x]<>'0')
-		then exit;
-	a[y][x]:='*';
-	fill(x+1,y);
-	fill(x-1,y);
-	fill(x,y+1);
-	fill(x,y-1);	
-end;
+#define MAX 10
+#define MIN 1
 
-procedure outa();
-	var s:string;
-begin
-	for s in a do writeln(s);
-end;
+char a[MAX][MAX + 1] = {
+    "----------",
+    "--1--1----",
+    "---1-1--11",
+    "--1---11--",
+    "---1------",
+    "----1--111",
+    "----1-1---",
+    "----1-1---",
+    "-------1--",
+    "--1----1--"
+};
 
-BEGIN
- fill(5,1);
- outa();
-END.
+void FillCell(int x, int y)
+{
+    a[y - 1][x - 1] = '0';
+}
+
+void FillVertical(int x, int y)
+{
+    if (y < MIN || y > MAX || a[y - 1][x - 1] != '-')
+        return;
+    
+    FillCell(x, y);
+
+	for (int i=y; i<=MAX; i++)
+		FillCell(x, i);
+	for (int i=y; i>=MIN; i--)
+		FillCell(y, i);
+}
+
+void FillHorizontal(int x, int y)
+{
+    if (x < MIN || x > MAX || a[y - 1][x - 1] != '-')
+        return;
+    
+    //FillCell(x, y);
+
+	for (int i=x; i<=MAX; i++)
+	{
+		FillVertical(i, y);
+	}
+	for (int i=x; i>=MIN; i--)
+	{
+		FillVertical(i, y);
+	}
+}
+
+void Fill(int x, int y)
+{
+    if (x < MIN || x > MAX || y < MIN || y > MAX || a[y - 1][x - 1] != '-')
+        return;
+
+    FillHorizontal(x, y);
+    /*Fill(x, y + 1);
+    Fill(x, y - 1);
+    Fill(x + 1, y);
+    Fill(x - 1, y);*/
+}
+
+void printArr()
+{
+    for (int i = 0; i < MAX; i++)
+    {
+        printf("%s\n", a[i]);
+    }
+}
+
+int main()
+{
+    Fill(5, 1);
+    printArr();
+    return 0;
+}
