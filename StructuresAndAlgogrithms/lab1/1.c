@@ -1,16 +1,19 @@
 #include <stdio.h>
+#include <stdbool.h>
 
+#define DPH 0
+#define MDH 0
 #define MAX 10
 #define MIN 1
 
 char a[MAX][MAX + 1] = {
-    "----------",
-    "--1--1----",
+    "1---------",
+    "-11--1----",
     "---1-1--11",
     "--1---11--",
-    "---1------",
-    "----1--111",
-    "----1-1---",
+    "-1-1------",
+    "-1--1--111",
+    "1--11-1---",
     "----1-1---",
     "-------1--",
     "--1----1--"
@@ -21,42 +24,63 @@ void FillCell(int x, int y)
     a[y - 1][x - 1] = '0';
 }
 
+bool IsCellEmpty(int x, int y)
+{
+	if (x < MIN || x > MAX || y < MIN || y > MAX || a[y - 1][x - 1] != '-')
+        return false;
+    else
+		return true;
+}
+
+void FillHorizontal(int x, int y);
+
 void FillVertical(int x, int y)
 {
-    if (y < MIN || y > MAX || a[y - 1][x - 1] != '-')
-        return;
-    
-    FillCell(x, y);
-
-	for (int i=y; i<=MAX; i++)
+    for (int i=y+1; i<=MAX; i++)
+    {
+        if (!IsCellEmpty(x, i))
+            break;
 		FillCell(x, i);
-	for (int i=y; i>=MIN; i--)
-		FillCell(y, i);
+        if (IsCellEmpty(x+1, i))
+            FillHorizontal(x+1, i);
+        if (IsCellEmpty(x-1, i))
+            FillHorizontal(x-1, i);
+    }
+	for (int i=y-1; i>=MIN; i--)
+    {
+        if (!IsCellEmpty(x, i))
+            break;
+		FillCell(x, i);
+        if (IsCellEmpty(x+1, i))
+            FillHorizontal(x+1, i);
+        if (IsCellEmpty(x-1, i))
+            FillHorizontal(x-1, i);
+    }
 }
 
 void FillHorizontal(int x, int y)
 {
-    if (x < MIN || x > MAX || a[y - 1][x - 1] != '-')
-        return;
-    
-    //FillCell(x, y);
-
 	for (int i=x; i<=MAX; i++)
 	{
+        if (!IsCellEmpty(i, y))
+            break;
+        FillCell(i, y);
 		FillVertical(i, y);
 	}
-	for (int i=x; i>=MIN; i--)
+	for (int i=x-1; i>=MIN; i--)
 	{
+        if (!IsCellEmpty(i, y))
+            break;
+        FillCell(i, y);
 		FillVertical(i, y);
 	}
 }
 
 void Fill(int x, int y)
 {
-    if (x < MIN || x > MAX || y < MIN || y > MAX || a[y - 1][x - 1] != '-')
-        return;
+    if (IsCellEmpty(x, y))
+        FillHorizontal(x, y);
 
-    FillHorizontal(x, y);
     /*Fill(x, y + 1);
     Fill(x, y - 1);
     Fill(x + 1, y);
