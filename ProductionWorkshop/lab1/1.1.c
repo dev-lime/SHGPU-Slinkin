@@ -4,12 +4,17 @@
 int main()
 {
     char x;
+    printf("Unsigned: ");
     scanf("%hhd", &x);
     unsigned char uxp = x, uxm = x;
+    printf("UXP = %hhu\n", uxp); // 256 - x; 1 + x
+    
+    printf("Signed: ");
+    scanf("%hhd", &x);
     signed char sxp = x, sxm = x;
+    printf("SXP = %hhd\n\n", sxp); // 128 - x; 129 + x
+    
     int ucp, ucm, scp, scm;
-    printf("%hhu\n", uxp);
-    printf("%hhd\n", sxp);
     for (ucp = 0; uxp < UCHAR_MAX; ucp++)
 	{
 		uxp++;
