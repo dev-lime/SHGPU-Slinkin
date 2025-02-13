@@ -7,7 +7,7 @@ int main()
     printf("Unsigned: ");
     scanf("%hhd", &x);
     unsigned char uxp = x, uxm = x;
-    printf("UXP = %hhu\n", uxp); // 256 - x; 1 + x
+    printf("UXP = %hhu\n", uxp); // x%=256; 256 - x; 1 + x
     
     printf("Signed: ");
     scanf("%hhd", &x);
