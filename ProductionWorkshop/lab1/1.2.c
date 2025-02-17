@@ -3,14 +3,19 @@
  
 int main()
 {
+	// 4 ввода вместо двух, два для signed (x,y) два для unsign (x,y)
     char x, y;
+
+    printf("Unsigned x, y:\n");
     scanf("%hhd %hhd", &x, &y);
     unsigned char uxp = x, uxm = x, uy = y;
+    
+    printf("Signed x, y:\n");
+    scanf("%hhd %hhd", &x, &y);
     signed char sxp = x, sxm = x, sy = y;
+    
     int ucp, ucm, scp, scm;
-    //
-    printf("%d, %d", uy, sy);
-    //
+    
     for (ucp = 0; uxp < UCHAR_MAX; ucp++)
     {
 		uxp+=uy;
@@ -31,8 +36,7 @@ int main()
 		sxm-=uy;
 	}
 	scm++;
-	
-    printf("UNSIGNED Y:\nUnsign++: %d\nUnsign--: %d\nSign++: %d\nSign--: %d\n", ucp, ucm, scp, scm);
+    printf("\nUNSIGNED Y:\nUnsign x++: %d\nUnsign x--: %d\nSign x++: %d\nSign x--: %d\n", ucp, ucm, scp, scm);
 	
 	for (ucp = 0; uxp < UCHAR_MAX; ucp++)
     {
@@ -54,8 +58,7 @@ int main()
 		sxm-=sy;
 	}
 	scm++;
-    
-    printf("\nSIGNED Y:\nUnsign++: %d\nUnsign--: %d\nSign++: %d\nSign--: %d\n", ucp, ucm, scp, scm);
+    printf("\nSIGNED Y:\nUnsign x++: %d\nUnsign x--: %d\nSign x++: %d\nSign x--: %d\n", ucp, ucm, scp, scm);
     
     return 0;
 }
