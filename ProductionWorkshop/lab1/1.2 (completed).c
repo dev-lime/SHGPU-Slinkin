@@ -45,8 +45,8 @@ int main() {
     printf("Operations X = X + Y: %d\n", operations_add);
     printf("Operations X = X - Y: %d\n", operations_sub);
     printf("\n");
-
-    /*original_X = X_signed;
+    
+    X_signed = original_X;
     operations_add = 0;
     while (1) {
         char new_X = X_signed + Y_unsigned;
@@ -71,8 +71,8 @@ int main() {
     printf("X is signed, Y is unsigned\n");
     printf("Operations X = X + Y: %d\n", operations_add);
     printf("Operations X = X - Y: %d\n", operations_sub);
-    printf("\n");*/
-
+    printf("\n");
+    
     original_X = X_unsigned;
     operations_add = 0;
     while (1) {
@@ -100,7 +100,7 @@ int main() {
     printf("Operations X = X - Y: %d\n", operations_sub);
     printf("\n");
 
-    original_X = X_unsigned;
+    X_unsigned = original_X;
     operations_add = 0;
     while (1) {
         unsigned char new_X = X_unsigned + Y_unsigned;
