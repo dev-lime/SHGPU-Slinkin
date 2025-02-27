@@ -7,29 +7,22 @@
 
 int main() {
     int N;
-    printf("Введите количество элементов последовательности: ");
+    printf("N: ");
     scanf("%d", &N);
 
-    if (N <= 1) {
-        printf("Последовательность должна содержать более одного элемента.\n");
-        return 1;
-    }
-
     int prev, current;
-    int isIncreasing = 1;
+    int res = 0;
 
-    printf("Введите элементы последовательности:\n");
+    printf("Elements:\n");
     scanf("%d", &prev);
 
     for (int i = 1; i < N; i++) {
         scanf("%d", &current);
-        if (current <= prev) {
-            isIncreasing = 0;
-        }
+        res |= current - prev;
         prev = current;
     }
 
-    printf("Последовательность %sявляется возрастающей.\n", isIncreasing ? "" : "не ");
+    printf("Последовательность %sявляется возрастающей.\n", res >= 0 ? "" : "не ");
 
     return 0;
 }
