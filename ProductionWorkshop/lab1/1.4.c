@@ -19,22 +19,20 @@ int main() {
     int prev, current;
     int res = 0;
     int phase = 0; // 0 - возрастание, 1 - убывание
-    int count = 1; // elem's в текущей фазе
 
     printf("Elements:\n");
     scanf("%d", &prev);
 
-    for (int i = 1; i < N; i++) {
+    for (int i = 0; i < N-1; i++) {
         scanf("%d", &current);
         
-        int expected_phase = (count / 3) % 2;
+        int expected_phase = i / 2 % 2;
         int is_increasing = current > prev;
         int is_decreasing = current < prev;
         
         res |= ((expected_phase == 0 && !is_increasing) || (expected_phase == 1 && !is_decreasing));
 
         int valid_transition = (is_increasing && phase == 0) || (is_decreasing && phase == 1);
-        count = (valid_transition * (count + 1)) + (!valid_transition * 1);
 
         phase = expected_phase;
         prev = current;
