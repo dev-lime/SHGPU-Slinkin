@@ -19,7 +19,7 @@ int main() {
     int prev, current;
     int res = 0;
     int phase = 0; // 0 - возрастание, 1 - убывание
-    int count = 1;
+    int count = 1; // elem's в текущей фазе
 
     printf("Elements:\n");
     scanf("%d", &prev);
