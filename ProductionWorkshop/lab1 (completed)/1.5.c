@@ -8,14 +8,14 @@
 #include <string.h>
 
 int main() {
-    int binary = 0;
-    char str[8] = "F19w0-65";
+    int bin = 0;
+    char str[] = "F19w0-65";
 
     for (int i = 0; i < strlen(str); i++) {
-        binary = (binary << 1) | (str[i] >= '0' && str[i] <= '9');
+        bin = (bin << 1) | (str[i] >= '0' && str[i] <= '9');
     }
 
-    printf("DEC: %d\n", binary);
+    printf("DEC: %d\n", bin);
 
     return 0;
 }
