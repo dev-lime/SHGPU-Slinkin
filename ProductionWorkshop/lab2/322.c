@@ -9,10 +9,14 @@ int main()
     for (int i = M; i <= N; i++)
     {
         int sum = 0;
-        for (int j = 1; j <= sqrt(i); j++)
+        for (int j = 1; j <= (int)sqrt(i); j++)
         {
-            float k = i % j;
-            if (k == 0) sum += j + k;
+            if (i % j == 0) 
+            {
+                sum += j;
+                if (j != i/j)
+                    sum += i/j;
+            }
         }
         if (sum > maxSum)
         {
@@ -24,4 +28,3 @@ int main()
     printf("%d\n", result);
     return 0;
 }
-// Неоптимизированный способ, можно сократить на квадрат
