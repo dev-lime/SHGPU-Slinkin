@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 
 int main()
 {
@@ -8,9 +9,10 @@ int main()
     for (int i = M; i <= N; i++)
     {
         int sum = 0;
-        for (int j = 1; j <= i; j++)
+        for (int j = 1; j <= sqrt(i); j++)
         {
-            if (i % j == 0) sum += j;
+            float k = i % j;
+            if (k == 0) sum += j + k;
         }
         if (sum > maxSum)
         {
@@ -22,3 +24,4 @@ int main()
     printf("%d\n", result);
     return 0;
 }
+// Неоптимизированный способ, можно сократить на квадрат
