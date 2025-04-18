@@ -53,5 +53,6 @@ int main() {
         printf("Таких элементов нет");
     }
 
+    printf("\n");
     return 0;
 }

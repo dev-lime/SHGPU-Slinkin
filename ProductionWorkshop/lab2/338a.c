@@ -1,5 +1,5 @@
 #include <stdio.h>
-/// Сдано до сюда!
+
 int main() {
     int M, N;
 
@@ -49,5 +49,6 @@ int main() {
         printf("Пересечение пусто");
     }
 
+    printf("\n");
     return 0;
 }
