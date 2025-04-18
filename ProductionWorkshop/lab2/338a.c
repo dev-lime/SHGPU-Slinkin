@@ -1,5 +1,5 @@
 #include <stdio.h>
-
+/// СДАНО ДО СЮДА, ДАЛЬШЕ ПУТИ НЕТ!
 int main() {
     int M, N;
     

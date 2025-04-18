@@ -2,8 +2,10 @@
 
 int main()
 {
-    int n = 1;
-    while (1)
+    int edge, ln;
+    scanf("%d", &edge);
+
+    for (int n = 2; n < edge; n++)
     {
         int count = 0;
         for (int x = 1; x*x*x < n; x++)
@@ -11,13 +13,12 @@ int main()
             for (int y = x; y*y*y < n; y++)
             {
                 if (x*x*x + y*y*y == n) count++;
-                if (count > 1)
+                if (count > 1 & ln != n)
                 {
-                    printf("%d\n", n);
-                    return 0;
+                    ln = n;
+                    printf("n: %d\t x: %d\t y:%d\n", n, x, y);
                 }
             }
         }
-        n++;
     }
 }
