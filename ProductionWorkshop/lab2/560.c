@@ -13,7 +13,7 @@ int main()
             if (i % d == 0) sum_i += d;
         }
 
-        if (sum_i > i && sum_i <= M) // Проверяем только для первой половины пар
+        if (sum_i > i && sum_i <= M) // Только для первой половины пар
         {
             int sum_s = 0;
             for (int d = 1; d < sum_i; d++) {

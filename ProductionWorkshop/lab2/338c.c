@@ -9,6 +9,13 @@ int main() {
     printf("Введите %d чисел a1..aM: ", M);
     for (int i = 0; i < M; i++) {
         scanf("%d", &a[i]);
+        for (int j = 0; j < i; j++) {
+            if (a[j] == a[i]) {
+                i--;
+                M--;
+                break;
+            }
+        }
     }
 
     printf("Введите N: ");
@@ -17,11 +24,17 @@ int main() {
     printf("Введите %d чисел b1..bN: ", N);
     for (int i = 0; i < N; i++) {
         scanf("%d", &b[i]);
+        for (int j = 0; j < i; j++) {
+            if (b[j] == b[i]) {
+                i--;
+                N--;
+                break;
+            }
+        }
     }
 
     printf("Элементы b, не входящие в a: ");
     int has_difference = 0;
-
     for (int i = 0; i < N; i++) {
         int is_in_a = 0;
         for (int j = 0; j < M; j++) {
@@ -31,18 +44,8 @@ int main() {
             }
         }
         if (!is_in_a) {
-            // Проверяем, не дублируется ли b[i] в уже выведенных
-            int is_duplicate = 0;
-            for (int j = 0; j < i; j++) {
-                if (b[j] == b[i]) {
-                    is_duplicate = 1;
-                    break;
-                }
-            }
-            if (!is_duplicate) {
-                printf("%d ", b[i]);
-                has_difference = 1;
-            }
+            printf("%d ", b[i]);
+            has_difference = 1;
         }
     }
 
