@@ -23,7 +23,8 @@ int main()
             }
         }
 
-        if (sum == i) printf("%d\n", i);
+        if (sum == i)
+            printf("%d\n", i);
     }
 
     return 0;

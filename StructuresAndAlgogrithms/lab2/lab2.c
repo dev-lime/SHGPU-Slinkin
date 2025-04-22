@@ -5,7 +5,7 @@
 /*
  общее количество итераций поиска,
  обнуляется и заполняется каждой функцией поиска
-*/  
+*/
 int find_count;
 
 /*
@@ -13,11 +13,11 @@ int find_count;
  Для линейного поиска должна возвращать 0 или 1
  (0 - переданный элемент НЕ соответствует критериям поиска, 1 - соответствует)
  Для бинарного поиска должна возвращать 0, 1 или -1
- (0 - переданный элемент соответствует критериям поиска; 
+ (0 - переданный элемент соответствует критериям поиска;
   1,-1 - больше/меньше искомого элемента или наоборот в зависимости от решения программиста)
 */
 
- typedef int (*testfunc)(int);
+typedef int (*testfunc)(int);
 
 /*
  Линейный поиск одного элемента в целочисленном массиве
@@ -38,10 +38,9 @@ int line_find_one(const int src[], int src_size, testfunc func);
  func - тест-функция
  result - массив найденных индексов
  result_maxsize - максимальное кол-во элементов в result
-*/  
-int line_find_all(const int src[], int src_size,  testfunc func, 
-			      int result[], int result_maxsize);
-
+*/
+int line_find_all(const int src[], int src_size, testfunc func,
+				  int result[], int result_maxsize);
 
 /*
  Бинарный поиск одного элемента в целочисленном массиве
@@ -50,7 +49,7 @@ int line_find_all(const int src[], int src_size,  testfunc func,
  src - исходный массив
  src_size - кол-во элементов в src
  func - тест-функция
-*/  
+*/
 int bin_find_one(const int src[], int src_size, testfunc func);
 
 /*
@@ -62,8 +61,8 @@ int bin_find_one(const int src[], int src_size, testfunc func);
  func - тест-функция
  res_beg - адрес переменной, куда будет сохранен индекс первого найденного элемента
  res_end - адрес переменной, куда будет сохранен индекс последнего найденного элемента
-*/  
+*/
 int bin_find_all(const int src[], int src_size, testfunc func,
-			      int *res_beg, int *res_end);
+				 int *res_beg, int *res_end);
 
 #endif // FINDUNIT

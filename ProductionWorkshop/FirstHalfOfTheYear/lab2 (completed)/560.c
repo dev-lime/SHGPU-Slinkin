@@ -14,20 +14,21 @@ int main()
             if (i % d == 0)
             {
                 sum_i += d;
-                if (d != i/d)
-                    sum_i += i/d;
+                if (d != i / d)
+                    sum_i += i / d;
             }
         }
 
         if (sum_i > i && sum_i <= M) // Только для первой половины пар
         {
             int sum_s = 1;
-            for (int d = 2; d <= (int)sqrt(sum_i); d++) {
+            for (int d = 2; d <= (int)sqrt(sum_i); d++)
+            {
                 if (sum_i % d == 0)
                 {
                     sum_s += d;
-                    if (d != sum_i/d)
-                        sum_s += sum_i/d;
+                    if (d != sum_i / d)
+                        sum_s += sum_i / d;
                 }
             }
 

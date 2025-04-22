@@ -18,7 +18,8 @@ int main()
             sum += pow(digit, count);
             temp /= 10;
         }
-        if (sum == num) printf("%d\n", num);
+        if (sum == num)
+            printf("%d\n", num);
     }
 
     return 0;

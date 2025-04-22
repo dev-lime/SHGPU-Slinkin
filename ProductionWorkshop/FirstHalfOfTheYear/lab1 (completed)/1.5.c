@@ -7,11 +7,13 @@
 #include <stdio.h>
 #include <string.h>
 
-int main() {
+int main()
+{
     int bin = 0;
     char str[] = "F19w0-65";
 
-    for (int i = 0; i < strlen(str); i++) {
+    for (int i = 0; i < strlen(str); i++)
+    {
         bin = (bin << 1) | (str[i] >= '0' && str[i] <= '9');
     }
 
