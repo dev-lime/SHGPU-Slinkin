@@ -42,26 +42,25 @@ int main()
 
     if (x <= 0 || y <= 0 || z <= 0)
     {
-        printf("Numbers must be positive.\n");
         return 1;
     }
 
     if (IS_TRIANGLE(x, y, z))
     {
-        printf("Треугольник существует.\n");
+        printf("Треугольник существует\n");
 
         if (is_acute_triangle(x, y, z))
         {
-            printf("Треугольник является остроугольным.\n");
+            printf("Остроугольник\n");
         }
         else
         {
-            printf("Треугольник не является остроугольным.\n");
+            printf("Треугольник не остроугольник\n");
         }
     }
     else
     {
-        printf("Треугольник не существует.\n");
+        printf("Треугольник не существует\n");
     }
 
     return 0;
