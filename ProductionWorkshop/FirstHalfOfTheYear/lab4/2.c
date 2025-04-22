@@ -1,0 +1,70 @@
+/*
+Общий вид функции main позволяет получить доступ к параметрам командной строки и переменным окружения:
+int main(int argc, char **argv, char **env)
+Разработать утилиту, которая будет выводить на экран содержимое переменных окружения (параметр env), имена которых переданы в командной строке (параметры argc и argv):
+1. При отсутствии параметров в командной строке утилита должна выводить правила своего использования.
+2. Поиск переменных окружения должен быть регистронезависимым.
+3. Каждая переменная выводится в двух строках: имя и значение. Затем - строка разделитель вида "---"
+4. При отсутствии в окружении искомой переменной, утилита должна выводить пустую строку вместо значения переменной
+Список переменных окружения можно получить в терминале утилитой env.
+*/
+
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+// Регистронезависимое сравнение строк
+int strcasecmp(const char *s1, const char *s2)
+{
+    while (*s1 && *s2)
+    {
+        if (tolower((unsigned char)*s1) != tolower((unsigned char)*s2))
+            return tolower((unsigned char)*s1) - tolower((unsigned char)*s2);
+        s1++;
+        s2++;
+    }
+    return tolower((unsigned char)*s1) - tolower((unsigned char)*s2);
+}
+
+int main(int argc, char **argv, char **env)
+{
+    // Если нет аргументов для командной строки
+    if (argc == 1)
+    {
+        printf("Usage: %s ENV_VAR1 [ENV_VAR2 ...]\n", argv[0]);
+        printf("Prints the values of the specified environment variables.\n");
+        printf("Variable names are case insensitive.\n");
+        return 0;
+    }
+
+    // Перебирает все запрошенные переменные
+    for (int i = 1; i < argc; i++)
+    {
+        char *var_name = argv[i];
+        char *value = NULL;
+
+        // Ищет переменную в окружении
+        for (char **env_ptr = env; *env_ptr != NULL; env_ptr++)
+        {
+            char *env_var = *env_ptr;
+            char *delim = strchr(env_var, '=');
+
+            if (delim != NULL)
+            {
+                size_t name_len = delim - env_var;
+                if (strncasecmp(env_var, var_name, name_len) == 0 &&
+                    strlen(var_name) == name_len)
+                {
+                    value = delim + 1;
+                    break;
+                }
+            }
+        }
+        
+        printf("%s\n", var_name);           // Имя переменной
+        printf("%s\n", value ? value : ""); // Значение (или пустая строка)
+        printf("---\n");                    // Разделитель
+    }
+
+    return 0;
+}
