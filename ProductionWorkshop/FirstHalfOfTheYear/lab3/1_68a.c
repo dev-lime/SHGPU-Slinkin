@@ -3,51 +3,67 @@
 Является ли это число палиндромом (перевертышем) с учетом
 четырех цифр, как, например, числа 2222, 6116, 0440 и т. д.?
 Решить задачу, с помощью функций и макроопределений, предназначенных для использования в выражениях.
+Создаваемые функции и макроопределения не должны обращаться к внешним для них переменным.
 */
 
-// ПЕРЕДЕЛАТЬ С ПЕРЕВОДОМ ИЗ ЧИСЛА В СТРОКУ
-
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 
-#define IS_PALINDROME(n) ((n) >= 0 && (n) <= 9999) && (((n) < 10) || ((n) < 100 && (n) / 10 == (n) % 10) || ((n) < 1000 && (n) / 100 == (n) % 10) || ((n) / 1000 == (n) % 10 && ((n) / 100) % 10 == ((n) / 10) % 10))
+#define IS_PALINDROME(s) (strlen(s) <= 4 && is_all_digits(s) && \
+                          (strlen(s) == 1 ||                    \
+                           (strlen(s) == 2 && s[0] == s[1]) ||  \
+                           (strlen(s) == 3 && s[0] == s[2]) ||  \
+                           (strlen(s) == 4 && s[0] == s[3] && s[1] == s[2])))
 
-int is_palindrome(int n)
+int is_all_digits(const char *s)
 {
-    if (n < 0 || n > 9999)
-        return 0;
-    int d1 = n / 1000;
-    int d2 = (n / 100) % 10;
-    int d3 = (n / 10) % 10;
-    int d4 = n % 10;
+    for (int i = 0; s[i]; i++)
+    {
+        if (!isdigit(s[i]))
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
 
-    return (n < 10) ||
-           (n < 100 && d1 == d4) ||
-           (n < 1000 && d1 == d3) ||
-           (d1 == d4 && d2 == d3);
+int is_palindrome(const char *s)
+{
+    int len = strlen(s);
+    if (len > 4 || !is_all_digits(s))
+    {
+        return 0;
+    }
+
+    return (len == 1) ||
+           (len == 2 && s[0] == s[1]) ||
+           (len == 3 && s[0] == s[2]) ||
+           (len == 4 && s[0] == s[3] && s[1] == s[2]);
 }
 
 int main()
 {
-    int n;
-    printf("(n ≤ 9999): ");
-    scanf("%d", &n);
+    char n[5];
+    printf("n: ");
+    scanf("%4s", n);
 
     if (IS_PALINDROME(n))
     {
-        printf("M: %d is palindrome\n", n);
+        printf("M: %s is palindrome\n", n);
     }
     else
     {
-        printf("M: %d is not palindrome\n", n);
+        printf("M: %s is not palindrome\n", n);
     }
 
     if (is_palindrome(n))
     {
-        printf("F: %d is palindrome\n", n);
+        printf("F: %s is palindrome\n", n);
     }
     else
     {
-        printf("F: %d is not palindrome\n", n);
+        printf("F: %s is not palindrome\n", n);
     }
 
     return 0;
