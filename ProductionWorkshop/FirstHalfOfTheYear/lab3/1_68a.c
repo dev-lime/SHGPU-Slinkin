@@ -10,31 +10,14 @@
 #include <string.h>
 #include <ctype.h>
 
-#define IS_PALINDROME(s) (strlen(s) <= 4 && is_all_digits(s) && \
-                          (strlen(s) == 1 ||                    \
-                           (strlen(s) == 2 && s[0] == s[1]) ||  \
-                           (strlen(s) == 3 && s[0] == s[2]) ||  \
-                           (strlen(s) == 4 && s[0] == s[3] && s[1] == s[2])))
-
-int is_all_digits(const char *s)
-{
-    for (int i = 0; s[i]; i++)
-    {
-        if (!isdigit(s[i]))
-        {
-            return 0;
-        }
-    }
-    return 1;
-}
+#define IS_PALINDROME(s) (strlen(s) == 1 ||                   \
+                          (strlen(s) == 2 && s[0] == s[1]) || \
+                          (strlen(s) == 3 && s[0] == s[2]) || \
+                          (strlen(s) == 4 && s[0] == s[3] && s[1] == s[2]))
 
 int is_palindrome(const char *s)
 {
     int len = strlen(s);
-    if (len > 4 || !is_all_digits(s))
-    {
-        return 0;
-    }
 
     return (len == 1) ||
            (len == 2 && s[0] == s[1]) ||

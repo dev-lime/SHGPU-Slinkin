@@ -7,20 +7,37 @@
 Создаваемые функции и макроопределения не должны обращаться к внешним для них переменным.
 */
 
+/*
+Даны действительные положительные числа x, y, z.
+а) Выяснить существует ли треугольник с длинами сторон x, y, z.
+б) Если треугольник существует, то ответить – является ли он
+остроугольным.
+Решить задачу, с помощью функций и макроопределений, предназначенных для использования в выражениях.
+Создаваемые функции и макроопределения не должны обращаться к внешним для них переменным.
+*/
+
 #include <stdio.h>
 #include <math.h>
 
 #define IS_TRIANGLE(x, y, z) ((x) + (y) > (z) && (x) + (z) > (y) && (y) + (z) > (x))
+#define IS_ACUTE_ANGLE(x, y, z) (                                                                                                       \
+    ((x) >= (y) && (x) >= (z)) ? ((y) * (y) + (z) * (z) > (x) * (x)) : ((y) >= (x) && (y) >= (z)) ? ((x) * (x) + (z) * (z) > (y) * (y)) \
+                                                                                                  : ((x) * (x) + (y) * (y) > (z) * (z)))
+
+int is_triangle(double x, double y, double z)
+{
+    return x + y > z && x + z > y && y + z > x;
+}
 
 int is_acute_triangle(double x, double y, double z)
 {
-    double max_side = x; // Наибольшая сторона
+    double max_side = x;
     if (y > max_side)
         max_side = y;
     if (z > max_side)
         max_side = z;
 
-    if (max_side == x) // Остроугольник
+    if (max_side == x)
     {
         return y * y + z * z > x * x;
     }
@@ -48,20 +65,38 @@ int main()
 
     if (IS_TRIANGLE(x, y, z))
     {
-        printf("Треугольник существует\n");
+        printf("M Треугольник существует\n");
 
-        if (is_acute_triangle(x, y, z))
+        if (IS_ACUTE_ANGLE(x, y, z))
         {
-            printf("Остроугольник\n");
+            printf("M Остроугольный\n");
         }
         else
         {
-            printf("Треугольник не остроугольник\n");
+            printf("M Треугольник не остроугольный\n");
         }
     }
     else
     {
-        printf("Треугольник не существует\n");
+        printf("M Треугольник не существует\n");
+    }
+
+    if (is_triangle(x, y, z))
+    {
+        printf("F Треугольник существует\n");
+
+        if (is_acute_triangle(x, y, z))
+        {
+            printf("F Остроугольный\n");
+        }
+        else
+        {
+            printf("F Треугольник не остроугольный\n");
+        }
+    }
+    else
+    {
+        printf("F Треугольник не существует\n");
     }
 
     return 0;
