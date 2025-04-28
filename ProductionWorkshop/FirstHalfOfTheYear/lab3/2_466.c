@@ -7,9 +7,15 @@
 */
 
 #include <stdio.h>
+#include <string.h>
 
 void swap_zeros_and_ones(char *str, int start_pos)
 {
+    if (start_pos < 0 || start_pos > strlen(str))
+    {
+        return;
+    }
+
     for (int i = start_pos; str[i] != '\0'; i++)
     {
         if (str[i] == '0')
@@ -33,11 +39,6 @@ int main()
 
     printf("Position: ");
     scanf("%d", &start_pos);
-
-    if (start_pos < 0)
-    {
-        return 1;
-    }
 
     swap_zeros_and_ones(str, start_pos);
 
