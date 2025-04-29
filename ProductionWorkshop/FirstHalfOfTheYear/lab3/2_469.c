@@ -83,6 +83,12 @@ void align_right(char *str, int target_len)
             }
         }
     }
+
+    if (strlen(result) != target_len)
+    {
+        printf("Error: это надо исправить!\nНеобходимо добавить недостающие пробелы перед крайним справа словом.\n");
+    }
+
     result[pos] = '\0';
 
     // Копирует результат обратно в исходную строку
