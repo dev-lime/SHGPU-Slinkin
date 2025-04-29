@@ -51,14 +51,20 @@ void align_right(char *str, int target_len)
     }
 
     if (word_count <= 1)
+    {
+        int shift = target_len - current_len;
+        memmove(str + shift, str, current_len + 1);
+        for (int i = 0; i < shift; i++)
+            str[i] = ' ';
         return;
+    }
 
     // Счётчик пробелов
     int total_spaces = target_len - current_len;
     int spaces_per_gap = total_spaces / (word_count - 1);
     int extra_spaces = total_spaces % (word_count - 1);
 
-    // Новая строка
+    // Создание новой строки
     char *result = (char *)malloc(target_len + 1);
     int pos = 0;
     in_word = 0;
@@ -75,23 +81,28 @@ void align_right(char *str, int target_len)
         {
             in_word = 0;
             gap_num++;
-            // Добавляет пробелы
-            int spaces = spaces_per_gap + (gap_num <= extra_spaces ? 1 : 0);
-            for (int j = 0; j < spaces; j++)
+            if (gap_num < word_count)
             {
-                result[pos++] = ' ';
+                int spaces = 1 + spaces_per_gap + (gap_num <= extra_spaces ? 1 : 0);
+                for (int j = 0; j < spaces; j++)
+                    result[pos++] = ' ';
             }
         }
     }
 
-    if (strlen(result) != target_len)
-    {
-        printf("Error: это надо исправить!\nНеобходимо добавить недостающие пробелы перед крайним справа словом.\n");
-    }
-
     result[pos] = '\0';
 
-    // Копирует результат обратно в исходную строку
+    // Проверка на длину
+    int result_len = strlen(result);
+    if (result_len < target_len)
+    {
+        int missing = target_len - result_len;
+        memmove(result + missing, result, result_len + 1);
+        for (int i = 0; i < missing; i++)
+            result[i] = ' ';
+    }
+
+    // Копируем обратно
     strcpy(str, result);
     free(result);
 }
