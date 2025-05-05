@@ -37,7 +37,7 @@ void align_right(char *str, int target_len)
     // Счётчик слов
     int word_count = 0;
     int in_word = 0;
-    for (int i = 0; str[i]; i++)
+    for (int i = 0; i < current_len; i++)
     {
         if (str[i] != ' ' && !in_word)
         {
@@ -53,7 +53,7 @@ void align_right(char *str, int target_len)
     if (word_count <= 1)
     {
         int shift = target_len - current_len;
-        memmove(str + shift, str, current_len + 1);
+        memmove(str + shift, str, current_len + 1); // Исправить
         for (int i = 0; i < shift; i++)
             str[i] = ' ';
         return;
@@ -70,7 +70,7 @@ void align_right(char *str, int target_len)
     in_word = 0;
     int gap_num = 0;
 
-    for (int i = 0; str[i]; i++)
+    for (int i = 0; i < current_len; i++)
     {
         if (str[i] != ' ')
         {
@@ -97,7 +97,7 @@ void align_right(char *str, int target_len)
     if (result_len < target_len)
     {
         int missing = target_len - result_len;
-        memmove(result + missing, result, result_len + 1);
+        memmove(result + missing, result, result_len + 1); // Исправить
         for (int i = 0; i < missing; i++)
             result[i] = ' ';
     }
