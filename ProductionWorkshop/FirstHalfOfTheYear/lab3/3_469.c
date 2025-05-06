@@ -28,76 +28,105 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define ALIGN_RIGHT(input, output, width)                   \
-    do                                                      \
-    {                                                       \
-        if (!(input) || !(output))                          \
-            break;                                          \
-                                                            \
-        size_t len = strlen(input);                         \
-                                                            \
-        if ((width) <= len)                                 \
-        {                                                   \
-            *(output) = realloc(*(output), len + 1);        \
-            if (*(output))                                  \
-                strcpy(*(output), input);                   \
-            break;                                          \
-        }                                                   \
-                                                            \
-        /* Находит начало последнего слова */               \
-        const char *last_word = input;                      \
-        const char *p = input;                              \
-        while (*p)                                          \
-        {                                                   \
-            if (*p != ' ')                                  \
-            {                                               \
-                last_word = p;                              \
-                while (*p && *p != ' ')                     \
-                    p++;                                    \
-            }                                               \
-            else                                            \
-            {                                               \
-                p++;                                        \
-            }                                               \
-        }                                                   \
-                                                            \
-        /* Вычисляет длину префикса */                      \
-        size_t prefix_len = last_word - input;              \
-                                                            \
-        /* Выделяет память для новой строки */              \
-        *(output) = realloc(*(output), (width) + 1);        \
-        if (!*(output))                                     \
-            break;                                          \
-                                                            \
-        /* Копирует префикс */                              \
-        strncpy(*(output), input, prefix_len);              \
-                                                            \
-        /* Добавляет пробелы */                             \
-        size_t spaces = (width) - len;                      \
-        memset(*(output) + prefix_len, ' ', spaces);        \
-                                                            \
-        /* Копирует последнее слово */                      \
-        strcpy(*(output) + prefix_len + spaces, last_word); \
+#define ALIGN_RIGHT(input, output, target_len)                                                         \
+    do                                                                                                 \
+    {                                                                                                  \
+        const char *__input = (input);                                                                 \
+        char **__output = (output);                                                                    \
+        int __target_len = (target_len);                                                               \
+        int __current_len = strlen(__input);                                                           \
+        if (__target_len <= __current_len)                                                             \
+        {                                                                                              \
+            *__output = (char *)realloc(*__output, __current_len + 1);                                 \
+            strcpy(*__output, __input);                                                                \
+            break;                                                                                     \
+        }                                                                                              \
+        int __word_count = 0;                                                                          \
+        int __in_word = 0;                                                                             \
+        for (int i = 0; i < __current_len; i++)                                                        \
+        {                                                                                              \
+            if (__input[i] != ' ' && !__in_word)                                                       \
+            {                                                                                          \
+                __in_word = 1;                                                                         \
+                __word_count++;                                                                        \
+            }                                                                                          \
+            else if (__input[i] == ' ')                                                                \
+            {                                                                                          \
+                __in_word = 0;                                                                         \
+            }                                                                                          \
+        }                                                                                              \
+        if (__word_count <= 1)                                                                         \
+        {                                                                                              \
+            *__output = (char *)realloc(*__output, __target_len + 1);                                  \
+            int __shift = __target_len - __current_len;                                                \
+            memmove(*__output + __shift, __input, __current_len + 1);                                  \
+            memset(*__output, ' ', __shift);                                                           \
+            (*__output)[__target_len] = '\0';                                                          \
+            break;                                                                                     \
+        }                                                                                              \
+        int __original_space_count = 0;                                                                \
+        int __space_positions[__word_count - 1];                                                       \
+        int __space_index = 0;                                                                         \
+        __in_word = 1;                                                                                 \
+        for (int i = 0; i < __current_len; i++)                                                        \
+        {                                                                                              \
+            if (__input[i] == ' ' && __in_word)                                                        \
+            {                                                                                          \
+                __in_word = 0;                                                                         \
+                __space_positions[__space_index++] = i;                                                \
+                __original_space_count++;                                                              \
+            }                                                                                          \
+            else if (__input[i] != ' ' && !__in_word)                                                  \
+            {                                                                                          \
+                __in_word = 1;                                                                         \
+            }                                                                                          \
+        }                                                                                              \
+        int __total_spaces_to_add = __target_len - __current_len;                                      \
+        int __base_spaces_to_add = __total_spaces_to_add / (__word_count - 1);                         \
+        int __extra_spaces = __total_spaces_to_add % (__word_count - 1);                               \
+        *__output = (char *)realloc(*__output, __target_len + 1);                                      \
+        char *__result = *__output;                                                                    \
+        int __input_pos = 0;                                                                           \
+        int __output_pos = 0;                                                                          \
+        __space_index = 0;                                                                             \
+        for (int i = 0; i < __current_len; i++)                                                        \
+        {                                                                                              \
+            if (__space_index < __word_count - 1 && i == __space_positions[__space_index])             \
+            {                                                                                          \
+                __result[__output_pos++] = ' ';                                                        \
+                __input_pos++;                                                                         \
+                int __spaces_to_add = __base_spaces_to_add + (__space_index < __extra_spaces ? 1 : 0); \
+                for (int j = 0; j < __spaces_to_add; j++)                                              \
+                {                                                                                      \
+                    __result[__output_pos++] = ' ';                                                    \
+                }                                                                                      \
+                __space_index++;                                                                       \
+            }                                                                                          \
+            else                                                                                       \
+            {                                                                                          \
+                __result[__output_pos++] = __input[__input_pos++];                                     \
+            }                                                                                          \
+        }                                                                                              \
+        __result[__output_pos] = '\0';                                                                 \
     } while (0)
 
 int main()
 {
-    char input[256];
+    char input[1000];
     char *output = NULL;
-    int width;
+    int target_len;
 
-    printf("String: ");
+    printf("Введите строку: ");
     fgets(input, sizeof(input), stdin);
     input[strcspn(input, "\n")] = '\0';
 
-    printf("Length: ");
-    scanf("%d", &width);
+    printf("Введите целевую длину строки: ");
+    scanf("%d", &target_len);
 
-    ALIGN_RIGHT(input, &output, width);
+    ALIGN_RIGHT(input, &output, target_len);
 
-    printf("Original: [%s]\n", input);
-    printf("Result:   [%s]\n", output ? output : "(null)");
-    printf("Length:   %zu\n", output ? strlen(output) : 0);
+    printf("Выровненная строка:\n%s\n", output);
+    printf("Длина строки: %zu\n", strlen(output));
 
     free(output);
     return 0;
