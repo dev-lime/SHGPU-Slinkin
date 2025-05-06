@@ -24,107 +24,119 @@
 Создаваемые функции и макроопределения не должны обращаться к внешним для них переменным.
 */
 
-// Использовать realloc для выделения памяти, передавать в функцию новую переменную, куда будет записана новая align строка
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-void align_right(char *str, int target_len)
+void align_right(const char *input, char **output, int target_len)
 {
-    int current_len = strlen(str);
-    if (target_len <= current_len)
-        return;
+	int current_len = strlen(input);
+	if (target_len <= current_len)
+	{
+		*output = (char *)realloc(*output, current_len + 1);
+		strcpy(*output, input);
+		return;
+	}
 
-    // Счётчик слов
-    int word_count = 0;
-    int in_word = 0;
-    for (int i = 0; i < current_len; i++)
-    {
-        if (str[i] != ' ' && !in_word)
-        {
-            in_word = 1;
-            word_count++;
-        }
-        else if (str[i] == ' ')
-        {
-            in_word = 0;
-        }
-    }
+	// Счётчик слов
+	int word_count = 0;
+	int in_word = 0;
+	for (int i = 0; i < current_len; i++)
+	{
+		if (input[i] != ' ' && !in_word)
+		{
+			in_word = 1;
+			word_count++;
+		}
+		else if (input[i] == ' ')
+		{
+			in_word = 0;
+		}
+	}
 
-    if (word_count <= 1)
-    {
-        int shift = target_len - current_len;
-        memmove(str + shift, str, current_len + 1); // Исправить
-        for (int i = 0; i < shift; i++)
-            str[i] = ' ';
-        return;
-    }
+	// Если одно слово ИЛИ пустая строка -> сдвигаем вправо
+	if (word_count <= 1)
+	{
+		*output = (char *)realloc(*output, target_len + 1);
+		int shift = target_len - current_len;
+		memmove(*output + shift, input, current_len + 1);
+		memset(*output, ' ', shift);
+		(*output)[target_len] = '\0';
+		return;
+	}
 
-    // Счётчик пробелов
-    int total_spaces = target_len - current_len;
-    int spaces_per_gap = total_spaces / (word_count - 1);
-    int extra_spaces = total_spaces % (word_count - 1);
+	// Счётчик пробелов
+	int original_space_count = 0;
+	int space_positions[word_count - 1];
+	int space_index = 0;
 
-    // Создание новой строки
-    char *result = (char *)malloc(target_len + 1);
-    int pos = 0;
-    in_word = 0;
-    int gap_num = 0;
+	in_word = 1;
+	for (int i = 0; i < current_len; i++)
+	{
+		if (input[i] == ' ' && in_word)
+		{
+			in_word = 0;
+			space_positions[space_index++] = i;
+			original_space_count++;
+		}
+		else if (input[i] != ' ' && !in_word)
+		{
+			in_word = 1;
+		}
+	}
 
-    for (int i = 0; i < current_len; i++)
-    {
-        if (str[i] != ' ')
-        {
-            result[pos++] = str[i];
-            in_word = 1;
-        }
-        else if (in_word)
-        {
-            in_word = 0;
-            gap_num++;
-            if (gap_num < word_count)
-            {
-                int spaces = 1 + spaces_per_gap + (gap_num <= extra_spaces ? 1 : 0);
-                for (int j = 0; j < spaces; j++)
-                    result[pos++] = ' ';
-            }
-        }
-    }
+	int total_spaces_to_add = target_len - current_len;
+	int base_spaces_to_add = total_spaces_to_add / (word_count - 1);
+	int extra_spaces = total_spaces_to_add % (word_count - 1);
 
-    result[pos] = '\0';
+	*output = (char *)realloc(*output, target_len + 1);
+	char *result = *output;
 
-    // Проверка на длину
-    int result_len = strlen(result);
-    if (result_len < target_len)
-    {
-        int missing = target_len - result_len;
-        memmove(result + missing, result, result_len + 1); // Исправить
-        for (int i = 0; i < missing; i++)
-            result[i] = ' ';
-    }
+	int input_pos = 0;
+	int output_pos = 0;
+	space_index = 0;
 
-    // Копируем обратно
-    strcpy(str, result);
-    free(result);
+	for (int i = 0; i < current_len; i++)
+	{
+		if (space_index < word_count - 1 && i == space_positions[space_index])
+		{
+			result[output_pos++] = ' ';
+			input_pos++;
+
+			int spaces_to_add = base_spaces_to_add + (space_index < extra_spaces ? 1 : 0);
+			for (int j = 0; j < spaces_to_add; j++)
+			{
+				result[output_pos++] = ' ';
+			}
+
+			space_index++;
+		}
+		else
+		{
+			result[output_pos++] = input[input_pos++];
+		}
+	}
+	result[output_pos] = '\0';
 }
 
 int main()
 {
-    char str[1000];
-    int target_len;
+	char input[1000];
+	char *output = NULL;
+	int target_len;
 
-    printf("Введите строку: ");
-    fgets(str, sizeof(str), stdin);
-    str[strcspn(str, "\n")] = '\0';
+	printf("Введите строку: ");
+	fgets(input, sizeof(input), stdin);
+	input[strcspn(input, "\n")] = '\0';
 
-    printf("Введите целевую длину строки: ");
-    scanf("%d", &target_len);
+	printf("Введите целевую длину строки: ");
+	scanf("%d", &target_len);
 
-    align_right(str, target_len);
+	align_right(input, &output, target_len);
 
-    printf("Выровненная строка:\n%s\n", str);
-    printf("Длина строки: %zu\n", strlen(str));
+	printf("Выровненная строка:\n%s\n", output);
+	printf("Длина строки: %zu\n", strlen(output));
 
-    return 0;
+	free(output);
+	return 0;
 }
