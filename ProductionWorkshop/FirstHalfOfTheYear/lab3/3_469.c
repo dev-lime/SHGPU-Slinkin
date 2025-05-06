@@ -28,74 +28,77 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define ALIGN_RIGHT(str, width)                        \
-    do                                                 \
-    {                                                  \
-        int len = strlen(str);                         \
-        if (len >= (width))                            \
-        {                                              \
-            break;                                     \
-        }                                              \
-        char *temp = malloc((width) + 1);              \
-        if (!temp)                                     \
-            break;                                     \
-                                                       \
-        /* Находит начало последнего слова */          \
-        char *last_word = str;                         \
-        char *p = str;                                 \
-        while (*p)                                     \
-        {                                              \
-            if (*p != ' ')                             \
-            {                                          \
-                last_word = p;                         \
-                while (*p && *p != ' ')                \
-                    p++;                               \
-            }                                          \
-            else                                       \
-            {                                          \
-                p++;                                   \
-            }                                          \
-        }                                              \
-                                                       \
-        /* Копирует часть до последнего слова */       \
-        int prefix_len = last_word - str;              \
-        strncpy(temp, str, prefix_len);                \
-                                                       \
-        /* Добавляет пробелы */                        \
-        int spaces = (width) - len;                    \
-        for (int i = 0; i < spaces; i++)               \
-        {                                              \
-            temp[prefix_len + i] = ' ';                \
-        }                                              \
-                                                       \
-        /* Копирует последнее слово */                 \
-        strcpy(temp + prefix_len + spaces, last_word); \
-                                                       \
-        /* Копирует обратно в исходную строку */       \
-        strcpy(str, temp);                             \
-        free(temp);                                    \
+#define ALIGN_RIGHT(input, output, width)                   \
+    do                                                      \
+    {                                                       \
+        if (!(input) || !(output))                          \
+            break;                                          \
+                                                            \
+        size_t len = strlen(input);                         \
+                                                            \
+        if ((width) <= len)                                 \
+        {                                                   \
+            *(output) = realloc(*(output), len + 1);        \
+            if (*(output))                                  \
+                strcpy(*(output), input);                   \
+            break;                                          \
+        }                                                   \
+                                                            \
+        /* Находит начало последнего слова */               \
+        const char *last_word = input;                      \
+        const char *p = input;                              \
+        while (*p)                                          \
+        {                                                   \
+            if (*p != ' ')                                  \
+            {                                               \
+                last_word = p;                              \
+                while (*p && *p != ' ')                     \
+                    p++;                                    \
+            }                                               \
+            else                                            \
+            {                                               \
+                p++;                                        \
+            }                                               \
+        }                                                   \
+                                                            \
+        /* Вычисляет длину префикса */                      \
+        size_t prefix_len = last_word - input;              \
+                                                            \
+        /* Выделяет память для новой строки */              \
+        *(output) = realloc(*(output), (width) + 1);        \
+        if (!*(output))                                     \
+            break;                                          \
+                                                            \
+        /* Копирует префикс */                              \
+        strncpy(*(output), input, prefix_len);              \
+                                                            \
+        /* Добавляет пробелы */                             \
+        size_t spaces = (width) - len;                      \
+        memset(*(output) + prefix_len, ' ', spaces);        \
+                                                            \
+        /* Копирует последнее слово */                      \
+        strcpy(*(output) + prefix_len + spaces, last_word); \
     } while (0)
 
 int main()
 {
-    char str[256];
+    char input[256];
+    char *output = NULL;
     int width;
 
     printf("String: ");
-    fgets(str, sizeof(str), stdin);
-    str[strcspn(str, "\n")] = '\0';
+    fgets(input, sizeof(input), stdin);
+    input[strcspn(input, "\n")] = '\0';
 
     printf("Length: ");
     scanf("%d", &width);
 
-    if (width <= strlen(str))
-    {
-        return 1;
-    }
+    ALIGN_RIGHT(input, &output, width);
 
-    ALIGN_RIGHT(str, width);
+    printf("Original: [%s]\n", input);
+    printf("Result:   [%s]\n", output ? output : "(null)");
+    printf("Length:   %zu\n", output ? strlen(output) : 0);
 
-    printf("Result:\n[%s]\n", str);
-
+    free(output);
     return 0;
 }

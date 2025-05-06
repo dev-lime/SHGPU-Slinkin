@@ -11,7 +11,6 @@
 #include <string.h>
 
 #define SWAP_ZEROS_AND_ONES(str, start_pos)          \
-    do                                               \
     {                                                \
         int i;                                       \
         for (i = (start_pos); (str)[i] != '\0'; i++) \
@@ -25,7 +24,7 @@
                 (str)[i] = '0';                      \
             }                                        \
         }                                            \
-    } while (0)
+    }
 
 int main()
 {

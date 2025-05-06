@@ -11,7 +11,6 @@
 #include <string.h>
 
 #define REMOVE_CHARS(s1, s2)      \
-    do                            \
     {                             \
         char *p = (s1);           \
         char *q = (s1);           \
@@ -35,7 +34,7 @@
             q++;                  \
         }                         \
         *p = '\0';                \
-    } while (0)
+    }
 
 int main()
 {
