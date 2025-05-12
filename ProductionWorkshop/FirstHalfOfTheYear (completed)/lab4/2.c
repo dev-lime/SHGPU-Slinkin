@@ -12,9 +12,11 @@ int main(int argc, char **argv, char **env)
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include <strings.h>
 
 // Регистронезависимое сравнение строк
-int strcasecmp(const char *s1, const char *s2)
+/*int strcasecmp(const char *s1, const char *s2)
 {
 	while (*s1 && *s2)
 	{
@@ -24,7 +26,7 @@ int strcasecmp(const char *s1, const char *s2)
 		s2++;
 	}
 	return tolower((unsigned char)*s1) - tolower((unsigned char)*s2);
-}
+}*/
 
 int main(int argc, char **argv, char **env)
 {
@@ -42,28 +44,35 @@ int main(int argc, char **argv, char **env)
 	{
 		char *var_name = argv[i];
 		char *value = NULL;
+		char *real_name = NULL;
 
 		// Ищет переменную в окружении
 		for (char **env_ptr = env; *env_ptr != NULL; env_ptr++)
 		{
 			char *env_var = *env_ptr;
-			char *delim = strchr(env_var, '=');
+			char *d = strchr(env_var, '=');
 
-			if (delim != NULL)
+			if (d != NULL)
 			{
-				size_t name_len = delim - env_var;
-				if (strncasecmp(env_var, var_name, name_len) == 0 &&
-					strlen(var_name) == name_len)
+				size_t name_len = d - env_var;
+				if (strlen(var_name) == name_len &&
+					strncasecmp(env_var, var_name, name_len) == 0)
 				{
-					value = delim + 1;
+					real_name = strndup(env_var, name_len);
+					value = d + 1;
 					break;
 				}
 			}
 		}
 
-		printf("%s\n", var_name);			// Имя переменной
-		printf("%s\n", value ? value : ""); // Значение (или пустая строка)
-		printf("---\n");					// Разделитель
+		printf("%s\n", real_name ? real_name : var_name); // Имя переменной
+		printf("%s\n", value ? value : "");				  // Значение (или пустая строка)
+		printf("---\n");								  // Разделитель
+
+		if (real_name)
+		{
+			free(real_name);
+		}
 	}
 
 	return 0;
