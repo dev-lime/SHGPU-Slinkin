@@ -15,19 +15,6 @@ int main(int argc, char **argv, char **env)
 #include <stdlib.h>
 #include <strings.h>
 
-// Регистронезависимое сравнение строк
-/*int strcasecmp(const char *s1, const char *s2)
-{
-	while (*s1 && *s2)
-	{
-		if (tolower((unsigned char)*s1) != tolower((unsigned char)*s2))
-			return tolower((unsigned char)*s1) - tolower((unsigned char)*s2);
-		s1++;
-		s2++;
-	}
-	return tolower((unsigned char)*s1) - tolower((unsigned char)*s2);
-}*/
-
 int main(int argc, char **argv, char **env)
 {
 	// Если нет аргументов для командной строки
