@@ -43,17 +43,16 @@ typedef struct
 int main()
 {
     int width, height;
-    printf("w, h: ");
     scanf("%d %d", &width, &height);
 
-    // Создаем изображение
+    // Создаёт изображение
     RGB **image = (RGB **)malloc(height * sizeof(RGB *));
     for (int i = 0; i < height; i++)
     {
         image[i] = (RGB *)malloc(width * sizeof(RGB));
         for (int j = 0; j < width; j++)
         {
-            image[i][j] = (RGB){255, 255, 255}; // белый цвет
+            image[i][j] = (RGB){255, 255, 255}; // белый цвет !!! НЕ РАБОТАЕТ !!!
         }
     }
 
@@ -66,7 +65,6 @@ int main()
     while (1)
     {
         int x1, y1, x2, y2, r, g, b;
-        printf("\nx1, y1, x2, y2, r, g, b: ");
         scanf("%d %d %d %d %d %d %d", &x1, &y1, &x2, &y2, &r, &g, &b);
 
         if (x1 == 0 && y1 == 0 && x2 == 0 && y2 == 0 && r == 0 && g == 0 && b == 0)
