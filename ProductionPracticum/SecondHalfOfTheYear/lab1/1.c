@@ -45,20 +45,20 @@ int main()
     int width, height;
     scanf("%d %d", &width, &height);
 
-    // Создаёт изображение
+    // Создаёт изображение с белым фоном
     RGB **image = (RGB **)malloc(height * sizeof(RGB *));
     for (int i = 0; i < height; i++)
     {
         image[i] = (RGB *)malloc(width * sizeof(RGB));
         for (int j = 0; j < width; j++)
         {
-            image[i][j] = (RGB){255, 255, 255}; // белый цвет !!! НЕ РАБОТАЕТ !!!
+            image[i][j] = (RGB){255, 255, 255}; // белый фон
         }
     }
 
-    // Графическое поле
+    // Массив прямоугольников (первый элемент не используется для рисования)
     rect_t *rects = (rect_t *)malloc(sizeof(rect_t));
-    rects[0] = (rect_t){0, 0, width - 1, height - 1, (RGB){0, 0, 0}}; // черная рамка
+    rects[0] = (rect_t){0, 0, width - 1, height - 1, (RGB){255, 255, 255}}; // хранит размеры
     int rect_count = 1;
 
     // Чтение прямоугольников
@@ -78,12 +78,12 @@ int main()
         rects[rect_count - 1] = (rect_t){x1, y1, x2, y2, (RGB){(unsigned char)r, (unsigned char)g, (unsigned char)b}};
     }
 
-    // Отрисовка
-    for (int r = 0; r < rect_count; r++)
+    // Отрисовка прямоугольников (начиная с 1, т.к. 0-й - это фон)
+    for (int r = 1; r < rect_count; r++)
     {
         rect_t rect = rects[r];
 
-        // x1 <= x2 и y1 <= y2
+        // Упорядочивает координаты
         int left = rect.x1 < rect.x2 ? rect.x1 : rect.x2;
         int right = rect.x1 < rect.x2 ? rect.x2 : rect.x1;
         int top = rect.y1 < rect.y2 ? rect.y1 : rect.y2;
@@ -95,13 +95,12 @@ int main()
         top = top < 0 ? 0 : top;
         bottom = bottom >= height ? height - 1 : bottom;
 
-        // Рисует прямоугольник
+        // Рисует прямоугольник с черной рамкой
         for (int y = top; y <= bottom; y++)
         {
             for (int x = left; x <= right; x++)
             {
-                // Если это граница прямоугольника или первый прямоугольник
-                if (r == 0 || x == left || x == right || y == top || y == bottom)
+                if (x == left || x == right || y == top || y == bottom)
                 {
                     image[y][x] = (RGB){0, 0, 0}; // черный цвет для границ
                 }
@@ -113,7 +112,7 @@ int main()
         }
     }
 
-    // Вывод изображения
+    // Вывод изображения в формате PPM P3
     printf("P3\n");
     printf("%d %d\n", width, height);
     printf("255\n");
