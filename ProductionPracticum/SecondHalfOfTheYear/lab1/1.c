@@ -24,7 +24,6 @@
 Результат:
 вывод полученного изображения из массива image на стандартный поток вывода в формате ppm P3.
 */
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -39,6 +38,36 @@ typedef struct
     int x2, y2; // правый нижний угол
     RGB color;
 } rect_t;
+
+void draw_rectangle(RGB **image, int width, int height,
+                    int x1, int y1, int x2, int y2, RGB color)
+{
+    int left = x1 < x2 ? x1 : x2;
+    int right = x1 < x2 ? x2 : x1;
+    int top = y1 < y2 ? y1 : y2;
+    int bottom = y1 < y2 ? y2 : y1;
+
+    left = left < 0 ? 0 : left;
+    right = right >= width ? width - 1 : right;
+    top = top < 0 ? 0 : top;
+    bottom = bottom >= height ? height - 1 : bottom;
+
+    // Рисует прямоугольник
+    for (int y = top; y <= bottom; y++)
+    {
+        for (int x = left; x <= right; x++)
+        {
+            image[y][x] = color;
+        }
+    }
+}
+
+void draw_rectangle_with_border(RGB **image, int width, int height,
+                                int x1, int y1, int x2, int y2, RGB color)
+{
+    draw_rectangle(image, width, height, x1 - 1, y1 - 1, x2 + 1, y2 + 1, (RGB){0, 0, 0});
+    draw_rectangle(image, width, height, x1, y1, x2, y2, color);
+}
 
 int main()
 {
@@ -56,10 +85,9 @@ int main()
         }
     }
 
-    // Массив прямоугольников (первый элемент не используется для рисования)
-    rect_t *rects = (rect_t *)malloc(sizeof(rect_t));
-    rects[0] = (rect_t){0, 0, width - 1, height - 1, (RGB){255, 255, 255}}; // хранит размеры
-    int rect_count = 1;
+    // Массив прямоугольников
+    rect_t *rects = NULL;
+    int rect_count = 0;
 
     // Чтение прямоугольников
     while (1)
@@ -78,38 +106,13 @@ int main()
         rects[rect_count - 1] = (rect_t){x1, y1, x2, y2, (RGB){(unsigned char)r, (unsigned char)g, (unsigned char)b}};
     }
 
-    // Отрисовка прямоугольников (начиная с 1, т.к. 0-й - это фон)
-    for (int r = 1; r < rect_count; r++)
+    // Отрисовка всех прямоугольников
+    for (int r = 0; r < rect_count; r++)
     {
-        rect_t rect = rects[r];
-
-        // Упорядочивает координаты
-        int left = rect.x1 < rect.x2 ? rect.x1 : rect.x2;
-        int right = rect.x1 < rect.x2 ? rect.x2 : rect.x1;
-        int top = rect.y1 < rect.y2 ? rect.y1 : rect.y2;
-        int bottom = rect.y1 < rect.y2 ? rect.y2 : rect.y1;
-
-        // Ограничивает координаты
-        left = left < 0 ? 0 : left;
-        right = right >= width ? width - 1 : right;
-        top = top < 0 ? 0 : top;
-        bottom = bottom >= height ? height - 1 : bottom;
-
-        // Рисует прямоугольник с черной рамкой
-        for (int y = top; y <= bottom; y++)
-        {
-            for (int x = left; x <= right; x++)
-            {
-                if (x == left || x == right || y == top || y == bottom)
-                {
-                    image[y][x] = (RGB){0, 0, 0}; // черный цвет для границ
-                }
-                else
-                {
-                    image[y][x] = rect.color; // цвет прямоугольника
-                }
-            }
-        }
+        draw_rectangle_with_border(image, width, height,
+                                   rects[r].x1, rects[r].y1,
+                                   rects[r].x2, rects[r].y2,
+                                   rects[r].color);
     }
 
     // Вывод изображения в формате PPM P3
