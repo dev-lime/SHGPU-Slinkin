@@ -24,6 +24,7 @@
 Результат:
 вывод полученного изображения из массива image на стандартный поток вывода в формате ppm P3.
 */
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -81,7 +82,7 @@ int main()
         image[i] = (RGB *)malloc(width * sizeof(RGB));
         for (int j = 0; j < width; j++)
         {
-            image[i][j] = (RGB){255, 255, 255}; // белый фон
+            image[i][j] = (RGB){255, 255, 255};
         }
     }
 
@@ -115,7 +116,7 @@ int main()
                                    rects[r].color);
     }
 
-    // Вывод изображения в формате PPM P3
+    // Вывод изображения
     printf("P3\n");
     printf("%d %d\n", width, height);
     printf("255\n");
