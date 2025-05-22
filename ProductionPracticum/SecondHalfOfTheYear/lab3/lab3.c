@@ -38,12 +38,12 @@ cml -l
 
 void print_help()
 {
-    printf("Usage: cml [-h|-l|-m] source_file target_file\n");
-    printf("Options:\n");
-    printf("  -h  Create a hard link\n");
-    printf("  -l  Create a symbolic link\n");
-    printf("  -m  Move/rename the file\n");
-    printf("If no option is specified, the file will be copied.\n");
+    printf("Использование: cml [-h|-l|-m] исходный_файл целевой_файл\n");
+    printf("Опции:\n");
+    printf("  -h  Создать жесткую ссылку\n");
+    printf("  -l  Создать символическую ссылку\n");
+    printf("  -m  Переместить/переименовать файл\n");
+    printf("Если опция не указана, файл будет скопирован.\n");
 }
 
 int is_regular_file(const char *path)
@@ -65,14 +65,14 @@ int copy_file(const char *src, const char *dst)
     src_fd = open(src, O_RDONLY);
     if (src_fd == -1)
     {
-        perror("Error opening source file");
+        perror("Ошибка открытия исходного файла");
         return 0;
     }
 
     dst_fd = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (dst_fd == -1)
     {
-        perror("Error opening destination file");
+        perror("Ошибка открытия целевого файла");
         close(src_fd);
         return 0;
     }
@@ -82,7 +82,7 @@ int copy_file(const char *src, const char *dst)
         bytes_written = write(dst_fd, buffer, bytes_read);
         if (bytes_written != bytes_read)
         {
-            perror("Error writing to destination file");
+            perror("Ошибка записи в целевой файл");
             close(src_fd);
             close(dst_fd);
             return 0;
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
     char *source_file = NULL;
     char *target_file = NULL;
 
-    // Parse command line options
+    // Разбор опций командной строки
     while (opt = getopt(argc, argv, "hlm"))
     {
         if (opt == -1)
@@ -119,24 +119,24 @@ int main(int argc, char *argv[])
             m_flag = 1;
             break;
         default:
-            fprintf(stderr, "Error: Unknown option '-%c'\n", optopt);
+            fprintf(stderr, "Ошибка: Неизвестная опция '-%c'\n", optopt);
             print_help();
             return 1;
         }
     }
 
-    // Check for mutually exclusive options
+    // Проверка взаимоисключающих опций
     if ((h_flag + l_flag + m_flag) > 1)
     {
-        fprintf(stderr, "Error: Options -h, -l, -m are mutually exclusive\n");
+        fprintf(stderr, "Ошибка: Опции -h, -l, -m взаимоисключают друг друга\n");
         print_help();
         return 1;
     }
 
-    // Check for correct number of non-option arguments
+    // Проверка правильного количества аргументов
     if (optind + 2 != argc)
     {
-        fprintf(stderr, "Error: Incorrect number of arguments\n");
+        fprintf(stderr, "Ошибка: Неверное количество аргументов\n");
         print_help();
         return 1;
     }
@@ -144,71 +144,71 @@ int main(int argc, char *argv[])
     source_file = argv[optind];
     target_file = argv[optind + 1];
 
-    // Check if source file exists and is regular file or link
+    // Проверка существования исходного файла и что это обычный файл или ссылка
     if (!is_regular_file(source_file))
     {
-        fprintf(stderr, "Error: Source file '%s' doesn't exist or is not a regular file/link\n", source_file);
+        fprintf(stderr, "Ошибка: Исходный файл '%s' не существует или не является обычным файлом/ссылкой\n", source_file);
         return 1;
     }
 
-    // Check if target file exists
+    // Проверка существования целевого файла
     struct stat target_stat;
     int target_exists = (stat(target_file, &target_stat) == 0);
 
     if (target_exists)
     {
-        // Check if target is regular file or link
+        // Проверка что цель - обычный файл или ссылка
         if (!is_regular_file(target_file))
         {
-            fprintf(stderr, "Error: Target file '%s' exists but is not a regular file/link\n", target_file);
+            fprintf(stderr, "Ошибка: Целевой файл '%s' существует, но не является обычным файлом/ссылкой\n", target_file);
             return 1;
         }
 
-        // Ask for user confirmation
-        printf("Target file '%s' exists. Overwrite? (y/n): ", target_file);
+        // Запрос подтверждения у пользователя
+        printf("Целевой файл '%s' существует. Перезаписать? (y/n): ", target_file);
         char response;
         scanf(" %c", &response);
         if (response != 'y' && response != 'Y')
         {
-            printf("Operation canceled\n");
+            printf("Операция отменена\n");
             return 0;
         }
 
-        // Remove existing file
+        // Удаление существующего файла
         if (unlink(target_file) != 0)
         {
-            perror("Error removing target file");
+            perror("Ошибка удаления целевого файла");
             return 1;
         }
     }
 
-    // Perform the requested operation
+    // Выполнение запрошенной операции
     if (h_flag)
     {
         if (link(source_file, target_file) != 0)
         {
-            perror("Error creating hard link");
+            perror("Ошибка создания жесткой ссылки");
             return 1;
         }
-        printf("Hard link created from '%s' to '%s'\n", source_file, target_file);
+        printf("Жесткая ссылка создана из '%s' в '%s'\n", source_file, target_file);
     }
     else if (l_flag)
     {
         if (symlink(source_file, target_file) != 0)
         {
-            perror("Error creating symbolic link");
+            perror("Ошибка создания символической ссылки");
             return 1;
         }
-        printf("Symbolic link created from '%s' to '%s'\n", source_file, target_file);
+        printf("Символическая ссылка создана из '%s' в '%s'\n", source_file, target_file);
     }
     else if (m_flag)
     {
         if (rename(source_file, target_file) != 0)
         {
-            perror("Error moving file");
+            perror("Ошибка перемещения файла");
             return 1;
         }
-        printf("File moved from '%s' to '%s'\n", source_file, target_file);
+        printf("Файл перемещен из '%s' в '%s'\n", source_file, target_file);
     }
     else
     {
@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
         {
             return 1;
         }
-        printf("File copied from '%s' to '%s'\n", source_file, target_file);
+        printf("Файл скопирован из '%s' в '%s'\n", source_file, target_file);
     }
 
     return 0;
