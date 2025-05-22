@@ -44,7 +44,6 @@ void generate_sierpinski(square_t **squares, int *count, int x, int y, int size,
 	}
 
 	int new_size = size / 3;
-
 	int new_x = x + new_size;
 	int new_y = y + new_size;
 
