@@ -36,8 +36,61 @@ typedef struct
     int size; // длина стороны
 } square_t;
 
-void generate_sierpinski(square_t **squares, int *count, int x, int y, int size, int iterations, int current_iteration);
-void draw_squares(RGB **image, int image_size, square_t *squares, int squares_count, RGB base_color, RGB remove_color);
+void generate_sierpinski(square_t **squares, int *count, int x, int y, int size, int iterations, int current_iteration)
+{
+    if (current_iteration >= iterations)
+    {
+        return;
+    }
+
+    int new_size = size / 3;
+    int new_x = x + new_size;
+    int new_y = y + new_size;
+
+    (*count)++;
+    *squares = (square_t *)realloc(*squares, *count * sizeof(square_t));
+    (*squares)[*count - 1] = (square_t){new_x, new_y, new_size};
+
+    // Рекурсивно обрабатывает 8 оставшихся квадратов
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            if (i == 1 && j == 1)
+                continue; // пропускает центральный квадрат
+
+            int next_x = x + i * new_size;
+            int next_y = y + j * new_size;
+            generate_sierpinski(squares, count, next_x, next_y, new_size, iterations, current_iteration + 1);
+        }
+    }
+}
+
+void draw_squares(RGB **image, int image_size, square_t *squares, int squares_count, RGB base_color, RGB remove_color)
+{
+    for (int y = 0; y < image_size; y++)
+    {
+        for (int x = 0; x < image_size; x++)
+        {
+            image[y][x] = base_color;
+        }
+    }
+
+    for (int i = 0; i < squares_count; i++)
+    {
+        square_t sq = squares[i];
+        for (int y = sq.y; y < sq.y + sq.size && y < image_size; y++)
+        {
+            for (int x = sq.x; x < sq.x + sq.size && x < image_size; x++)
+            {
+                if (x >= 0 && y >= 0)
+                {
+                    image[y][x] = remove_color;
+                }
+            }
+        }
+    }
+}
 
 int main()
 {
@@ -81,7 +134,6 @@ int main()
         printf("\n");
     }
 
-    // Освобождение памяти
     for (int i = 0; i < image_size; i++)
     {
         free(image[i]);
@@ -90,62 +142,4 @@ int main()
     free(squares);
 
     return 0;
-}
-
-// Рекурсивная генерация квадратов Серпинского
-void generate_sierpinski(square_t **squares, int *count, int x, int y, int size, int iterations, int current_iteration)
-{
-    if (current_iteration >= iterations)
-    {
-        return;
-    }
-
-    int new_size = size / 3;
-    int new_x = x + new_size;
-    int new_y = y + new_size;
-
-    (*count)++;
-    *squares = (square_t *)realloc(*squares, *count * sizeof(square_t));
-    (*squares)[*count - 1] = (square_t){new_x, new_y, new_size};
-
-    // Рекурсивно обрабатывает 8 оставшихся квадратов
-    for (int i = 0; i < 3; i++)
-    {
-        for (int j = 0; j < 3; j++)
-        {
-            if (i == 1 && j == 1)
-                continue; // пропускает центральный квадрат
-
-            int next_x = x + i * new_size;
-            int next_y = y + j * new_size;
-            generate_sierpinski(squares, count, next_x, next_y, new_size, iterations, current_iteration + 1);
-        }
-    }
-}
-
-// Отрисовка квадратов
-void draw_squares(RGB **image, int image_size, square_t *squares, int squares_count, RGB base_color, RGB remove_color)
-{
-    for (int y = 0; y < image_size; y++)
-    {
-        for (int x = 0; x < image_size; x++)
-        {
-            image[y][x] = base_color;
-        }
-    }
-
-    for (int i = 0; i < squares_count; i++)
-    {
-        square_t sq = squares[i];
-        for (int y = sq.y; y < sq.y + sq.size && y < image_size; y++)
-        {
-            for (int x = sq.x; x < sq.x + sq.size && x < image_size; x++)
-            {
-                if (x >= 0 && y >= 0)
-                {
-                    image[y][x] = remove_color;
-                }
-            }
-        }
-    }
 }
