@@ -1,9 +1,11 @@
 /*
-
-Создать утилиту cml (упрощенный аналог утилит cp, mv, ln) для копирования/перемещения регулярных файлов и создания ссылок на регулярные файлы. Общий вид:
- cml [-h|-l|-m] исходный_файл результирующий_файл
+Создать утилиту cml (упрощенный аналог утилит cp, mv, ln)для копирования/перемещения
+регулярных файлов и создания ссылок на регулярные файлы. Общий вид:
+cml [-h|-l|-m] исходный_файл результирующий_файл
 Поведение утилиты:
-1) Если синтаксис вызова утилиты неверен (отсутствуют один или оба обязательных параметра, обязательных параметров больше двух, используются несуществующие опции) - сообщить об этом, вывести краткую справку и остановить программу.
+1) Если синтаксис вызова утилиты неверен (отсутствуют один или оба обязательных параметра,
+обязательных параметров больше двух, используются несуществующие опции) - сообщить об этом,
+вывести краткую справку и остановить программу.
 Примеры верного синтакиса:
 cml -h 1 2
 cml 123 456.txt
@@ -17,9 +19,12 @@ cml -l
 2) Если исходный файл не существует - сообщить об этом и остановить программу.
 3) Если исходный файл существует, но не является регулярным файлом или ссылкой - сообщить об этом и остановить программу.
 4) Если результирующий файл существует, но не является регулярным файлом или ссылкой - сообщить об этом и остановить программу.
-5) Если результирующий файл не существует, то утилита либо копирует исходный файл (если опция отсутствует), либо перемещает/переименовывает исходный файл (-m), либо создает жесткую ссылку (-h), либо создает символическую ссылку (-l)
-6) Если результирующий файл существует и является регулярным файлом или ссылкой, следует запросить у пользователя разрешение на удаление. При положительном ответе - удалить файл и далее работать по предыдущему варианту. При отрицательном - остановить программу с соответствующим сообщением.
-
+5) Если результирующий файл не существует, то утилита либо копирует исходный файл (если опция отсутствует),
+либо перемещает/переименовывает исходный файл (-m), либо создает жесткую ссылку (-h), либо создает символическую ссылку (-l)
+6) Если результирующий файл существует и является регулярным файлом или ссылкой,
+следует запросить у пользователя разрешение на удаление.
+При положительном ответе - удалить файл и далее работать по предыдущему варианту.
+При отрицательном - остановить программу с соответствующим сообщением.
 */
 
 #include <stdio.h>
@@ -97,7 +102,8 @@ int main(int argc, char *argv[])
     char *target_file = NULL;
 
     // Parse command line options
-    while (opt = getopt(argc, argv, "hlm")) {
+    while (opt = getopt(argc, argv, "hlm"))
+    {
         if (opt == -1)
             break;
 
@@ -120,14 +126,16 @@ int main(int argc, char *argv[])
     }
 
     // Check for mutually exclusive options
-    if ((h_flag + l_flag + m_flag) > 1) {
+    if ((h_flag + l_flag + m_flag) > 1)
+    {
         fprintf(stderr, "Error: Options -h, -l, -m are mutually exclusive\n");
         print_help();
         return 1;
     }
 
     // Check for correct number of non-option arguments
-    if (optind + 2 != argc) {
+    if (optind + 2 != argc)
+    {
         fprintf(stderr, "Error: Incorrect number of arguments\n");
         print_help();
         return 1;
@@ -137,7 +145,8 @@ int main(int argc, char *argv[])
     target_file = argv[optind + 1];
 
     // Check if source file exists and is regular file or link
-    if (!is_regular_file(source_file)) {
+    if (!is_regular_file(source_file))
+    {
         fprintf(stderr, "Error: Source file '%s' doesn't exist or is not a regular file/link\n", source_file);
         return 1;
     }
@@ -146,7 +155,8 @@ int main(int argc, char *argv[])
     struct stat target_stat;
     int target_exists = (stat(target_file, &target_stat) == 0);
 
-    if (target_exists) {
+    if (target_exists)
+    {
         // Check if target is regular file or link
         if (!is_regular_file(target_file))
         {
@@ -173,28 +183,35 @@ int main(int argc, char *argv[])
     }
 
     // Perform the requested operation
-    if (h_flag) {
+    if (h_flag)
+    {
         if (link(source_file, target_file) != 0)
         {
             perror("Error creating hard link");
             return 1;
         }
         printf("Hard link created from '%s' to '%s'\n", source_file, target_file);
-    } else if (l_flag) {
+    }
+    else if (l_flag)
+    {
         if (symlink(source_file, target_file) != 0)
         {
             perror("Error creating symbolic link");
             return 1;
         }
         printf("Symbolic link created from '%s' to '%s'\n", source_file, target_file);
-    } else if (m_flag) {
+    }
+    else if (m_flag)
+    {
         if (rename(source_file, target_file) != 0)
         {
             perror("Error moving file");
             return 1;
         }
         printf("File moved from '%s' to '%s'\n", source_file, target_file);
-    } else {
+    }
+    else
+    {
         if (!copy_file(source_file, target_file))
         {
             return 1;
