@@ -25,13 +25,12 @@ uses
 
 var
   Canvas: TXCanvas;
-  SmallCanvas: TXCanvas;
   Pos: TPoint;
   Color: TRGB;
   i: Integer;
 begin
   try
-    // Создаем основной холст
+    // Создаем холст
     Canvas := TXCanvas.Create(800, 600);
     try
       // Тест 1: Очистка холста и установка цвета
@@ -42,7 +41,7 @@ begin
       Canvas.MoveTo(100, 100);
       Canvas.DrawPoint;
 
-      // Тест 3: Рисование линий (алгоритм Брезенхема)
+      // Тест 3: Рисование линий
       Canvas.MoveTo(50, 50);
       Canvas.DrawLineTo(150, 150);
 
@@ -62,48 +61,48 @@ begin
 
       // Тест 6: Сохранение в PPM
       Canvas.SaveToPPM('test.ppm');
-      Writeln('PPM file saved: test.ppm');
 
       // Тест 7: Загрузка из PPM
       Canvas.LoadFromPPM('test.ppm');
-      Writeln('PPM file loaded: test.ppm');
 
-      // Тест 8: Получение информации
+      // Тест 8: Сохранение в других форматах
+      Canvas.SaveToFile('test.png');
+      Canvas.SaveToFile('test.jpg');
+
+      // Тест 9: Получение информации
       Writeln('Canvas size: ', Canvas.GetWidth, 'x', Canvas.GetHeight);
       Pos := Canvas.GetPosition;
       Writeln('Current position: ', Pos.X, ',', Pos.Y);
       Color := Canvas.GetColor;
       Writeln('Current color: R=', Color.R, ' G=', Color.G, ' B=', Color.B);
 
-      // Тест 9: Создание второго холста и наложение
+      // Тест 10: Создание второго холста и наложение
       Canvas.ClearWithColor(0, 0, 0); // Черный фон
-      Canvas.SetTransparentColor(0, 0, 0); // Прозрачный цвет - черный
+      Canvas.SetColor(0, 0, 0); // Прозрачный цвет - черный
 
-      // Создаем маленький холст с красным кругом
-      SmallCanvas := TXCanvas.Create(100, 100);
+      // Создаем второй холст с красным кругом
+      with TXCanvas.Create(100, 100) do
       try
-        SmallCanvas.ClearWithColor(0, 0, 0); // Черный фон
-        SmallCanvas.SetColor(255, 0, 0); // Красный цвет
+        ClearWithColor(0, 0, 0); // Черный фон
+        SetColor(255, 0, 0); // Красный цвет
 
         // Рисуем круг (аппроксимация)
         for i := 0 to 359 do
         begin
-          SmallCanvas.MoveTo(
-            50 + Round(40 * Cos(i * Pi / 180)),
-            50 + Round(40 * Sin(i * Pi / 180)));
-          SmallCanvas.DrawPoint;
+          MoveTo(50 + Round(40 * Cos(i * Pi / 180)),
+                50 + Round(40 * Sin(i * Pi / 180)));
+          DrawPoint;
         end;
 
         // Наложение на основной холст
         Canvas.MoveTo(350, 250);
-        Canvas.BlendCanvas(SmallCanvas);
+        Canvas.BlendCanvas(TXCanvas(self));
       finally
-        SmallCanvas.Free;
+        Free;
       end;
 
-      // Сохраняем результат в PPM
-      Canvas.SaveToPPM('blended.ppm');
-      Writeln('Blended PPM file saved: blended.ppm');
+      // Сохраняем результат
+      Canvas.SaveToFile('blended.png');
 
       Writeln('All tests completed successfully.');
     finally
@@ -113,7 +112,5 @@ begin
     on E: Exception do
       Writeln('Error: ', E.Message);
   end;
-
-  ReadLn;
 end.
 
