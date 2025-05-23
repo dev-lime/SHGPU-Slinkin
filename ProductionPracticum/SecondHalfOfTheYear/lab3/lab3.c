@@ -209,41 +209,41 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Ошибка: Целевой файл '%s' существует, но не является обычным файлом/ссылкой\n", target_file);
 			return 1;
 		}
-	if (target_exists)
-	{
-		// Проверка что цель - обычный файл или ссылка
-		if (!is_regular_file(target_file))
+		if (target_exists)
 		{
-			fprintf(stderr, "Ошибка: Целевой файл '%s' существует, но не является обычным файлом/ссылкой\n", target_file);
-			return 1;
-		}
+			// Проверка что цель - обычный файл или ссылка
+			if (!is_regular_file(target_file))
+			{
+				fprintf(stderr, "Ошибка: Целевой файл '%s' существует, но не является обычным файлом/ссылкой\n", target_file);
+				return 1;
+			}
 
-		// Запрос подтверждения у пользователя
-		printf("Целевой файл '%s' существует. Перезаписать? (y/n): ", target_file);
-		char response;
-		scanf(" %c", &response);
-		if (response != 'y' && response != 'Y')
-		{
-			printf("Операция отменена\n");
-			return 0;
-		}
-		// Запрос подтверждения у пользователя
-		printf("Целевой файл '%s' существует. Перезаписать? (y/n): ", target_file);
-		char response;
-		scanf(" %c", &response);
-		if (response != 'y' && response != 'Y')
-		{
-			printf("Операция отменена\n");
-			return 0;
-		}
+			// Запрос подтверждения у пользователя
+			printf("Целевой файл '%s' существует. Перезаписать? (y/n): ", target_file);
+			char response;
+			scanf(" %c", &response);
+			if (response != 'y' && response != 'Y')
+			{
+				printf("Операция отменена\n");
+				return 0;
+			}
+			// Запрос подтверждения у пользователя
+			printf("Целевой файл '%s' существует. Перезаписать? (y/n): ", target_file);
+			char response;
+			scanf(" %c", &response);
+			if (response != 'y' && response != 'Y')
+			{
+				printf("Операция отменена\n");
+				return 0;
+			}
 
-		// Удаление существующего файла
-		if (unlink(target_file) != 0)
-		{
-			perror("Ошибка удаления целевого файла");
-			return 1;
+			// Удаление существующего файла
+			if (unlink(target_file) != 0)
+			{
+				perror("Ошибка удаления целевого файла");
+				return 1;
+			}
 		}
-	}
 		// Удаление существующего файла
 		if (unlink(target_file) != 0)
 		{
