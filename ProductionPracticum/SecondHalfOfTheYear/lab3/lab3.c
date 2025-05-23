@@ -96,53 +96,48 @@ int copy_file(const char *src, const char *dst)
 
 int main(int argc, char *argv[])
 {
-    int opt;
     int h_flag = 0, l_flag = 0, m_flag = 0;
     char *source_file = NULL;
     char *target_file = NULL;
 
-    // Разбор опций командной строки
-    while (opt = getopt(argc, argv, "hlm"))
-    {
-        if (opt == -1)
-            break;
-
-        switch (opt)
-        {
-        case 'h':
-            h_flag = 1;
-            break;
-        case 'l':
-            l_flag = 1;
-            break;
-        case 'm':
-            m_flag = 1;
-            break;
-        default:
-            fprintf(stderr, "Ошибка: Неизвестная опция '-%c'\n", optopt);
-            print_help();
-            return 1;
-        }
-    }
-
-    // Проверка взаимоисключающих опций
-    if ((h_flag + l_flag + m_flag) > 1)
-    {
-        fprintf(stderr, "Ошибка: Опции -h, -l, -m взаимоисключают друг друга\n");
-        print_help();
-        return 1;
-    }
-
-    // Проверка правильного количества аргументов
-    if (optind + 2 != argc)
+    // Проверка количества аргументов
+    if (argc < 3 || argc > 4)
     {
         fprintf(stderr, "Ошибка: Неверное количество аргументов\n");
         print_help();
         return 1;
     }
 
-    source_file = argv[optind];
-    target_file = argv[optind + 1];
+    // Разбор опции
+    if (argc == 4)
+    {
+        if (strcmp(argv[1], "-h") == 0)
+        {
+            h_flag = 1;
+        }
+        else if (strcmp(argv[1], "-l") == 0)
+        {
+            l_flag = 1;
+        }
+        else if (strcmp(argv[1], "-m") == 0)
+        {
+            m_flag = 1;
+        }
+        else
+        {
+            fprintf(stderr, "Ошибка: Неизвестная опция '%s'\n", argv[1]);
+            print_help();
+            return 1;
+        }
+
+        source_file = argv[2];
+        target_file = argv[3];
+    }
+    else
+    {
+        source_file = argv[1];
+        target_file = argv[2];
+    }
 
     // Проверка существования исходного файла и что это обычный файл или ссылка
     if (!is_regular_file(source_file))
