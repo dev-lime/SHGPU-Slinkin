@@ -18,95 +18,94 @@ int Depth = 0;
 int MaxDepth = 0;
 
 char a[MAX][MAX + 1] = {
-    "0001001000",
-    "0010010000",
-    "0001010111",
-    "0000001100",
-    "0001100000",
-    "0000101111",
-    "0000101000",
-    "0000101000",
-    "0001101100",
-    "0010000100"};
+	"0001001000",
+	"0010010000",
+	"0001010111",
+	"0000001100",
+	"0001100000",
+	"0000101111",
+	"0000101000",
+	"0000101000",
+	"0001101100",
+	"0010000100"};
 
 void FillCell(int x, int y)
 {
-    a[y - 1][x - 1] = '*';
+	a[y - 1][x - 1] = '*';
 }
 
 void AddDepth()
 {
-    Depth++;
-    if (Depth > MaxDepth)
-        MaxDepth = Depth;
+	Depth++;
+	if (Depth > MaxDepth)
+		MaxDepth = Depth;
 }
 
 void SubDepth()
 {
-    Depth--;
+	Depth--;
 }
 
 bool IsCellEmpty(int x, int y)
 {
-    if (x < MIN || x > MAX || y < MIN || y > MAX || a[y - 1][x - 1] != '0')
-        return false;
-    return true;
+	if (x < MIN || x > MAX || y < MIN || y > MAX || a[y - 1][x - 1] != '0')
+		return false;
+	return true;
 }
 
 void Fill(int x, int y)
 {
-    AddDepth();
+	AddDepth();
 
-    if (!IsCellEmpty(x, y))
-    {
-        SubDepth();
-        return;
-    }
+	if (!IsCellEmpty(x, y))
+	{
+		SubDepth();
+		return;
+	}
 
-    FillCell(x, y);
+	FillCell(x, y);
 
-    // Рекурсивные вызовы для вертикальных направлений
-    Fill(x, y + 1); // низ
-    Fill(x, y - 1); // верх
+	// Обработка вертикальных направлений (рекурсия)
+	Fill(x, y + 1); // вниз
+	Fill(x, y - 1); // вверх
 
-    // Замена хвостовой рекурсии для горизонтальных направлений на цикл
-    while (true)
-    {
-        if (IsCellEmpty(x + 1, y))
-        {
-            x++;
-            FillCell(x, y);
-            Fill(x, y + 1);
-            Fill(x, y - 1);
-        }
-        else if (IsCellEmpty(x - 1, y))
-        {
-            x--;
-            FillCell(x, y);
-            Fill(x, y + 1);
-            Fill(x, y - 1);
-        }
-        else
-        {
-            break;
-        }
-    }
+	// Обработка горизонтальных направлений (циклы)
+	int currentX = x;
 
-    SubDepth();
+	// Заполнение вправо
+	while (IsCellEmpty(currentX + 1, y))
+	{
+		currentX++;
+		FillCell(currentX, y);
+		Fill(currentX, y + 1); // рекурсия вниз
+		Fill(currentX, y - 1); // рекурсия вверх
+	}
+
+	// Заполнение влево
+	currentX = x;
+	while (IsCellEmpty(currentX - 1, y))
+	{
+		currentX--;
+		FillCell(currentX, y);
+		Fill(currentX, y + 1); // рекурсия вниз
+		Fill(currentX, y - 1); // рекурсия вверх
+	}
+
+	SubDepth();
 }
 
 void PrintArray()
 {
-    for (int i = 0; i < MAX; i++)
-    {
-        printf("%s\n", a[i]);
-    }
+	for (int i = 0; i < MAX; i++)
+	{
+		printf("%s\n", a[i]);
+	}
 }
 
 int main()
 {
-    Fill(5, 1);
-    PrintArray();
-    printf("\nMax recursion depth = %d\n", MaxDepth);
-    return 0;
+	Fill(5, 1);
+	PrintArray();
+	printf("\nMax recursion depth = %d\n", MaxDepth);
+	return 0;
 }

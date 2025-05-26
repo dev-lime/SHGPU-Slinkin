@@ -18,73 +18,73 @@ int Depth = 0;
 int MaxDepth = 0;
 
 char a[MAX][MAX + 1] = {
-    "0001001000",
-    "0010010000",
-    "0001010111",
-    "0000001100",
-    "0001100000",
-    "0000101111",
-    "0000101000",
-    "0000101000",
-    "0001101100",
-    "0010000100"};
+	"0001001000",
+	"0010010000",
+	"0001010111",
+	"0000001100",
+	"0001100000",
+	"0000101111",
+	"0000101000",
+	"0000101000",
+	"0001101100",
+	"0010000100"};
 
 void FillCell(int x, int y)
 {
-    a[y - 1][x - 1] = '*';
+	a[y - 1][x - 1] = '*';
 }
 
 void AddDepth()
 {
-    Depth++;
-    if (Depth > MaxDepth)
-        MaxDepth = Depth;
+	Depth++;
+	if (Depth > MaxDepth)
+		MaxDepth = Depth;
 }
 
 void SubDepth()
 {
-    Depth--;
+	Depth--;
 }
 
 bool IsCellEmpty(int x, int y)
 {
-    if (x < MIN || x > MAX || y < MIN || y > MAX || a[y - 1][x - 1] != '0')
-        return false;
-    return true;
+	if (x < MIN || x > MAX || y < MIN || y > MAX || a[y - 1][x - 1] != '0')
+		return false;
+	return true;
 }
 
 void Fill(int x, int y)
 {
-    AddDepth();
+	AddDepth();
 
-    if (!IsCellEmpty(x, y))
-    {
-        SubDepth();
-        return;
-    }
+	if (!IsCellEmpty(x, y))
+	{
+		SubDepth();
+		return;
+	}
 
-    FillCell(x, y);
+	FillCell(x, y);
 
-    Fill(x + 1, y); // право
-    Fill(x - 1, y); // лево
-    Fill(x, y + 1); // низ
-    Fill(x, y - 1); // верх
+	Fill(x + 1, y); // право
+	Fill(x - 1, y); // лево
+	Fill(x, y + 1); // низ
+	Fill(x, y - 1); // верх
 
-    SubDepth();
+	SubDepth();
 }
 
 void PrintArray()
 {
-    for (int i = 0; i < MAX; i++)
-    {
-        printf("%s\n", a[i]);
-    }
+	for (int i = 0; i < MAX; i++)
+	{
+		printf("%s\n", a[i]);
+	}
 }
 
 int main()
 {
-    Fill(5, 1);
-    PrintArray();
-    printf("\nMax recursion depth = %d\n", MaxDepth);
-    return 0;
+	Fill(5, 1);
+	PrintArray();
+	printf("\nMax recursion depth = %d\n", MaxDepth);
+	return 0;
 }
