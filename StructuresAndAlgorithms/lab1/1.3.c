@@ -18,20 +18,20 @@ int Depth = 0;
 int MaxDepth = 0;
 
 char a[MAX][MAX + 1] = {
-    "1---------",
-    "-11--1----",
-    "---1-1--11",
-    "--1---11--",
-    "-1-1------",
-    "-1--1--111",
-    "1--11-1---",
-    "----1-1---",
-    "-------1--",
-    "--1----1--"};
+    "0001001000",
+    "0010010000",
+    "0001010111",
+    "0000001100",
+    "0001100000",
+    "0000101111",
+    "0000101000",
+    "0000101000",
+    "0001101100",
+    "0010000100"};
 
 void FillCell(int x, int y)
 {
-    a[y - 1][x - 1] = '0';
+    a[y - 1][x - 1] = '*';
 }
 
 void AddDepth()
@@ -48,60 +48,54 @@ void SubDepth()
 
 bool IsCellEmpty(int x, int y)
 {
-    if (x < MIN || x > MAX || y < MIN || y > MAX || a[y - 1][x - 1] != '-')
+    if (x < MIN || x > MAX || y < MIN || y > MAX || a[y - 1][x - 1] != '0')
         return false;
     return true;
 }
 
-void FillHorizontal(int x, int y);
-
-void FillVertical(int x, int y)
-{
-    // AddDepth();
-    //  Заполнение вниз
-    for (int i = y + 1; i <= MAX; i++)
-    {
-        if (!IsCellEmpty(x, i))
-            break;
-        FillCell(x, i);
-        if (IsCellEmpty(x + 1, i))
-            FillHorizontal(x + 1, i);
-        if (IsCellEmpty(x - 1, i))
-            FillHorizontal(x - 1, i);
-    }
-    // Заполнение вверх
-    for (int i = y - 1; i >= MIN; i--)
-    {
-        if (!IsCellEmpty(x, i))
-            break;
-        FillCell(x, i);
-        if (IsCellEmpty(x + 1, i))
-            FillHorizontal(x + 1, i);
-        if (IsCellEmpty(x - 1, i))
-            FillHorizontal(x - 1, i);
-    }
-    // SubDepth();
-}
+void FillVertical(int x, int y);
 
 void FillHorizontal(int x, int y)
 {
     AddDepth();
-    // Заполнение вправо
-    for (int i = x; i <= MAX; i++)
+
+    // Заполнение вправо (цикл)
+    int i = x;
+    while (i <= MAX && IsCellEmpty(i, y))
     {
-        if (!IsCellEmpty(i, y))
-            break;
         FillCell(i, y);
         FillVertical(i, y);
+        i++;
     }
-    // Заполнение влево
-    for (int i = x - 1; i >= MIN; i--)
+
+    // Заполнение влево (цикл)
+    i = x - 1;
+    while (i >= MIN && IsCellEmpty(i, y))
     {
-        if (!IsCellEmpty(i, y))
-            break;
         FillCell(i, y);
         FillVertical(i, y);
+        i--;
     }
+
+    SubDepth();
+}
+
+void FillVertical(int x, int y)
+{
+    AddDepth();
+
+    if (IsCellEmpty(x, y + 1))
+    {
+        FillCell(x, y + 1);
+        FillHorizontal(x, y + 1);
+    }
+
+    if (IsCellEmpty(x, y - 1))
+    {
+        FillCell(x, y - 1);
+        FillHorizontal(x, y - 1);
+    }
+
     SubDepth();
 }
 
@@ -109,11 +103,12 @@ void Fill(int x, int y)
 {
     if (IsCellEmpty(x, y))
     {
+        FillCell(x, y);
         FillHorizontal(x, y);
     }
 }
 
-void printArr()
+void PrintArray()
 {
     for (int i = 0; i < MAX; i++)
     {
@@ -124,7 +119,7 @@ void printArr()
 int main()
 {
     Fill(5, 1);
-    printArr();
-    printf("\nMax depth = %d", MaxDepth);
+    PrintArray();
+    printf("\nMax recursion depth = %d\n", MaxDepth);
     return 0;
 }
