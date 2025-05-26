@@ -55,37 +55,44 @@ bool IsCellEmpty(int x, int y)
 
 void Fill(int x, int y)
 {
-    while (true)
+    AddDepth();
+
+    if (!IsCellEmpty(x, y))
     {
-        AddDepth();
-
-        if (!IsCellEmpty(x, y))
-        {
-            SubDepth();
-            return;
-        }
-
-        FillCell(x, y);
-
-        Fill(x, y + 1); // низ (рекурсия)
-        Fill(x, y - 1); // верх (рекурсия)
-
-        // Заменяем хвостовую рекурсию на итерацию
-        if (IsCellEmpty(x + 1, y))
-        {
-            x++;
-            continue;
-        }
-
-        if (IsCellEmpty(x - 1, y))
-        {
-            x--;
-            continue;
-        }
-
         SubDepth();
         return;
     }
+
+    FillCell(x, y);
+
+    // Рекурсивные вызовы для вертикальных направлений
+    Fill(x, y + 1); // низ
+    Fill(x, y - 1); // верх
+
+    // Замена хвостовой рекурсии для горизонтальных направлений на цикл
+    while (true)
+    {
+        if (IsCellEmpty(x + 1, y))
+        {
+            x++;
+            FillCell(x, y);
+            Fill(x, y + 1);
+            Fill(x, y - 1);
+        }
+        else if (IsCellEmpty(x - 1, y))
+        {
+            x--;
+            FillCell(x, y);
+            Fill(x, y + 1);
+            Fill(x, y - 1);
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    SubDepth();
 }
 
 void PrintArray()

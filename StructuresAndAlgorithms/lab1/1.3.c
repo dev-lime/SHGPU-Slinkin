@@ -53,58 +53,82 @@ bool IsCellEmpty(int x, int y)
     return true;
 }
 
-void FillVertical(int x, int y);
-
-void FillHorizontal(int x, int y)
+typedef struct
 {
-    AddDepth();
+    int x;
+    int y;
+} Point;
 
-    // Заполнение вправо (цикл)
-    int i = x;
-    while (i <= MAX && IsCellEmpty(i, y))
-    {
-        FillCell(i, y);
-        FillVertical(i, y);
-        i++;
-    }
+Point stack[MAX * MAX];
+int stackTop = -1;
 
-    // Заполнение влево (цикл)
-    i = x - 1;
-    while (i >= MIN && IsCellEmpty(i, y))
-    {
-        FillCell(i, y);
-        FillVertical(i, y);
-        i--;
-    }
-
-    SubDepth();
+void Push(int x, int y)
+{
+    stackTop++;
+    stack[stackTop].x = x;
+    stack[stackTop].y = y;
 }
 
-void FillVertical(int x, int y)
+Point Pop()
 {
-    AddDepth();
-
-    if (IsCellEmpty(x, y + 1))
-    {
-        FillCell(x, y + 1);
-        FillHorizontal(x, y + 1);
-    }
-
-    if (IsCellEmpty(x, y - 1))
-    {
-        FillCell(x, y - 1);
-        FillHorizontal(x, y - 1);
-    }
-
-    SubDepth();
+    return stack[stackTop--];
 }
 
-void Fill(int x, int y)
+bool StackIsEmpty()
 {
-    if (IsCellEmpty(x, y))
+    return stackTop == -1;
+}
+
+void Fill(int startX, int startY)
+{
+    Push(startX, startY);
+
+    while (!StackIsEmpty())
     {
+        AddDepth();
+        Point p = Pop();
+        int x = p.x;
+        int y = p.y;
+
+        if (!IsCellEmpty(x, y))
+        {
+            SubDepth();
+            continue;
+        }
+
         FillCell(x, y);
-        FillHorizontal(x, y);
+
+        // Горизонтальное заполнение (цикл вправо)
+        int right = x + 1;
+        while (right <= MAX && IsCellEmpty(right, y))
+        {
+            FillCell(right, y);
+            if (IsCellEmpty(right, y + 1))
+                Push(right, y + 1);
+            if (IsCellEmpty(right, y - 1))
+                Push(right, y - 1);
+            right++;
+        }
+
+        // Горизонтальное заполнение (цикл влево)
+        int left = x - 1;
+        while (left >= MIN && IsCellEmpty(left, y))
+        {
+            FillCell(left, y);
+            if (IsCellEmpty(left, y + 1))
+                Push(left, y + 1);
+            if (IsCellEmpty(left, y - 1))
+                Push(left, y - 1);
+            left--;
+        }
+
+        // Вертикальные направления (добавляем в стек)
+        if (IsCellEmpty(x, y + 1))
+            Push(x, y + 1);
+        if (IsCellEmpty(x, y - 1))
+            Push(x, y - 1);
+
+        SubDepth();
     }
 }
 
