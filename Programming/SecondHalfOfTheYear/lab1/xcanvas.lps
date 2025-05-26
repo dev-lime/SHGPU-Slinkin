@@ -9,7 +9,6 @@
         <Filename Value="xcanvas.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="XCanvas"/>
-        <IsVisibleTab Value="True"/>
         <CursorPos Y="2"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
@@ -18,9 +17,16 @@
         <Filename Value="lab1.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="TestXCanvas"/>
-        <EditorIndex Value="1"/>
+        <EditorIndex Value="2"/>
         <CursorPos Y="20"/>
         <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="..\..\..\..\..\..\Downloads\struct230\1.pas"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
+        <UsageCount Value="10"/>
         <Loaded Value="True"/>
       </Unit>
     </Units>
