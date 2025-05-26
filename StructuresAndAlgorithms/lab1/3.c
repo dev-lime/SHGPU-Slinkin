@@ -21,3 +21,107 @@ hrec строит H-фрактал, а pbm переводит его в граф
 Максимальная глубина рекурсии равна 7. Полученный набор строк конвееризируется на вход программы pbm,
 которая формирует рисунок и сохраняет его в графическом файле result.pbm (формат PBM, версия P1)
 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+void draw_h(char **grid, int maxY, int maxX, int y, int x, int size, int depth, int current_depth)
+{
+    if (current_depth > depth)
+    {
+        return;
+    }
+
+    if (y < 0 || y >= maxY || x < 0 || x >= maxX)
+    {
+        return;
+    }
+
+    int half = size / 2;
+
+    // Рисует вертикальные линии (|)
+    for (int i = y - half; i <= y + half; i++)
+    {
+        if (i >= 0 && i < maxY)
+        {
+            // Левая линия
+            if (x - half >= 0)
+            {
+                grid[i][x - half] = '*';
+            }
+            // Правая линия
+            if (x + half < maxX)
+            {
+                grid[i][x + half] = '*';
+            }
+        }
+    }
+
+    // Рисует горизонтальную линию (-)
+    for (int j = x - half; j <= x + half; j++)
+    {
+        if (j >= 0 && j < maxX)
+        {
+            grid[y][j] = '*';
+        }
+    }
+
+    // Новый размер для следующего уровня рекурсии
+    int new_size = (int)(size / sqrt(2));
+
+    // Рекурсивно рисует 4 новые H в концах текущей H
+    draw_h(grid, maxY, maxX, y - half, x - half, new_size, depth, current_depth + 1); // верхний левый
+    draw_h(grid, maxY, maxX, y - half, x + half, new_size, depth, current_depth + 1); // верхний правый
+    draw_h(grid, maxY, maxX, y + half, x - half, new_size, depth, current_depth + 1); // нижний левый
+    draw_h(grid, maxY, maxX, y + half, x + half, new_size, depth, current_depth + 1); // нижний правый
+}
+
+int main(int argc, char *argv[])
+{
+    if (argc != 5)
+    {
+        fprintf(stderr, "Usage: %s MaxY MaxX Size Depth\n", argv[0]);
+        return 1;
+    }
+
+    int maxY = atoi(argv[1]);
+    int maxX = atoi(argv[2]);
+    int size = atoi(argv[3]);
+    int depth = atoi(argv[4]);
+
+    // Выделяет память для сетки
+    char **grid = (char **)malloc(maxY * sizeof(char *));
+    for (int i = 0; i < maxY; i++)
+    {
+        grid[i] = (char *)malloc(maxX * sizeof(char));
+        for (int j = 0; j < maxX; j++)
+        {
+            grid[i][j] = ' ';
+        }
+    }
+
+    // Начинает построение с центра
+    int centerY = maxY / 2;
+    int centerX = maxX / 2;
+    draw_h(grid, maxY, maxX, centerY, centerX, size, depth, 1);
+
+    // Результат
+    for (int i = 0; i < maxY; i++)
+    {
+        for (int j = 0; j < maxX; j++)
+        {
+            putchar(grid[i][j]);
+        }
+        putchar('\n');
+    }
+
+    // Освобождение памяти
+    for (int i = 0; i < maxY; i++)
+    {
+        free(grid[i]);
+    }
+    free(grid);
+
+    return 0;
+}
