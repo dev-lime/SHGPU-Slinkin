@@ -6,3 +6,5 @@
 - 📁 **ProductionPracticum** - Производственный практикум
 - 📁 **Programming** - Программирование
 - 📁 **StructuresAndAlgorithms** - Структуры и алгоритмы
+
+[Сайт со всеми заданиями](https://xdsl.shspu.ru/)
