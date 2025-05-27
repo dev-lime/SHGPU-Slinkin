@@ -16,8 +16,6 @@
 9) Метод закраски ограниченной области в текущей позиции текущим цветом (см. смежный предмет)
 10) Метод накладывания стороннего холста на текущий холст в текущую позицию, считая прозрачным текущим цвет
 11) Методы загрузки и сохранения холста в форматах JPG,PNG,PCX и других, поддерживаемых пакетом fcl-image.
-
-https://chat.deepseek.com/a/chat/s/973288c9-4068-466f-a34e-ad1597fc272d
 *)
 
 program TestXCanvas;
@@ -37,8 +35,8 @@ begin
     Canvas := TXCanvas.Create(800, 600);
     try
       // Тест 1: Очистка холста и установка цвета
-      Canvas.ClearWithColor(200, 200, 255);
-      Canvas.SetColor(255, 0, 0);
+      Canvas.ClearWithColor(200, 200, 255); // Светло-голубой фон
+      Canvas.SetColor(255, 0, 0); // Красный цвет
 
       // Тест 2: Рисование точек
       Canvas.MoveTo(100, 100);
@@ -49,16 +47,16 @@ begin
       Canvas.DrawLineTo(150, 150);
 
       // Тест 4: Рисование прямоугольников
-      Canvas.SetColor(0, 255, 0);
+      Canvas.SetColor(0, 255, 0); // Зеленый цвет
       Canvas.MoveTo(200, 200);
       Canvas.DrawRect(100, 80);
 
-      Canvas.SetColor(0, 0, 255);
+      Canvas.SetColor(0, 0, 255); // Синий цвет
       Canvas.MoveTo(300, 300);
       Canvas.DrawFilledRect(120, 90);
 
       // Тест 5: Заливка области
-      Canvas.SetColor(255, 255, 0);
+      Canvas.SetColor(255, 255, 0); // Желтый цвет
       Canvas.MoveTo(400, 400);
       Canvas.FloodFill;
 

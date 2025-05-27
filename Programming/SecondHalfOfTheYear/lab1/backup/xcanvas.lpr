@@ -5,7 +5,7 @@ unit XCanvas;
 interface
 
 uses
-  Classes, SysUtils, FPImage, FPWritePPM, FPReadPPM, FPImgCanv, Graphics;
+  Classes, SysUtils;
 
 type
   // Тип для хранения цвета пикселя
@@ -28,10 +28,13 @@ type
     FCanvas: array of array of TRGB;
     FCurrentColor: TRGB;
     FCurrentPos: TPoint;
+    FTransparentColor: TRGB;
     procedure SetSize(AWidth, AHeight: Integer);
     function GetPixel(X, Y: Integer): TRGB;
     procedure SetPixel(X, Y: Integer; const Value: TRGB);
     procedure FloodFillRecursive(X, Y: Integer; const OldColor, NewColor: TRGB);
+    function SameColor(const C1, C2: TRGB): Boolean;
+    procedure Swap(var A, B: Integer);
   public
     constructor Create(AWidth, AHeight: Integer);
     destructor Destroy; override;
@@ -48,6 +51,7 @@ type
     // 3) Методы для изменения и получения текущего цвета
     procedure SetColor(R, G, B: Byte);
     function GetColor: TRGB;
+    procedure SetTransparentColor(R, G, B: Byte);
 
     // 4) Методы для изменения и получения текущей позиции
     procedure MoveTo(X, Y: Integer);
@@ -62,7 +66,7 @@ type
     // 7) Метод рисования закрашенного прямоугольника
     procedure DrawFilledRect(Width, Height: Integer);
 
-    // 8) Метод рисования отрезка
+    // 8) Метод рисования отрезка (алгоритм Брезенхема)
     procedure DrawLineTo(X, Y: Integer);
 
     // 9) Метод закраски ограниченной области
@@ -70,10 +74,6 @@ type
 
     // 10) Метод накладывания стороннего холста
     procedure BlendCanvas(OtherCanvas: TXCanvas);
-
-    // 11) Методы загрузки и сохранения в других форматах
-    procedure SaveToFile(const FileName: string);
-    procedure LoadFromFile(const FileName: string);
 
     // Вспомогательные методы
     procedure Clear;
@@ -93,6 +93,9 @@ begin
   FCurrentColor.B := 0;
   FCurrentPos.X := 0;
   FCurrentPos.Y := 0;
+  FTransparentColor.R := 0;
+  FTransparentColor.G := 0;
+  FTransparentColor.B := 0;
 end;
 
 destructor TXCanvas.Destroy;
@@ -138,67 +141,182 @@ begin
     raise Exception.Create('Pixel coordinates out of bounds');
 end;
 
+function TXCanvas.SameColor(const C1, C2: TRGB): Boolean;
+begin
+  Result := (C1.R = C2.R) and (C1.G = C2.G) and (C1.B = C2.B);
+end;
+
+procedure TXCanvas.Swap(var A, B: Integer);
+var
+  Temp: Integer;
+begin
+  Temp := A;
+  A := B;
+  B := Temp;
+end;
+
 procedure TXCanvas.SaveToPPM(const FileName: string);
 var
-  PPMFile: TextFile;
+  F: TextFile;
   i, j: Integer;
+  Line: string;
+  BytesWritten: Integer;
+const
+  MaxLineLength = 70; // Максимальная длина строки в PPM P3
 begin
-  AssignFile(PPMFile, FileName);
+  AssignFile(F, FileName);
   try
-    Rewrite(PPMFile);
-    // Записываем заголовок PPM P3
-    WriteLn(PPMFile, 'P3');
-    WriteLn(PPMFile, FWidth, ' ', FHeight);
-    WriteLn(PPMFile, '255');
+    Rewrite(F);
 
-    // Записываем данные пикселей
+    // Записываем заголовок PPM
+    WriteLn(F, 'P3');
+    WriteLn(F, FWidth, ' ', FHeight);
+    WriteLn(F, '255');
+
+    // Записываем данные пикселей с ограничением длины строки
     for j := 0 to FHeight - 1 do
     begin
+      Line := '';
+      BytesWritten := 0;
+
       for i := 0 to FWidth - 1 do
       begin
-        Write(PPMFile, FCanvas[j, i].R, ' ', FCanvas[j, i].G, ' ', FCanvas[j, i].B, ' ');
+        // Добавляем компоненты цвета
+        if Line <> '' then
+        begin
+          Line := Line + ' ';
+          Inc(BytesWritten);
+        end;
+
+        // Добавляем красную компоненту
+        if BytesWritten + Length(IntToStr(FCanvas[j, i].R)) > MaxLineLength then
+        begin
+          WriteLn(F, Line);
+          Line := '';
+          BytesWritten := 0;
+        end;
+        Line := Line + IntToStr(FCanvas[j, i].R);
+        Inc(BytesWritten, Length(IntToStr(FCanvas[j, i].R)));
+
+        // Добавляем зеленую компоненту
+        if BytesWritten + 1 + Length(IntToStr(FCanvas[j, i].G)) > MaxLineLength then
+        begin
+          WriteLn(F, Line);
+          Line := '';
+          BytesWritten := 0;
+        end
+        else if Line <> '' then
+        begin
+          Line := Line + ' ';
+          Inc(BytesWritten);
+        end;
+        Line := Line + IntToStr(FCanvas[j, i].G);
+        Inc(BytesWritten, Length(IntToStr(FCanvas[j, i].G)));
+
+        // Добавляем синюю компоненту
+        if BytesWritten + 1 + Length(IntToStr(FCanvas[j, i].B)) > MaxLineLength then
+        begin
+          WriteLn(F, Line);
+          Line := '';
+          BytesWritten := 0;
+        end
+        else if Line <> '' then
+        begin
+          Line := Line + ' ';
+          Inc(BytesWritten);
+        end;
+        Line := Line + IntToStr(FCanvas[j, i].B);
+        Inc(BytesWritten, Length(IntToStr(FCanvas[j, i].B)));
       end;
-      WriteLn(PPMFile);
+
+      // Записываем оставшиеся данные строки
+      if Line <> '' then
+        WriteLn(F, Line);
     end;
   finally
-    CloseFile(PPMFile);
+    CloseFile(F);
   end;
 end;
 
 procedure TXCanvas.LoadFromPPM(const FileName: string);
 var
-  PPMFile: TextFile;
+  F: TextFile;
   MagicNumber: string;
-  MaxVal: Integer;
+  Width, Height, MaxVal: Integer;
   i, j: Integer;
   R, G, B: Integer;
+  Line: string;
+  Tokens: TStringList;
+  TokenIndex: Integer;
 begin
-  AssignFile(PPMFile, FileName);
+  AssignFile(F, FileName);
+  Tokens := TStringList.Create;
   try
-    Reset(PPMFile);
+    Tokens.Delimiter := ' ';
+    Tokens.StrictDelimiter := True;
+
+    Reset(F);
+
     // Читаем заголовок
-    ReadLn(PPMFile, MagicNumber);
+    ReadLn(F, MagicNumber);
     if MagicNumber <> 'P3' then
       raise Exception.Create('Only PPM P3 format is supported');
 
-    ReadLn(PPMFile, FWidth, FHeight);
-    ReadLn(PPMFile, MaxVal);
+    // Читаем размеры изображения
+    ReadLn(F, Line);
+    Tokens.DelimitedText := Line;
+    if Tokens.Count <> 2 then
+      raise Exception.Create('Invalid image dimensions');
+    Width := StrToInt(Tokens[0]);
+    Height := StrToInt(Tokens[1]);
 
-    SetSize(FWidth, FHeight);
+    // Читаем максимальное значение цвета
+    ReadLn(F, MaxVal);
+    if MaxVal <> 255 then
+      raise Exception.Create('Only 8-bit color depth is supported');
+
+    // Устанавливаем размер холста
+    SetSize(Width, Height);
+
+    TokenIndex := 0;
+    Tokens.Clear;
 
     // Читаем данные пикселей
-    for j := 0 to FHeight - 1 do
+    for j := 0 to Height - 1 do
     begin
-      for i := 0 to FWidth - 1 do
+      for i := 0 to Width - 1 do
       begin
-        Read(PPMFile, R, G, B);
+        // Если токены закончились, читаем следующую строку
+        if TokenIndex >= Tokens.Count then
+        begin
+          if Eof(F) then
+            raise Exception.Create('Unexpected end of file');
+          ReadLn(F, Line);
+          Tokens.DelimitedText := Line;
+          TokenIndex := 0;
+        end;
+
+        // Читаем компоненты цвета
+        if TokenIndex + 2 >= Tokens.Count then
+          raise Exception.Create('Invalid color data');
+
+        R := StrToInt(Tokens[TokenIndex]);
+        G := StrToInt(Tokens[TokenIndex+1]);
+        B := StrToInt(Tokens[TokenIndex+2]);
+        TokenIndex := TokenIndex + 3;
+
+        // Проверяем диапазон значений
+        if (R < 0) or (R > 255) or (G < 0) or (G > 255) or (B < 0) or (B > 255) then
+          raise Exception.Create('Invalid color value');
+
         FCanvas[j, i].R := Byte(R);
         FCanvas[j, i].G := Byte(G);
         FCanvas[j, i].B := Byte(B);
       end;
     end;
   finally
-    CloseFile(PPMFile);
+    CloseFile(F);
+    Tokens.Free;
   end;
 end;
 
@@ -216,7 +334,7 @@ begin
       OldCanvas[j, i] := FCanvas[j, i];
 
   // Устанавливаем новый размер
-  SetSize(NewWidth, FHeight);
+  SetSize(NewWidth, NewHeight);
 
   // Копируем данные из старого холста
   for j := 0 to Min(FHeight, NewHeight) - 1 do
@@ -241,6 +359,13 @@ begin
   FCurrentColor.R := R;
   FCurrentColor.G := G;
   FCurrentColor.B := B;
+end;
+
+procedure TXCanvas.SetTransparentColor(R, G, B: Byte);
+begin
+  FTransparentColor.R := R;
+  FTransparentColor.G := G;
+  FTransparentColor.B := B;
 end;
 
 function TXCanvas.GetColor: TRGB;
@@ -299,33 +424,41 @@ end;
 
 procedure TXCanvas.DrawLineTo(X, Y: Integer);
 var
-  dx, dy, step, i: Integer;
-  xInc, yInc, xCur, yCur: Double;
+  dx, dy, sx, sy, err, e2: Integer;
+  x0, y0, x1, y1: Integer;
 begin
-  dx := X - FCurrentPos.X;
-  dy := Y - FCurrentPos.Y;
+  // Алгоритм Брезенхема для рисования линии
+  x0 := FCurrentPos.X;
+  y0 := FCurrentPos.Y;
+  x1 := X;
+  y1 := Y;
 
-  if Abs(dx) > Abs(dy) then
-    step := Abs(dx)
-  else
-    step := Abs(dy);
+  dx := Abs(x1 - x0);
+  dy := Abs(y1 - y0);
 
-  if step = 0 then
+  if x0 < x1 then sx := 1 else sx := -1;
+  if y0 < y1 then sy := 1 else sy := -1;
+
+  err := dx - dy;
+
+  while True do
   begin
-    SetPixel(FCurrentPos.X, FCurrentPos.Y, FCurrentColor);
-    Exit;
-  end;
+    SetPixel(x0, y0, FCurrentColor);
 
-  xInc := dx / step;
-  yInc := dy / step;
-  xCur := FCurrentPos.X;
-  yCur := FCurrentPos.Y;
+    if (x0 = x1) and (y0 = y1) then Break;
 
-  for i := 0 to step do
-  begin
-    SetPixel(Round(xCur), Round(yCur), FCurrentColor);
-    xCur := xCur + xInc;
-    yCur := yCur + yInc;
+    e2 := 2 * err;
+    if e2 > -dy then
+    begin
+      err := err - dy;
+      x0 := x0 + sx;
+    end;
+
+    if e2 < dx then
+    begin
+      err := err + dx;
+      y0 := y0 + sy;
+    end;
   end;
 
   FCurrentPos.X := X;
@@ -337,22 +470,16 @@ var
   OldColor: TRGB;
 begin
   OldColor := GetPixel(FCurrentPos.X, FCurrentPos.Y);
-  if (OldColor.R = FCurrentColor.R) and
-     (OldColor.G = FCurrentColor.G) and
-     (OldColor.B = FCurrentColor.B) then
-    Exit;
+  if SameColor(OldColor, FCurrentColor) then Exit;
 
   FloodFillRecursive(FCurrentPos.X, FCurrentPos.Y, OldColor, FCurrentColor);
 end;
 
 procedure TXCanvas.FloodFillRecursive(X, Y: Integer; const OldColor, NewColor: TRGB);
 begin
-  if (X < 0) or (X >= FWidth) or (Y < 0) or (Y >= FHeight) then
-    Exit;
+  if (X < 0) or (X >= FWidth) or (Y < 0) or (Y >= FHeight) then Exit;
 
-  if (FCanvas[Y, X].R = OldColor.R) and
-     (FCanvas[Y, X].G = OldColor.G) and
-     (FCanvas[Y, X].B = OldColor.B) then
+  if SameColor(FCanvas[Y, X], OldColor) then
   begin
     FCanvas[Y, X] := NewColor;
     FloodFillRecursive(X + 1, Y, OldColor, NewColor);
@@ -372,108 +499,12 @@ begin
     for i := 0 to Min(FWidth, OtherCanvas.FWidth) - 1 do
     begin
       OtherColor := OtherCanvas.GetPixel(i, j);
-      // Если цвет не равен текущему (прозрачному), то накладываем его
-      if not ((OtherColor.R = FCurrentColor.R) and
-              (OtherColor.G = FCurrentColor.G) and
-              (OtherColor.B = FCurrentColor.B)) then
+      // Если цвет не равен прозрачному, то накладываем его
+      if not SameColor(OtherColor, FTransparentColor) then
       begin
         SetPixel(FCurrentPos.X + i, FCurrentPos.Y + j, OtherColor);
       end;
     end;
-  end;
-end;
-
-procedure TXCanvas.SaveToFile(const FileName: string);
-var
-  Image: TFPMemoryImage;
-  Writer: TFPCustomImageWriter;
-  Ext: string;
-  i, j: Integer;
-  Col: TFPColor;
-begin
-  Image := TFPMemoryImage.Create(FWidth, FHeight);
-  try
-    // Конвертируем наше изображение в формат TFPMemoryImage
-    for j := 0 to FHeight - 1 do
-    begin
-      for i := 0 to FWidth - 1 do
-      begin
-        Col.Red := FCanvas[j, i].R * 256;
-        Col.Green := FCanvas[j, i].G * 256;
-        Col.Blue := FCanvas[j, i].B * 256;
-        Col.Alpha := $FFFF;
-        Image.Colors[i, j] := Col;
-      end;
-    end;
-
-    // Определяем формат по расширению файла
-    Ext := LowerCase(ExtractFileExt(FileName));
-    if Ext = '.jpg' then
-      Writer := TFPWriterJPEG.Create
-    else if Ext = '.png' then
-      Writer := TFPWriterPNG.Create
-    else if Ext = '.pcx' then
-      Writer := TFPWriterPCX.Create
-    else if Ext = '.ppm' then
-      Writer := TFPWriterPPM.Create
-    else
-      raise Exception.Create('Unsupported file format');
-
-    try
-      Image.SaveToFile(FileName, Writer);
-    finally
-      Writer.Free;
-    end;
-  finally
-    Image.Free;
-  end;
-end;
-
-procedure TXCanvas.LoadFromFile(const FileName: string);
-var
-  Image: TFPMemoryImage;
-  Reader: TFPCustomImageReader;
-  Ext: string;
-  i, j: Integer;
-  Col: TFPColor;
-begin
-  Image := TFPMemoryImage.Create(0, 0);
-  try
-    // Определяем формат по расширению файла
-    Ext := LowerCase(ExtractFileExt(FileName));
-    if Ext = '.jpg' then
-      Reader := TFPReaderJPEG.Create
-    else if Ext = '.png' then
-      Reader := TFPReaderPNG.Create
-    else if Ext = '.pcx' then
-      Reader := TFPReaderPCX.Create
-    else if Ext = '.ppm' then
-      Reader := TFPReaderPPM.Create
-    else
-      raise Exception.Create('Unsupported file format');
-
-    try
-      Image.LoadFromFile(FileName, Reader);
-    finally
-      Reader.Free;
-    end;
-
-    // Устанавливаем размер холста
-    SetSize(Image.Width, Image.Height);
-
-    // Конвертируем изображение в наш формат
-    for j := 0 to FHeight - 1 do
-    begin
-      for i := 0 to FWidth - 1 do
-      begin
-        Col := Image.Colors[i, j];
-        FCanvas[j, i].R := Col.Red div 256;
-        FCanvas[j, i].G := Col.Green div 256;
-        FCanvas[j, i].B := Col.Blue div 256;
-      end;
-    end;
-  finally
-    Image.Free;
   end;
 end;
 
@@ -496,4 +527,3 @@ begin
 end;
 
 end.
-

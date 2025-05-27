@@ -5,7 +5,7 @@ unit XCanvas;
 interface
 
 uses
-  Classes, SysUtils, Graphics;
+  Classes, SysUtils;
 
 type
   // Тип для хранения цвета пикселя
@@ -34,11 +34,12 @@ type
     procedure SetPixel(X, Y: Integer; const Value: TRGB);
     procedure FloodFillRecursive(X, Y: Integer; const OldColor, NewColor: TRGB);
     function SameColor(const C1, C2: TRGB): Boolean;
+    procedure Swap(var A, B: Integer);
   public
     constructor Create(AWidth, AHeight: Integer);
     destructor Destroy; override;
 
-    // 1) Методы загрузки и сохранения PPM P3 (собственная реализация)
+    // 1) Методы загрузки и сохранения PPM P3
     procedure SaveToPPM(const FileName: string);
     procedure LoadFromPPM(const FileName: string);
 
@@ -103,6 +104,14 @@ begin
   inherited Destroy;
 end;
 
+function Min(A, B: Integer): Integer;
+begin
+  if A < B then
+    Result := A
+  else
+    Result := B;
+end;
+
 procedure TXCanvas.SetSize(AWidth, AHeight: Integer);
 var
   i, j: Integer;
@@ -145,12 +154,21 @@ begin
   Result := (C1.R = C2.R) and (C1.G = C2.G) and (C1.B = C2.B);
 end;
 
+procedure TXCanvas.Swap(var A, B: Integer);
+var
+  Temp: Integer;
+begin
+  Temp := A;
+  A := B;
+  B := Temp;
+end;
+
 procedure TXCanvas.SaveToPPM(const FileName: string);
 var
   F: TextFile;
   i, j: Integer;
   Line: string;
-  LineLength: Integer;
+  BytesWritten: Integer;
 const
   MaxLineLength = 70; // Максимальная длина строки в PPM P3
 begin
@@ -167,47 +185,56 @@ begin
     for j := 0 to FHeight - 1 do
     begin
       Line := '';
-      LineLength := 0;
+      BytesWritten := 0;
 
       for i := 0 to FWidth - 1 do
       begin
-        // Формируем строку с цветами пикселя
+        // Добавляем компоненты цвета
         if Line <> '' then
         begin
           Line := Line + ' ';
-          Inc(LineLength);
+          Inc(BytesWritten);
         end;
 
-        // Добавляем компоненты цвета
-        AddToken := IntToStr(FCanvas[j, i].R);
-        if LineLength + Length(AddToken) > MaxLineLength then
+        // Добавляем красную компоненту
+        if BytesWritten + Length(IntToStr(FCanvas[j, i].R)) > MaxLineLength then
         begin
           WriteLn(F, Line);
           Line := '';
-          LineLength := 0;
+          BytesWritten := 0;
         end;
-        Line := Line + AddToken;
-        Inc(LineLength, Length(AddToken));
+        Line := Line + IntToStr(FCanvas[j, i].R);
+        Inc(BytesWritten, Length(IntToStr(FCanvas[j, i].R)));
 
-        AddToken := ' ' + IntToStr(FCanvas[j, i].G);
-        if LineLength + Length(AddToken) > MaxLineLength then
+        // Добавляем зеленую компоненту
+        if BytesWritten + 1 + Length(IntToStr(FCanvas[j, i].G)) > MaxLineLength then
         begin
           WriteLn(F, Line);
           Line := '';
-          LineLength := 0;
+          BytesWritten := 0;
+        end
+        else if Line <> '' then
+        begin
+          Line := Line + ' ';
+          Inc(BytesWritten);
         end;
-        Line := Line + AddToken;
-        Inc(LineLength, Length(AddToken));
+        Line := Line + IntToStr(FCanvas[j, i].G);
+        Inc(BytesWritten, Length(IntToStr(FCanvas[j, i].G)));
 
-        AddToken := ' ' + IntToStr(FCanvas[j, i].B);
-        if LineLength + Length(AddToken) > MaxLineLength then
+        // Добавляем синюю компоненту
+        if BytesWritten + 1 + Length(IntToStr(FCanvas[j, i].B)) > MaxLineLength then
         begin
           WriteLn(F, Line);
           Line := '';
-          LineLength := 0;
+          BytesWritten := 0;
+        end
+        else if Line <> '' then
+        begin
+          Line := Line + ' ';
+          Inc(BytesWritten);
         end;
-        Line := Line + AddToken;
-        Inc(LineLength, Length(AddToken));
+        Line := Line + IntToStr(FCanvas[j, i].B);
+        Inc(BytesWritten, Length(IntToStr(FCanvas[j, i].B)));
       end;
 
       // Записываем оставшиеся данные строки
@@ -226,9 +253,16 @@ var
   Width, Height, MaxVal: Integer;
   i, j: Integer;
   R, G, B: Integer;
+  Line: string;
+  Tokens: TStringList;
+  TokenIndex: Integer;
 begin
   AssignFile(F, FileName);
+  Tokens := TStringList.Create;
   try
+    Tokens.Delimiter := ' ';
+    Tokens.StrictDelimiter := True;
+
     Reset(F);
 
     // Читаем заголовок
@@ -237,7 +271,12 @@ begin
       raise Exception.Create('Only PPM P3 format is supported');
 
     // Читаем размеры изображения
-    ReadLn(F, Width, Height);
+    ReadLn(F, Line);
+    Tokens.DelimitedText := Line;
+    if Tokens.Count <> 2 then
+      raise Exception.Create('Invalid image dimensions');
+    Width := StrToInt(Tokens[0]);
+    Height := StrToInt(Tokens[1]);
 
     // Читаем максимальное значение цвета
     ReadLn(F, MaxVal);
@@ -247,13 +286,32 @@ begin
     // Устанавливаем размер холста
     SetSize(Width, Height);
 
+    TokenIndex := 0;
+    Tokens.Clear;
+
     // Читаем данные пикселей
     for j := 0 to Height - 1 do
     begin
       for i := 0 to Width - 1 do
       begin
+        // Если токены закончились, читаем следующую строку
+        if TokenIndex >= Tokens.Count then
+        begin
+          if Eof(F) then
+            raise Exception.Create('Unexpected end of file');
+          ReadLn(F, Line);
+          Tokens.DelimitedText := Line;
+          TokenIndex := 0;
+        end;
+
         // Читаем компоненты цвета
-        Read(F, R, G, B);
+        if TokenIndex + 2 >= Tokens.Count then
+          raise Exception.Create('Invalid color data');
+
+        R := StrToInt(Tokens[TokenIndex]);
+        G := StrToInt(Tokens[TokenIndex+1]);
+        B := StrToInt(Tokens[TokenIndex+2]);
+        TokenIndex := TokenIndex + 3;
 
         // Проверяем диапазон значений
         if (R < 0) or (R > 255) or (G < 0) or (G > 255) or (B < 0) or (B > 255) then
@@ -266,6 +324,7 @@ begin
     end;
   finally
     CloseFile(F);
+    Tokens.Free;
   end;
 end;
 
@@ -476,4 +535,3 @@ begin
 end;
 
 end.
-
