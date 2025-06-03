@@ -59,7 +59,6 @@ void Fill(int x, int y)
 
 	while (true)
 	{
-
 		if (!IsCellEmpty(x, y))
 		{
 			SubDepth();
