@@ -71,32 +71,31 @@ void Fill(int x, int y)
 		return;
 	}
 
-	int xLeft = 0, xRight = MAX - 1;
+	FillCell(x, y);
 
-	for (int x1 = x; x1 < MAX; x1++)
+	// Заполнение вправо
+	int xRight = x;
+	while (IsCellEmpty(xRight + 1, y))
 	{
-		if (IsCellEmpty(y, x1))
-			FillCell(y, x1);
-		else if (!IsCellEmpty(y, x1))
-		{
-			xRight = x1 - 1;
-			break;
-		}
+		xRight++;
+		FillCell(xRight, y);
 	}
-	for (int x1 = x; x1 >= 0; x1--)
+
+	// Заполнение влево
+	int xLeft = x;
+	while (IsCellEmpty(xLeft - 1, y))
 	{
-		if (IsCellEmpty(y, x1))
-			FillCell(y, x1);
-		else if (!IsCellEmpty(y, x1))
-		{
-			xLeft = x1 + 1;
-			break;
-		}
+		xLeft--;
+		FillCell(xLeft, y);
 	}
+
+	// Рекурсия по вертикали в диапазоне [xLeft, xRight]
 	for (int x1 = xLeft; x1 <= xRight; x1++)
 	{
-		Fill(x1, y + 1);
-		Fill(x1, y - 1);
+		if (IsCellEmpty(x1, y + 1))
+			Fill(x1, y + 1); // вниз
+		if (IsCellEmpty(x1, y - 1))
+			Fill(x1, y - 1); // вверх
 	}
 
 	SubDepth();
