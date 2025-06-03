@@ -57,38 +57,23 @@ void Fill(int x, int y)
 {
 	AddDepth();
 
-	if (!IsCellEmpty(x, y))
+	while (true)
 	{
-		SubDepth();
-		return;
-	}
 
-	FillCell(x, y);
+		if (!IsCellEmpty(x, y))
+		{
+			SubDepth();
+			return;
+		}
 
-	// Обработка вертикальных направлений (рекурсия)
-	Fill(x, y + 1); // вниз
-	Fill(x, y - 1); // вверх
+		FillCell(x, y);
 
-	// Обработка горизонтальных направлений (циклы)
-	int currentX = x;
+		Fill(x + 1, y); // вправо
+		Fill(x - 1, y); // влево
+		Fill(x, y + 1); // вниз
+		y--;			// верх
 
-	// Заполнение вправо
-	while (IsCellEmpty(currentX + 1, y))
-	{
-		currentX++;
-		FillCell(currentX, y);
-		Fill(currentX, y + 1); // рекурсия вниз
-		Fill(currentX, y - 1); // рекурсия вверх
-	}
-
-	// Заполнение влево
-	currentX = x;
-	while (IsCellEmpty(currentX - 1, y))
-	{
-		currentX--;
-		FillCell(currentX, y);
-		Fill(currentX, y + 1); // рекурсия вниз
-		Fill(currentX, y - 1); // рекурсия вверх
+		continue;
 	}
 
 	SubDepth();

@@ -8,6 +8,14 @@
 3) с сокращением 2-х рекурсивных вызовов.
 */
 
+/*
+
+1 - исходная (верно)
+2 - заполнение вправо циклом
+3 - рекурсия по Y, циклы по X
+
+*/
+
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -53,83 +61,45 @@ bool IsCellEmpty(int x, int y)
 	return true;
 }
 
-typedef struct
+void Fill(int x, int y)
 {
-	int x;
-	int y;
-} Point;
+	AddDepth();
 
-Point stack[MAX * MAX];
-int stackTop = -1;
-
-void Push(int x, int y)
-{
-	stackTop++;
-	stack[stackTop].x = x;
-	stack[stackTop].y = y;
-}
-
-Point Pop()
-{
-	return stack[stackTop--];
-}
-
-bool StackIsEmpty()
-{
-	return stackTop == -1;
-}
-
-void Fill(int startX, int startY)
-{
-	Push(startX, startY);
-
-	while (!StackIsEmpty())
+	if (!IsCellEmpty(x, y))
 	{
-		AddDepth();
-		Point p = Pop();
-		int x = p.x;
-		int y = p.y;
-
-		if (!IsCellEmpty(x, y))
-		{
-			SubDepth();
-			continue;
-		}
-
-		FillCell(x, y);
-
-		// Горизонтальное заполнение (цикл вправо)
-		int right = x + 1;
-		while (right <= MAX && IsCellEmpty(right, y))
-		{
-			FillCell(right, y);
-			if (IsCellEmpty(right, y + 1))
-				Push(right, y + 1);
-			if (IsCellEmpty(right, y - 1))
-				Push(right, y - 1);
-			right++;
-		}
-
-		// Горизонтальное заполнение (цикл влево)
-		int left = x - 1;
-		while (left >= MIN && IsCellEmpty(left, y))
-		{
-			FillCell(left, y);
-			if (IsCellEmpty(left, y + 1))
-				Push(left, y + 1);
-			if (IsCellEmpty(left, y - 1))
-				Push(left, y - 1);
-			left--;
-		}
-
-		// Вертикальные направления (добавляем в стек)
-		if (IsCellEmpty(x, y + 1))
-			Push(x, y + 1);
-		if (IsCellEmpty(x, y - 1))
-			Push(x, y - 1);
-
 		SubDepth();
+		return;
 	}
+
+	int xLeft = 0, xRight = MAX - 1;
+
+	for (int x1 = x; x1 < MAX; x1++)
+	{
+		if (IsCellEmpty(y, x1))
+			FillCell(y, x1);
+		else if (!IsCellEmpty(y, x1))
+		{
+			xRight = x1 - 1;
+			break;
+		}
+	}
+	for (int x1 = x; x1 >= 0; x1--)
+	{
+		if (IsCellEmpty(y, x1))
+			FillCell(y, x1);
+		else if (!IsCellEmpty(y, x1))
+		{
+			xLeft = x1 + 1;
+			break;
+		}
+	}
+	for (int x1 = xLeft; x1 <= xRight; x1++)
+	{
+		Fill(x1, y + 1);
+		Fill(x1, y - 1);
+	}
+
+	SubDepth();
 }
 
 void PrintArray()
