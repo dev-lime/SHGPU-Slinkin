@@ -112,14 +112,14 @@ int bin_find_all(const int src[], int src_size, int (*func)(int),
 	return end - start + 1;
 }
 
-int test_equal(int target, int value)
+int test_equal(int value)
 {
-	return (value == target) ? 0 : (value < target ? -1 : 1);
+	return (value == 50) ? 0 : (value < 50 ? -1 : 1);
 }
 
-int test_greater(int value)
+int test_equal_for_linear(int value)
 {
-	return (value > 50) ? 1 : 0;
+	return (value == 50) ? 1 : 0;
 }
 
 int main()
@@ -127,13 +127,13 @@ int main()
 	int arr[] = {10, 20, 30, 40, 50, 50, 50, 60, 70, 80, 90, 100};
 	int size = sizeof(arr) / sizeof(arr[0]);
 
-	printf("Linear search for first element > 50:\n");
-	int index = line_find_one(arr, size, test_greater);
+	printf("Linear search for first element equal to 50:\n");
+	int index = line_find_one(arr, size, test_equal_for_linear);
 	printf("Found at index: %d, iterations: %d\n", index, find_count);
 
-	printf("\nLinear search for all elements > 50:\n");
+	printf("\nLinear search for all elements equal to 50:\n");
 	int results[10];
-	int count = line_find_all(arr, size, test_greater, results, 10);
+	int count = line_find_all(arr, size, test_equal_for_linear, results, 10);
 	printf("Found %d elements: ", count);
 	for (int i = 0; i < count; i++)
 	{
@@ -142,13 +142,12 @@ int main()
 	printf(", iterations: %d\n", find_count);
 
 	printf("\nBinary search for 50:\n");
-	int (*test_equal_50)(int) = &test_equal;
-	index = bin_find_one(arr, size, test_equal_50);
+	index = bin_find_one(arr, size, test_equal);
 	printf("Found at index: %d, iterations: %d\n", index, find_count);
 
 	printf("\nBinary search for all 50s:\n");
 	int beg, end;
-	count = bin_find_all(arr, size, test_equal_50, &beg, &end);
+	count = bin_find_all(arr, size, test_equal, &beg, &end);
 	printf("Found %d elements from index %d to %d, iterations: %d\n",
 		   count, beg, end, find_count);
 
