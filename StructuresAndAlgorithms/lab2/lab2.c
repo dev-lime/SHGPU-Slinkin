@@ -127,28 +127,28 @@ int main()
 	int arr[] = {10, 20, 30, 40, 50, 50, 50, 60, 70, 80, 90, 100};
 	int size = sizeof(arr) / sizeof(arr[0]);
 
-	printf("Linear search for first element equal to 50:\n");
+	printf("Линейный поиск одного элемента\n");
 	int index = line_find_one(arr, size, test_equal_for_linear);
-	printf("Found at index: %d, iterations: %d\n", index, find_count);
+	printf("Индекс: %d\nИтераций: %d\n", index, find_count);
 
-	printf("\nLinear search for all elements equal to 50:\n");
+	printf("\nЛинейный поиск всех элементов\n");
 	int results[10];
 	int count = line_find_all(arr, size, test_equal_for_linear, results, 10);
-	printf("Found %d elements: ", count);
+	printf("Найдено %d элементов: ", count);
 	for (int i = 0; i < count; i++)
 	{
-		printf("%d ", results[i]);
+		printf("[%d] ", results[i]);
 	}
-	printf(", iterations: %d\n", find_count);
+	printf("\nИтераций: %d\n", find_count);
 
-	printf("\nBinary search for 50:\n");
+	printf("\nБинарный поиск одного элемента\n");
 	index = bin_find_one(arr, size, test_equal);
-	printf("Found at index: %d, iterations: %d\n", index, find_count);
+	printf("Индекс: %d\nИтераций: %d\n", index, find_count);
 
-	printf("\nBinary search for all 50s:\n");
+	printf("\nБинарный поиск всех элементов\n");
 	int beg, end;
 	count = bin_find_all(arr, size, test_equal, &beg, &end);
-	printf("Found %d elements from index %d to %d, iterations: %d\n",
+	printf("Найдено %d элементов от [%d] до [%d]\nИтераций: %d\n",
 		   count, beg, end, find_count);
 
 	return 0;
