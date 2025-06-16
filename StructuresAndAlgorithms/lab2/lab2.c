@@ -71,45 +71,21 @@ int bin_find_all(const int src[], int src_size, int (*func)(int),
 		return 0;
 	}
 
-	int left = 0;
-	int right = pos;
-	int start = pos;
-	while (left <= right)
+	*res_beg = pos;
+	while (*res_beg > 0 && func(src[*res_beg - 1]) == 0)
 	{
 		find_count++;
-		int mid = left + (right - left) / 2;
-		if (func(src[mid]) == 0)
-		{
-			start = mid;
-			right = mid - 1;
-		}
-		else
-		{
-			left = mid + 1;
-		}
+		(*res_beg)--;
 	}
 
-	left = pos;
-	right = src_size - 1;
-	int end = pos;
-	while (left <= right)
+	*res_end = pos;
+	while (*res_end < src_size - 1 && func(src[*res_end + 1]) == 0)
 	{
 		find_count++;
-		int mid = left + (right - left) / 2;
-		if (func(src[mid]) == 0)
-		{
-			end = mid;
-			left = mid + 1;
-		}
-		else
-		{
-			right = mid - 1;
-		}
+		(*res_end)++;
 	}
 
-	*res_beg = start;
-	*res_end = end;
-	return end - start + 1;
+	return *res_end - *res_beg + 1;
 }
 
 int test_equal(int value)
