@@ -50,11 +50,11 @@ int bin_find_one(const int src[], int src_size, int (*func)(int))
 		}
 		else if (test_result < 0)
 		{
-			right = mid - 1;
+			left = mid + 1;
 		}
 		else
 		{
-			left = mid + 1;
+			right = mid - 1;
 		}
 	}
 	return -1;
