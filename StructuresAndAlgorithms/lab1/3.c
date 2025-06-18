@@ -26,130 +26,96 @@ hrec строит H-фрактал, а pbm переводит его в граф
 #include <stdlib.h>
 #include <math.h>
 
-int fieldWidth, fieldHeight;
-unsigned char (*drawingField)[fieldWidth];
-
-int CharToDigit(unsigned char c)
-{
-	return c - '0';
-}
-
-void PrintDrawingField()
-{
-	for (int row = 0; row < fieldHeight; row++)
-	{
-		for (int col = 0; col < fieldWidth; col++)
-		{
-			printf("%c", drawingField[row][col]);
-		}
-		printf("\n");
-	}
-}
-
-void DrawHFractal(int centerX, int centerY, int segmentLength, int currentDepth, int maxRecursionDepth)
-{
-	if (currentDepth >= maxRecursionDepth)
-	{
-		return;
-	}
-
-	// Horizontal line
-	for (int x = centerX; x <= centerX + round(segmentLength / 2); x++)
-	{
-		if (x >= 0 && x < fieldWidth)
-		{
-			drawingField[centerY][x] = '*';
-		}
-	}
-	for (int x = centerX; x >= centerX - round(segmentLength / 2); x--)
-	{
-		if (x >= 0 && x < fieldWidth)
-		{
-			drawingField[centerY][x] = '*';
-		}
-	}
-
-	int rightVerticalX = centerX + round(segmentLength / 2);
-	int leftVerticalX = centerX - round(segmentLength / 2);
-	int newSegmentLength = round(segmentLength / sqrt(2));
-
-	// Right vertical line
-	for (int y = centerY; y <= centerY + round(newSegmentLength / 2); y++)
-	{
-		if (y >= 0 && y < fieldHeight && rightVerticalX >= 0 && rightVerticalX < fieldWidth)
-		{
-			drawingField[y][rightVerticalX] = '*';
-		}
-	}
-	for (int y = centerY; y >= centerY - round(newSegmentLength / 2); y--)
-	{
-		if (y >= 0 && y < fieldHeight && rightVerticalX >= 0 && rightVerticalX < fieldWidth)
-		{
-			drawingField[y][rightVerticalX] = '*';
-		}
-	}
-
-	// Left vertical line
-	for (int y = centerY; y <= centerY + round(newSegmentLength / 2); y++)
-	{
-		if (y >= 0 && y < fieldHeight && leftVerticalX >= 0 && leftVerticalX < fieldWidth)
-		{
-			drawingField[y][leftVerticalX] = '*';
-		}
-	}
-	for (int y = centerY; y >= centerY - round(newSegmentLength / 2); y--)
-	{
-		if (y >= 0 && y < fieldHeight && leftVerticalX >= 0 && leftVerticalX < fieldWidth)
-		{
-			drawingField[y][leftVerticalX] = '*';
-		}
-	}
-
-	DrawHFractal(centerX + round(segmentLength / 2), centerY + round(newSegmentLength / 2),
-				 round(newSegmentLength / sqrt(2)), currentDepth + 1, maxRecursionDepth);
-	DrawHFractal(centerX - round(segmentLength / 2), centerY - round(newSegmentLength / 2),
-				 round(newSegmentLength / sqrt(2)), currentDepth + 1, maxRecursionDepth);
-	DrawHFractal(centerX - round(segmentLength / 2), centerY + round(newSegmentLength / 2),
-				 round(newSegmentLength / sqrt(2)), currentDepth + 1, maxRecursionDepth);
-	DrawHFractal(centerX + round(segmentLength / 2), centerY - round(newSegmentLength / 2),
-				 round(newSegmentLength / sqrt(2)), currentDepth + 1, maxRecursionDepth);
-}
-
 int main(int argc, char **argv)
 {
-	if (argc != 5)
-	{
-		printf("Usage: ./h_fractal field_width field_height initial_segment_length max_recursion_depth\n");
-		return 1;
-	}
+	int x = 0, y = 0, len = 0, iter = 0, maxN[4];
 
-	fieldWidth = atoi(argv[1]);
-	fieldHeight = atoi(argv[2]);
-	int initialSegmentLength = atoi(argv[3]);
-	int maxRecursionDepth = atoi(argv[4]);
-
-	drawingField = malloc(fieldHeight * sizeof(*drawingField));
-	for (int i = 0; i < fieldHeight; i++)
+	int StrToInt(unsigned char c)
 	{
-		drawingField[i] = malloc(fieldWidth * sizeof(**drawingField));
-	}
+		return c - 48;
+	};
 
-	for (int row = 0; row < fieldHeight; row++)
+	if (argc > 4)
 	{
-		for (int col = 0; col < fieldWidth; col++)
+		for (int j = 1; j <= 4; j++)
 		{
-			drawingField[row][col] = ' ';
+			for (int i = 0; i <= pow(10, 10); i++)
+			{
+				if (argv[j][i] == 0)
+				{
+					maxN[j - 1] = i;
+					break;
+				}
+			}
+		}
+
+		for (int i = 0; i < maxN[0]; i++)
+			x += pow(10, maxN[0] - 1 - i) * StrToInt(argv[1][i]);
+		for (int i = 0; i < maxN[1]; i++)
+			y += pow(10, maxN[1] - 1 - i) * StrToInt(argv[2][i]);
+		for (int i = 0; i < maxN[2]; i++)
+			len += pow(10, maxN[2] - 1 - i) * StrToInt(argv[3][i]);
+		for (int i = 0; i < maxN[3]; i++)
+			iter += pow(10, maxN[3] - 1 - i) * StrToInt(argv[4][i]);
+	}
+	else
+	{
+		printf("error\n");
+		printf("./C2_1_3_herc x y len iter\n");
+		return 0;
+	}
+
+	unsigned char array[y][x];
+
+	for (int y1 = 0; y1 <= y - 1; y1++)
+		for (int x1 = 0; x1 <= x - 1; x1++)
+			array[y1][x1] = ' ';
+
+	void outArray()
+	{
+		// printf("P1\n%d %d\n",x,y);
+		for (int y1 = 0; y1 <= y - 1; y1++)
+		{
+			for (int x1 = 0; x1 <= x - 1; x1++)
+				printf("%c", array[y1][x1]);
+			printf("\n");
+		}
+	};
+
+	void fill(int x0, int y0, int len0, int iter0)
+	{
+		if (iter0 >= iter)
+		{
+			return;
+		}
+		else
+		{
+			for (int x1 = x0; x1 <= x0 + round(len0 / 2); x1++)
+				array[y0][x1] = '*';
+			for (int x1 = x0; x1 >= x0 - round(len0 / 2); x1--)
+				array[y0][x1] = '*';
+
+			int x2 = x0 + round(len0 / 2), x3 = x0 - round(len0 / 2);
+			int len1 = round(len0 / sqrt(2));
+
+			for (int y1 = y0; y1 <= y0 + round(len1 / 2); y1++)
+				array[y1][x2] = '*';
+			for (int y1 = y0; y1 >= y0 - round(len1 / 2); y1--)
+				array[y1][x2] = '*';
+
+			for (int y1 = y0; y1 <= y0 + round(len1 / 2); y1++)
+				array[y1][x3] = '*';
+			for (int y1 = y0; y1 >= y0 - round(len1 / 2); y1--)
+				array[y1][x3] = '*';
+
+			fill(x0 + round(len0 / 2), y0 + round(len1 / 2), round(len1 / sqrt(2)), iter0 + 1);
+			fill(x0 - round(len0 / 2), y0 - round(len1 / 2), round(len1 / sqrt(2)), iter0 + 1);
+			fill(x0 - round(len0 / 2), y0 + round(len1 / 2), round(len1 / sqrt(2)), iter0 + 1);
+			fill(x0 + round(len0 / 2), y0 - round(len1 / 2), round(len1 / sqrt(2)), iter0 + 1);
 		}
 	}
 
-	DrawHFractal(fieldWidth / 2, fieldHeight / 2, initialSegmentLength, 0, maxRecursionDepth);
-	PrintDrawingField();
-
-	for (int i = 0; i < fieldHeight; i++)
-	{
-		free(drawingField[i]);
-	}
-	free(drawingField);
-
+	fill(x / 2, y / 2, len, 0);
+	outArray();
 	return 0;
 }
