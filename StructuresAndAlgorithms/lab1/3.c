@@ -26,110 +26,96 @@ hrec строит H-фрактал, а pbm переводит его в граф
 #include <stdlib.h>
 #include <math.h>
 
-unsigned char **array;
-int width, height;
-
-int stringToNumber(char *str)
-{
-	int result = 0;
-	for (int i = 0; str[i] != '\0'; i++)
-	{
-		result = result * 10 + (str[i] - '0');
-	}
-	return result;
-}
-
-// Рекурсивная функция построения H-фрактала
-void buildH(int x0, int y0, int len, int iteration, int maxIterations)
-{
-	if (iteration >= maxIterations)
-		return;
-
-	// Рисует горизонтальную линию
-	int halfLen = len / 2;
-	for (int x = x0 - halfLen; x <= x0 + halfLen; x++)
-	{
-		if (x >= 0 && x < width)
-		{
-			array[y0][x] = '*';
-		}
-	}
-
-	// Вычисляет длину вертикальных линий
-	int verticalLen = len / sqrt(2);
-
-	// Рисует вертикальные линии
-	int halfVert = verticalLen / 2;
-	for (int y = y0 - halfVert; y <= y0 + halfVert; y++)
-	{
-		if (y >= 0 && y < height)
-		{
-			// Правая вертикаль
-			if (x0 + halfLen >= 0 && x0 + halfLen < width)
-			{
-				array[y][x0 + halfLen] = '*';
-			}
-			// Левая вертикаль
-			if (x0 - halfLen >= 0 && x0 - halfLen < width)
-			{
-				array[y][x0 - halfLen] = '*';
-			}
-		}
-	}
-
-	// Рекурсия
-	int newLen = verticalLen / sqrt(2);
-	buildH(x0 + halfLen, y0 + halfVert, newLen, iteration + 1, maxIterations); // Верхний правый
-	buildH(x0 - halfLen, y0 - halfVert, newLen, iteration + 1, maxIterations); // Нижний левый
-	buildH(x0 - halfLen, y0 + halfVert, newLen, iteration + 1, maxIterations); // Верхний левый
-	buildH(x0 + halfLen, y0 - halfVert, newLen, iteration + 1, maxIterations); // Нижний правый
-}
-
 int main(int argc, char **argv)
 {
-	// Проверка
-	if (argc != 5)
+	int x = 0, y = 0, len = 0, iter = 0, maxN[4];
+
+	int StrToInt(unsigned char c)
 	{
-		printf("Ошибка: неверное количество аргументов\n");
-		printf("Использование: %s width height initial_length max_iterations\n", argv[0]);
-		return 1;
+		return c - 48;
+	};
+
+	if (argc > 4)
+	{
+		for (int j = 1; j <= 4; j++)
+		{
+			for (int i = 0; i <= pow(10, 10); i++)
+			{
+				if (argv[j][i] == 0)
+				{
+					maxN[j - 1] = i;
+					break;
+				}
+			}
+		}
+
+		for (int i = 0; i < maxN[0]; i++)
+			x += pow(10, maxN[0] - 1 - i) * StrToInt(argv[1][i]);
+		for (int i = 0; i < maxN[1]; i++)
+			y += pow(10, maxN[1] - 1 - i) * StrToInt(argv[2][i]);
+		for (int i = 0; i < maxN[2]; i++)
+			len += pow(10, maxN[2] - 1 - i) * StrToInt(argv[3][i]);
+		for (int i = 0; i < maxN[3]; i++)
+			iter += pow(10, maxN[3] - 1 - i) * StrToInt(argv[4][i]);
+	}
+	else
+	{
+		printf("error\n");
+		printf("./C2_1_3_herc x y len iter\n");
+		return 0;
 	}
 
-	// Аргументы
-	width = stringToNumber(argv[1]);
-	height = stringToNumber(argv[2]);
-	int initialLength = stringToNumber(argv[3]);
-	int maxIterations = stringToNumber(argv[4]);
+	unsigned char array[y][x];
 
-	// Создание массива
-	array = (unsigned char **)malloc(height * sizeof(unsigned char *));
-	for (int y = 0; y < height; y++)
+	for (int y1 = 0; y1 <= y - 1; y1++)
+		for (int x1 = 0; x1 <= x - 1; x1++)
+			array[y1][x1] = ' ';
+
+	void outArray()
 	{
-		array[y] = (unsigned char *)malloc(width * sizeof(unsigned char));
-		for (int x = 0; x < width; x++)
+		// printf("P1\n%d %d\n",x,y);
+		for (int y1 = 0; y1 <= y - 1; y1++)
 		{
-			array[y][x] = ' ';
+			for (int x1 = 0; x1 <= x - 1; x1++)
+				printf("%c", array[y1][x1]);
+			printf("\n");
+		}
+	};
+
+	void fill(int x0, int y0, int len0, int iter0)
+	{
+		if (iter0 >= iter)
+		{
+			return;
+		}
+		else
+		{
+			for (int x1 = x0; x1 <= x0 + round(len0 / 2); x1++)
+				array[y0][x1] = '*';
+			for (int x1 = x0; x1 >= x0 - round(len0 / 2); x1--)
+				array[y0][x1] = '*';
+
+			int x2 = x0 + round(len0 / 2), x3 = x0 - round(len0 / 2);
+			int len1 = round(len0 / sqrt(2));
+
+			for (int y1 = y0; y1 <= y0 + round(len1 / 2); y1++)
+				array[y1][x2] = '*';
+			for (int y1 = y0; y1 >= y0 - round(len1 / 2); y1--)
+				array[y1][x2] = '*';
+
+			for (int y1 = y0; y1 <= y0 + round(len1 / 2); y1++)
+				array[y1][x3] = '*';
+			for (int y1 = y0; y1 >= y0 - round(len1 / 2); y1--)
+				array[y1][x3] = '*';
+
+			fill(x0 + round(len0 / 2), y0 + round(len1 / 2), round(len1 / sqrt(2)), iter0 + 1);
+			fill(x0 - round(len0 / 2), y0 - round(len1 / 2), round(len1 / sqrt(2)), iter0 + 1);
+			fill(x0 - round(len0 / 2), y0 + round(len1 / 2), round(len1 / sqrt(2)), iter0 + 1);
+			fill(x0 + round(len0 / 2), y0 - round(len1 / 2), round(len1 / sqrt(2)), iter0 + 1);
 		}
 	}
 
-	// Запуск построения фрактала из центра
-	buildH(width / 2, height / 2, initialLength, 0, maxIterations);
-
-	// Вывод
-	for (int y = 0; y < height; y++)
-	{
-		for (int x = 0; x < width; x++)
-		{
-			printf("%c", array[y][x]);
-		}
-		printf("\n");
-	}
-
-	for (int y = 0; y < height; y++)
-	{
-		free(array[y]);
-	}
-	free(array);
-
+	fill(x / 2, y / 2, len, 0);
+	outArray();
 	return 0;
 }
