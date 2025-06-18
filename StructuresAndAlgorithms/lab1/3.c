@@ -26,96 +26,93 @@ hrec строит H-фрактал, а pbm переводит его в граф
 #include <stdlib.h>
 #include <math.h>
 
+#define EMPTY_CELL ' '
+#define FILLED_CELL '*'
+
+void initializeArray(unsigned char **array, int height, int width)
+{
+	for (int y = 0; y < height; y++)
+	{
+		for (int x = 0; x < width; x++)
+		{
+			array[y][x] = EMPTY_CELL;
+		}
+	}
+}
+
+void printArray(unsigned char **array, int height, int width)
+{
+	for (int y = 0; y < height; y++)
+	{
+		for (int x = 0; x < width; x++)
+		{
+			printf("%c", array[y][x]);
+		}
+		printf("\n");
+	}
+}
+
+void drawH(unsigned char **array, int centerX, int centerY, int length, int currentDepth, int maxDepth)
+{
+	if (currentDepth >= maxDepth)
+	{
+		return;
+	}
+
+	// Draw horizontal line
+	int halfLength = length / 2;
+	for (int x = centerX - halfLength; x <= centerX + halfLength; x++)
+	{
+		array[centerY][x] = FILLED_CELL;
+	}
+
+	// Draw vertical lines
+	int newLength = length / sqrt(2);
+	int newHalfLength = newLength / 2;
+
+	for (int y = centerY - newHalfLength; y <= centerY + newHalfLength; y++)
+	{
+		array[y][centerX + halfLength] = FILLED_CELL; // Right vertical
+		array[y][centerX - halfLength] = FILLED_CELL; // Left vertical
+	}
+
+	// Recursively draw smaller H's at four corners
+	drawH(array, centerX + halfLength, centerY + newHalfLength, newLength, currentDepth + 1, maxDepth);
+	drawH(array, centerX - halfLength, centerY - newHalfLength, newLength, currentDepth + 1, maxDepth);
+	drawH(array, centerX - halfLength, centerY + newHalfLength, newLength, currentDepth + 1, maxDepth);
+	drawH(array, centerX + halfLength, centerY - newHalfLength, newLength, currentDepth + 1, maxDepth);
+}
+
 int main(int argc, char **argv)
 {
-	int x = 0, y = 0, len = 0, iter = 0, maxN[4];
-
-	int StrToInt(unsigned char c)
+	if (argc != 5)
 	{
-		return c - 48;
-	};
-
-	if (argc > 4)
-	{
-		for (int j = 1; j <= 4; j++)
-		{
-			for (int i = 0; i <= pow(10, 10); i++)
-			{
-				if (argv[j][i] == 0)
-				{
-					maxN[j - 1] = i;
-					break;
-				}
-			}
-		}
-
-		for (int i = 0; i < maxN[0]; i++)
-			x += pow(10, maxN[0] - 1 - i) * StrToInt(argv[1][i]);
-		for (int i = 0; i < maxN[1]; i++)
-			y += pow(10, maxN[1] - 1 - i) * StrToInt(argv[2][i]);
-		for (int i = 0; i < maxN[2]; i++)
-			len += pow(10, maxN[2] - 1 - i) * StrToInt(argv[3][i]);
-		for (int i = 0; i < maxN[3]; i++)
-			iter += pow(10, maxN[3] - 1 - i) * StrToInt(argv[4][i]);
-	}
-	else
-	{
-		printf("error\n");
-		printf("./C2_1_3_herc x y len iter\n");
-		return 0;
+		printf("Usage: %s width height length max_depth\n", argv[0]);
+		return 1;
 	}
 
-	unsigned char array[y][x];
+	int width = atoi(argv[1]);
+	int height = atoi(argv[2]);
+	int initialLength = atoi(argv[3]);
+	int maxDepth = atoi(argv[4]);
 
-	for (int y1 = 0; y1 <= y - 1; y1++)
-		for (int x1 = 0; x1 <= x - 1; x1++)
-			array[y1][x1] = ' ';
-
-	void outArray()
+	// Allocate 2D array
+	unsigned char **array = malloc(height * sizeof(unsigned char *));
+	for (int y = 0; y < height; y++)
 	{
-		// printf("P1\n%d %d\n",x,y);
-		for (int y1 = 0; y1 <= y - 1; y1++)
-		{
-			for (int x1 = 0; x1 <= x - 1; x1++)
-				printf("%c", array[y1][x1]);
-			printf("\n");
-		}
-	};
-
-	void fill(int x0, int y0, int len0, int iter0)
-	{
-		if (iter0 >= iter)
-		{
-			return;
-		}
-		else
-		{
-			for (int x1 = x0; x1 <= x0 + round(len0 / 2); x1++)
-				array[y0][x1] = '*';
-			for (int x1 = x0; x1 >= x0 - round(len0 / 2); x1--)
-				array[y0][x1] = '*';
-
-			int x2 = x0 + round(len0 / 2), x3 = x0 - round(len0 / 2);
-			int len1 = round(len0 / sqrt(2));
-
-			for (int y1 = y0; y1 <= y0 + round(len1 / 2); y1++)
-				array[y1][x2] = '*';
-			for (int y1 = y0; y1 >= y0 - round(len1 / 2); y1--)
-				array[y1][x2] = '*';
-
-			for (int y1 = y0; y1 <= y0 + round(len1 / 2); y1++)
-				array[y1][x3] = '*';
-			for (int y1 = y0; y1 >= y0 - round(len1 / 2); y1--)
-				array[y1][x3] = '*';
-
-			fill(x0 + round(len0 / 2), y0 + round(len1 / 2), round(len1 / sqrt(2)), iter0 + 1);
-			fill(x0 - round(len0 / 2), y0 - round(len1 / 2), round(len1 / sqrt(2)), iter0 + 1);
-			fill(x0 - round(len0 / 2), y0 + round(len1 / 2), round(len1 / sqrt(2)), iter0 + 1);
-			fill(x0 + round(len0 / 2), y0 - round(len1 / 2), round(len1 / sqrt(2)), iter0 + 1);
-		}
+		array[y] = malloc(width * sizeof(unsigned char));
 	}
 
-	fill(x / 2, y / 2, len, 0);
-	outArray();
+	initializeArray(array, height, width);
+	drawH(array, width / 2, height / 2, initialLength, 0, maxDepth);
+	printArray(array, height, width);
+
+	// Free allocated memory
+	for (int y = 0; y < height; y++)
+	{
+		free(array[y]);
+	}
+	free(array);
+
 	return 0;
 }
