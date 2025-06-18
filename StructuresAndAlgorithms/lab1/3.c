@@ -26,84 +26,68 @@ hrec строит H-фрактал, а pbm переводит его в граф
 #include <stdlib.h>
 #include <math.h>
 
-int charToDigit(char c)
-{
-	return c - '0';
-}
+unsigned char **array;
+int width, height;
 
-int stringToInt(char *str, int length)
+int stringToNumber(char *str)
 {
 	int result = 0;
-	for (int i = 0; i < length; i++)
+	for (int i = 0; str[i] != '\0'; i++)
 	{
-		result = result * 10 + charToDigit(str[i]);
+		result = result * 10 + (str[i] - '0');
 	}
 	return result;
 }
 
-void printArray(unsigned char **array, int width, int height)
+// Рекурсивная функция построения H-фрактала
+void buildH(int x0, int y0, int len, int iteration, int maxIterations)
 {
-	for (int y = 0; y < height; y++)
-	{
-		for (int x = 0; x < width; x++)
-		{
-			printf("%c", array[y][x]);
-		}
-		printf("\n");
-	}
-}
-
-void buildHFractal(unsigned char **array, int centerX, int centerY,
-				   int length, int currentIter, int maxIter)
-{
-	if (currentIter >= maxIter)
-	{
+	if (iteration >= maxIterations)
 		return;
-	}
 
-	// Рисует горизонтальную линию H
-	int halfLength = round(length / 2.0);
-	for (int x = centerX - halfLength; x <= centerX + halfLength; x++)
+	// Рисует горизонтальную линию
+	int halfLen = len / 2;
+	for (int x = x0 - halfLen; x <= x0 + halfLen; x++)
 	{
-		if (x >= 0 && x < length * 2)
-		{ // Проверка границ
-			array[centerY][x] = '*';
+		if (x >= 0 && x < width)
+		{
+			array[y0][x] = '*';
 		}
 	}
 
 	// Вычисляет длину вертикальных линий
-	int verticalLength = round(length / sqrt(2));
+	int verticalLen = len / sqrt(2);
 
-	// Рисует правую вертикальную линию H
-	int rightX = centerX + halfLength;
-	for (int y = centerY - verticalLength / 2; y <= centerY + verticalLength / 2; y++)
+	// Рисует вертикальные линии
+	int halfVert = verticalLen / 2;
+	for (int y = y0 - halfVert; y <= y0 + halfVert; y++)
 	{
-		if (y >= 0 && y < length * 2)
-		{ // Проверка границ
-			array[y][rightX] = '*';
+		if (y >= 0 && y < height)
+		{
+			// Правая вертикаль
+			if (x0 + halfLen >= 0 && x0 + halfLen < width)
+			{
+				array[y][x0 + halfLen] = '*';
+			}
+			// Левая вертикаль
+			if (x0 - halfLen >= 0 && x0 - halfLen < width)
+			{
+				array[y][x0 - halfLen] = '*';
+			}
 		}
 	}
 
-	// Рисует левую вертикальную линию H
-	int leftX = centerX - halfLength;
-	for (int y = centerY - verticalLength / 2; y <= centerY + verticalLength / 2; y++)
-	{
-		if (y >= 0 && y < length * 2)
-		{ // Проверка границ
-			array[y][leftX] = '*';
-		}
-	}
-
-	// Рекурсивно строит H-фракталы в 4 углах
-	int newLength = round(verticalLength / sqrt(2));
-	buildHFractal(array, rightX, centerY + verticalLength / 2, newLength, currentIter + 1, maxIter);
-	buildHFractal(array, leftX, centerY - verticalLength / 2, newLength, currentIter + 1, maxIter);
-	buildHFractal(array, leftX, centerY + verticalLength / 2, newLength, currentIter + 1, maxIter);
-	buildHFractal(array, rightX, centerY - verticalLength / 2, newLength, currentIter + 1, maxIter);
+	// Рекурсия
+	int newLen = verticalLen / sqrt(2);
+	buildH(x0 + halfLen, y0 + halfVert, newLen, iteration + 1, maxIterations); // Верхний правый
+	buildH(x0 - halfLen, y0 - halfVert, newLen, iteration + 1, maxIterations); // Нижний левый
+	buildH(x0 - halfLen, y0 + halfVert, newLen, iteration + 1, maxIterations); // Верхний левый
+	buildH(x0 + halfLen, y0 - halfVert, newLen, iteration + 1, maxIterations); // Нижний правый
 }
 
 int main(int argc, char **argv)
 {
+	// Проверка
 	if (argc != 5)
 	{
 		printf("Ошибка: неверное количество аргументов\n");
@@ -111,14 +95,14 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	// Парсинг аргументов командной строки
-	int width = atoi(argv[1]);
-	int height = atoi(argv[2]);
-	int initialLength = atoi(argv[3]);
-	int maxIterations = atoi(argv[4]);
+	// Аргументы
+	width = stringToNumber(argv[1]);
+	height = stringToNumber(argv[2]);
+	int initialLength = stringToNumber(argv[3]);
+	int maxIterations = stringToNumber(argv[4]);
 
-	// Выделение памяти для массива
-	unsigned char **array = (unsigned char **)malloc(height * sizeof(unsigned char *));
+	// Создание массива
+	array = (unsigned char **)malloc(height * sizeof(unsigned char *));
 	for (int y = 0; y < height; y++)
 	{
 		array[y] = (unsigned char *)malloc(width * sizeof(unsigned char));
@@ -128,12 +112,18 @@ int main(int argc, char **argv)
 		}
 	}
 
-	// Построение фрактала
-	int centerX = width / 2;
-	int centerY = height / 2;
-	buildHFractal(array, centerX, centerY, initialLength, 0, maxIterations);
+	// Запуск построения фрактала из центра
+	buildH(width / 2, height / 2, initialLength, 0, maxIterations);
 
-	printArray(array, width, height);
+	// Вывод
+	for (int y = 0; y < height; y++)
+	{
+		for (int x = 0; x < width; x++)
+		{
+			printf("%c", array[y][x]);
+		}
+		printf("\n");
+	}
 
 	for (int y = 0; y < height; y++)
 	{
