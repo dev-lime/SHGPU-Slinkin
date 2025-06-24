@@ -9,7 +9,7 @@
         <MainUnitHasScaledStatement Value="False"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
-      <Title Value="progect1"/>
+      <Title Value="project1"/>
     </General>
     <BuildModes>
       <Item Name="default" Default="True"/>
@@ -23,12 +23,17 @@
     </RunParams>
     <Units>
       <Unit>
-        <Filename Value="progect1.lpr"/>
+        <Filename Value="project1.lpr"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="unit1.pas"/>
         <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="unit2.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Unit2"/>
       </Unit>
     </Units>
   </ProjectOptions>
@@ -42,11 +47,6 @@
         <UseAnsiStrings Value="False"/>
       </SyntaxOptions>
     </Parsing>
-    <Linking>
-      <Debugging>
-        <DebugInfoType Value="dsDwarf3"/>
-      </Debugging>
-    </Linking>
     <Other>
       <CustomOptions Value="-Fr/usr/lib64/fpc/msg/errore.msg"/>
     </Other>
