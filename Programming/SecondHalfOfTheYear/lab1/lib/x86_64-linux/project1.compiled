@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Compiler Value="/usr/bin/fpc" Date="1654788744"/>
+  <Params Value=" -MObjFPC -Scghi -Cg -O1 -gw2 -godwarfsets -gl -l -vewnhibq &quot;-Fi/home/student/Рабочий стол/23м 2025г/программирование 230б/lr1/lib/x86_64-linux&quot; -Fu/usr/lib64/lazarus/lcl/units/x86_64-linux/gtk2 -Fu/usr/lib64/lazarus/lcl/units/x86_64-linux -Fu/usr/lib64/lazarus/components/freetype/lib/x86_64-linux -Fu/usr/lib64/lazarus/components/lazutils/lib/x86_64-linux -Fu/usr/lib64/lazarus/packager/units/x86_64-linux &quot;-Fu/home/student/Рабочий стол/23м 2025г/программирование 230б/lr1/&quot; &quot;-FU/home/student/Рабочий стол/23м 2025г/программирование 230б/lr1/lib/x86_64-linux/&quot; &quot;-FE/home/student/Рабочий стол/23м 2025г/программирование 230б/lr1/&quot; &quot;-o/home/student/Рабочий стол/23м 2025г/программирование 230б/lr1/project1&quot; -dLCL -dLCLgtk2 project1.lpr"/>
+</CONFIG>

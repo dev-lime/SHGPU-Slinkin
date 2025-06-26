@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <Version Value="12"/>
+    <BuildModes Active="Default"/>
+    <Units>
+      <Unit>
+        <Filename Value="project1.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Project1"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="75"/>
+        <CursorPos X="49" Y="106"/>
+        <UsageCount Value="58"/>
+      </Unit>
+      <Unit>
+        <Filename Value="u23030428canvas.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="u23030428Canvas"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos Y="218"/>
+        <UsageCount Value="58"/>
+      </Unit>
+      <Unit>
+        <Filename Value="canvas23030428.pas"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="239"/>
+        <CursorPos X="3" Y="267"/>
+        <UsageCount Value="58"/>
+      </Unit>
+      <Unit>
+        <Filename Value="../../../tmp/unit1.pas"/>
+        <UnitName Value="Unit1"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="13"/>
+        <UsageCount Value="7"/>
+      </Unit>
+    </Units>
+    <General>
+      <ActiveWindowIndexAtStart Value="-1"/>
+    </General>
+    <JumpHistory HistoryIndex="-1"/>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes ActiveMode="default">
+        <Mode Name="default">
+          <local>
+            <LaunchingApplication Use="True"/>
+          </local>
+        </Mode>
+      </Modes>
+    </RunParams>
+    <HistoryLists>
+      <List Name="LaunchingApplication" Type="File" Count="2">
+        <Item1 Value="/usr/bin/xterm -T &apos;Lazarus Run Output&apos; -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+        <Item2 Value="/usr/bin/gnome-terminal -t &apos;Lazarus Run Output&apos; -e &apos;$(LazarusDir)/tools/runwait.sh $(TargetCmdLine)&apos;"/>
+      </List>
+    </HistoryLists>
+  </ProjectSession>
+</CONFIG>
