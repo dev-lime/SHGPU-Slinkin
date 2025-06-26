@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="12"/>
+    <BuildModes Active="Default"/>
+    <Units>
+      <Unit>
+        <Filename Value="project1.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="18"/>
+        <CursorPos X="10" Y="21"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="txcanvas.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="TXCanvas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="290"/>
+        <CursorPos Y="309"/>
+        <UsageCount Value="20"/>
+      </Unit>
+      <Unit>
+        <Filename Value="xcanvas.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="XCanvas"/>
+        <EditorIndex Value="1"/>
+        <CursorPos X="5" Y="65"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit>
+    </Units>
+    <JumpHistory HistoryIndex="4">
+      <Position>
+        <Filename Value="project1.lpr"/>
+        <Caret Line="21" Column="10" TopLine="18"/>
+      </Position>
+      <Position>
+        <Filename Value="xcanvas.pas"/>
+        <Caret Line="309" TopLine="290"/>
+      </Position>
+      <Position>
+        <Filename Value="project1.lpr"/>
+        <Caret Line="21" Column="10" TopLine="18"/>
+      </Position>
+      <Position>
+        <Filename Value="xcanvas.pas"/>
+        <Caret Line="61" Column="11" TopLine="51"/>
+      </Position>
+      <Position>
+        <Filename Value="xcanvas.pas"/>
+        <Caret Line="64" Column="15" TopLine="51"/>
+      </Position>
+    </JumpHistory>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes ActiveMode=""/>
+    </RunParams>
+  </ProjectSession>
+</CONFIG>
