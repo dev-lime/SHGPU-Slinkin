@@ -1,108 +1,36 @@
+(*
+Разработать класс TXCanvas для рисования различных графических объектов, где X - номер студенческого билета студента. Каждая точка холста описывается цветом в виде триплета RGB. Рисование обеспечивается сущностью "карандаш", которая описывается цветом RGB и текущим местоположением (позицией). Запрещается использовать любые существующие средства поддержки графики, за исключением последнего задания. Проверить работоспособность всех методов класса.
+
+Декларируемые возможности TXCanvas:
+1. Методы загрузки и сохранения холста в формате PPM P3 (см. смежный предмет)
+2. Методы для изменения и получения размеров холста
+3. Методы для изменения и получения текущего цвета
+4. Методы для изменения и получения текущей позиции
+5. Метод рисования точки в текущей позиции текущим цветом
+6. Метод рисования прямоугольника заданного размера в текущей позиции текущим цветом
+7. Метод рисования закрашенного прямоугольника заданного размера в текущей позиции текущим цветом
+8. Метод рисования отрезка текущим цветом в заданную позицию из текущей с перемещением карандаша в конечную позицию
+9. Метод закраски ограниченной области в текущей позиции текущим цветом (см. смежный предмет)
+10. Метод накладывания стороннего холста на текущий холст в текущую позицию, считая прозрачным текущим цвет
+11. Методы загрузки и сохранения холста в форматах JPG,PNG,PCX и других, поддерживаемых пакетом fcl-image.
+*)
+
 program Project1;
 
 uses
-  canvas23030428;
+  XCanvas;
 
 var
-  canvas: T23030428Canvas;
-  color: TRGB;
-
-  canvas1, canvas2: T23030428Canvas;
+  Canvas: TXCanvas;
 begin
-  canvas := T23030428Canvas.Create;
-  ////6 - ширина, высота
-  canvas.add(100, 100);
-  //canvas.SetPencilColor(0, 0, 255);
-  //canvas.KoordPencil(14, 15);
-  //canvas.rectangle6(70, 50);
-  //canvas.SaveToPPM('test6.ppm');
-  //
-  ////7
-  //canvas.add(100, 100);
-  //canvas.SetPencilColor(0, 255, 0);
-  //canvas.KoordPencil(14, 15);
-  //canvas.rectangle7(20, 40);
-  //canvas.SaveToPPM('test7.ppm');
-  //
-  ////8
-  //canvas.add(100, 100);
-  //canvas.SetPencilColor(0, 0, 0);
-  //canvas.KoordPencil(13, 0);
-  //canvas.segment(13, 10);
-  //canvas.SaveToPPM('test8.ppm');
-  //
-  ////9
-  //canvas.add(100, 100);
-  //canvas.SetPencilColor(0, 255, 0);
-  //canvas.KoordPencil(10, 10);
-  //canvas.rectangle7(20, 20);
-  //canvas.SetPencilColor(255, 0, 0);
-  //canvas.KoordPencil(14, 15);
-  //canvas.lim_area;
-  //canvas.SaveToPPM('test9_1.ppm');
-  //
-  //canvas.add(100, 100);
-  //canvas.SetPencilColor(0, 255, 0);
-  //canvas.KoordPencil(10, 10);
-  //canvas.rectangle6(20, 20);
-  //canvas.SetPencilColor(255, 0, 0);
-  //canvas.KoordPencil(14, 15);
-  //canvas.lim_area;
-  //canvas.SaveToPPM('test9_2.ppm');
-  //
-  ////10
-  //canvas1 := T23030428Canvas.Create;
-  //canvas1.add(100, 100);
-  //canvas1.SetPencilColor(200, 200, 200);
-  //canvas1.KoordPencil(0, 0);
-  //canvas1.rectangle7(100, 100);
-  //
-  //canvas2 := T23030428Canvas.Create;
-  //canvas2.add(10, 10);
-  //canvas2.SetPencilColor(255, 255, 255);
-  //canvas2.KoordPencil(0, 0);
-  //canvas2.rectangle7(10, 10);
-  //
-  //canvas2.SetPencilColor(0, 0, 0);
-  //canvas2.KoordPencil(0, 0);
-  //canvas2.segment(0, 9);
-  //
-  //canvas1.SetPencilColor(255, 255, 255); //прозрач
-  //canvas1.KoordPencil(20, 20);
-  //canvas1.OverlayCanvas(canvas2);
-  //canvas1.SaveToPPM('10t.ppm');
-  //
-  ////дом
-  //canvas.add(1000, 1000);
-  //canvas.SetPencilColor(0,0,0);
-  //canvas.KoordPencil(300,500);
-  //canvas.segment(300, 200);
-  //canvas.SetPencilColor(200, 200, 0);
-  //canvas.segment(450, 50);
-  //canvas.SetPencilColor(0, 255, 0);
-  //canvas.segment(590, 200);
-  //canvas.segment(590, 500);
-  //canvas.SetPencilColor(0, 0, 255);
-  //canvas.segment(300, 200);
-  //canvas.segment(590, 200);
-  //canvas.SetPencilColor(200, 0, 200);
-  //canvas.segment(300, 500);
-  //canvas.SetPencilColor(255, 0, 0);
-  //canvas.segment(590, 500);
-  //
-  //canvas.SetPencilColor(0, 200, 200);
-  //canvas.KoordPencil(250, 500);
-  //canvas.rectangle6(400, 100);
-  //canvas.SetPencilColor(0, 255, 0);
-  //canvas.KoordPencil(260, 510);
-  //canvas.rectangle7(380, 80);
-  //
-  //canvas.KoordPencil(420, 240);
-  //canvas.SetPencilColor(255, 0, 0);
-  //canvas.lim_area;
-  //canvas.SaveToPPM('home.ppm');
-
-   canvas.SetPencilColor(0,0,0);
-   canvas.KoordPencil(1,12); //чтоюы была тройка
-   canvas.segment(12,1);
+  Canvas := TXCanvas.Create;
+  try
+    Canvas.Initialize(800, 600);
+    Canvas.SetPencilColor(255, 0, 0); // Красный цвет
+    Canvas.MovePencilTo(100, 100);
+    Canvas.DrawFilledRectangle(200, 150);
+    Canvas.SaveToPPM('drawing.ppm');
+  finally
+    Canvas.Free;
+  end;
 end.
