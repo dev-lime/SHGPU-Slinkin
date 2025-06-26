@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <Version Value="12"/>
+    <Units>
+      <Unit>
+        <Filename Value="project.pas"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <CursorPos Y="12"/>
+        <UsageCount Value="21"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="memcontrol.pas"/>
+        <UnitName Value="MemControl"/>
+        <EditorIndex Value="1"/>
+        <CursorPos X="14" Y="9"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit>
+    </Units>
+    <JumpHistory HistoryIndex="2">
+      <Position>
+        <Filename Value="project.pas"/>
+        <Caret Line="10" Column="34"/>
+      </Position>
+      <Position>
+        <Filename Value="project.pas"/>
+        <Caret Line="8" Column="6"/>
+      </Position>
+      <Position>
+        <Filename Value="project.pas"/>
+        <Caret Line="2" Column="15"/>
+      </Position>
+    </JumpHistory>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes ActiveMode=""/>
+    </RunParams>
+  </ProjectSession>
+</CONFIG>
