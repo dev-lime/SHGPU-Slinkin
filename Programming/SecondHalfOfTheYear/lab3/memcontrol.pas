@@ -1,22 +1,26 @@
 unit MemControl;
+
 {$mode ObjFPC}
-interface uses sysUtils;
+
+interface
+
+uses sysUtils;
 
 type
-  TData = Pointer;
+  TData = pointer;
 
-  // абстрактный базовый класс
   TAbstractStorage = class
   protected
     function getData(position: qword): TData; virtual; abstract;
     procedure setData(position: qword; value: TData); virtual; abstract;
     function getCount: qword; virtual; abstract;
-  public
+    procedure setCount(value: qword); virtual; abstract;
+  protected
     property data[position: qword]: TData read getData write setData; default;
-    property count: qword read getCount;
+  public
+    property count: qword read getCount write setCount;
   end;
 
-  // класс с реализацией хранилища в оперативной памяти
   TMemStorage = class(TAbstractStorage)
   private
     fdata: array of TData;
@@ -24,9 +28,9 @@ type
     function getData(position: qword): TData; override;
     procedure setData(position: qword; value: TData); override;
     function getCount: qword; override;
+    procedure setCount(value: qword); override;
   end;
 
-  // класс с реализацией хранилища целочисленных данных в оперативной памяти
   TIntMemStorage = class(TMemStorage)
   protected
     function getIData(position: qword): integer;
@@ -35,199 +39,176 @@ type
     property dataI[position: qword]: integer read getIData write setIData; default;
   end;
 
-  // класс с реализацией хранилища вещественных данных в оперативной памяти
   TFloatMemStorage = class(TMemStorage)
-  private
-    fExtendedData: array of Extended;
   protected
-    function getfData(position: qword): Extended;
-    procedure setfData(position: qword; value: Extended);
-    function getCount: qword; override;
+    function getfData(position: qword): extended;
+    procedure setfData(position: qword; value: extended);
   public
-    property dataF[position: qword]: Extended read getfData write setfData; default;
-    constructor Create;
+    property dataF[position: qword]: extended read getfData write setfData; default;
+    destructor Destroy; override;
   end;
 
-  // Базовый класс для файлового хранилища
   TFileStorage = class(TAbstractStorage)
   private
-    fFileName: string;
-    fFile: File;
-    fDataSize: Integer;
+    fd: file;
   protected
     function getData(position: qword): TData; override;
     procedure setData(position: qword; value: TData); override;
     function getCount: qword; override;
+    procedure setCount(value: qword); override;
   public
-    constructor Create(const filename: string; dataSize: Integer);
-    destructor Destroy; override;
+    constructor Create(filename: string);
+    destructor Destroy(); override;
   end;
 
-  // Класс для хранения целых чисел в файле
   TIntFileStorage = class(TFileStorage)
   protected
     function getIData(position: qword): integer;
     procedure setIData(position: qword; value: integer);
   public
-    constructor Create(const filename: string);
     property dataI[position: qword]: integer read getIData write setIData; default;
   end;
 
 implementation
 
-{ TMemStorage }
-
 function TMemStorage.getData(position: qword): TData;
 begin
-  if position >= Length(fdata) then
-    Result := nil
-  else
-    Result := fdata[position];
+  if (position >= getCount) then
+    exit(nil);
+  Result := fdata[position];
 end;
 
 procedure TMemStorage.setData(position: qword; value: TData);
 begin
-  if position >= Length(fdata) then
-    SetLength(fdata, position + 1);
+  if (position >= getCount) then
+    setCount(position + 1);
   fdata[position] := value;
 end;
 
 function TMemStorage.getCount: qword;
 begin
-  Result := Length(fdata);
+  Result := length(fdata);
 end;
 
-{ TIntMemStorage }
+procedure TMemStorage.setCount(value: qword);
+var
+  old: qword;
+begin
+  old := getCount;
+  setlength(fdata, value);
+  for old := old to value-1 do
+    fdata[old] := nil;
+end;
 
 function TIntMemStorage.getIData(position: qword): integer;
-var
-  p: TData;
 begin
-  p := getData(position);
-  if p = nil then
-    Result := 0
-  else
-    Result := Integer(p);
+  Result := integer(getData(position));
 end;
 
 procedure TIntMemStorage.setIData(position: qword; value: integer);
 begin
-  setData(position, TData(Pointer(value)));
+  setData(position, Pointer(value));
 end;
 
-{ TFloatMemStorage }
-
-constructor TFloatMemStorage.Create;
+function TFloatMemStorage.getfData(position: qword): extended;
+var
+  p: pointer;
 begin
-  inherited;
-  SetLength(fExtendedData, 0);
+  p := data[position];
+  if (p = nil) then
+    exit(0);
+  Result := extended(p^);
 end;
 
-function TFloatMemStorage.getfData(position: qword): Extended;
+procedure TFloatMemStorage.setfData(position: qword; value: extended);
+var
+  p: ^extended;
 begin
-  if position >= Length(fExtendedData) then
-    Result := 0.0
-  else
-    Result := fExtendedData[position];
+  if (getData(position) = nil) then
+  begin
+    p := getmem(sizeof(extended));
+    data[position] := p;
+  end;
+  p := data[position];
+  p^ := value;
 end;
 
-procedure TFloatMemStorage.setfData(position: qword; value: Extended);
+destructor TFloatMemStorage.Destroy;
+var
+  i: integer;
 begin
-  if position >= Length(fExtendedData) then
-    SetLength(fExtendedData, position + 1);
-  fExtendedData[position] := value;
+  for i := 0 to getCount-1 do
+  begin
+    if (data[i] <> nil) then
+    begin
+      freemem(data[i]);
+    end;
+  end;
 end;
 
-function TFloatMemStorage.getCount: qword;
-begin
-  Result := Length(fExtendedData);
-end;
-
-{ TFileStorage }
-
-constructor TFileStorage.Create(const filename: string; dataSize: Integer);
+constructor TFileStorage.Create(filename: string);
 begin
   inherited Create;
-  fFileName := filename;
-  fDataSize := dataSize;
-  AssignFile(fFile, fFileName);
-  if FileExists(fFileName) then
-    Reset(fFile, fDataSize)
-  else
-    Rewrite(fFile, fDataSize);
+  if (not fileExists(filename)) then
+  begin
+    assign(fd, filename);
+    rewrite(fd);
+    close(fd);
+  end;
+  assign(fd, filename);
+  reset(fd, sizeof(TData));
 end;
 
-destructor TFileStorage.Destroy;
+destructor TFileStorage.Destroy();
 begin
-  CloseFile(fFile);
-  inherited;
+  close(fd);
 end;
 
 function TFileStorage.getData(position: qword): TData;
-var
-  buf: Pointer;
 begin
-  if position >= FileSize(fFile) then
-    Exit(nil);
-
-  Seek(fFile, position);
-  GetMem(buf, fDataSize);
-  BlockRead(fFile, buf^, 1);
-  Result := buf;
+  if (position < filesize(fd)) then
+  begin
+    seek(fd, position);
+    BlockRead(fd, Result, 1);
+  end
+  else
+    exit(nil);
 end;
 
 procedure TFileStorage.setData(position: qword; value: TData);
 begin
-  if position >= FileSize(fFile) then
-    Seek(fFile, FileSize(fFile));
-
-  Seek(fFile, position);
-  if value <> nil then
-    BlockWrite(fFile, value^, 1)
-  else
-  begin
-    // записывает нулевые данные
-    GetMem(value, fDataSize);
-    FillChar(value^, fDataSize, 0);
-    BlockWrite(fFile, value^, 1);
-    FreeMem(value);
-  end;
+  if (position >= getCount) then
+    setcount(position + 1);
+  seek(fd, position);
+  BlockWrite(fd, value, 1);
 end;
 
 function TFileStorage.getCount: qword;
 begin
-  Result := FileSize(fFile);
+  Result := filesize(fd);
 end;
 
-{ TIntFileStorage }
-
-constructor TIntFileStorage.Create(const filename: string);
-begin
-  inherited Create(filename, SizeOf(Integer));
-end;
-
-function TIntFileStorage.getIData(position: qword): integer;
+procedure TFileStorage.setCount(value: qword);
 var
+  i: qword;
   p: TData;
 begin
-  p := getData(position);
-  if p = nil then
-    Result := 0
-  else
+  p := nil;
+  for i := getCount to value - 1 do
   begin
-    Result := Integer(p^);
-    FreeMem(p);
+    seek(fd, i);
+    BlockWrite(fd, p, 1);
   end;
 end;
 
-procedure TIntFileStorage.setIData(position: qword; value: integer);
-var
-  p: ^Integer;
+function TIntFileStorage.getIData(position: qword): integer;
 begin
-  GetMem(p, SizeOf(Integer));
-  p^ := value;
-  setData(position, p);
-  FreeMem(p);
+  Result := integer(getData(position));
+end;
+
+procedure TIntFileStorage.setIData(position: qword; value: integer);
+begin
+  setData(position, Pointer(value));
 end;
 
 end.
