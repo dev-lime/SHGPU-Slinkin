@@ -7,20 +7,21 @@
         <Filename Value="project.pas"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <CursorPos Y="12"/>
-        <UsageCount Value="21"/>
+        <TopLine Value="112"/>
+        <CursorPos X="23" Y="133"/>
+        <UsageCount Value="22"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="memcontrol.pas"/>
         <UnitName Value="MemControl"/>
         <EditorIndex Value="1"/>
-        <CursorPos X="14" Y="9"/>
+        <CursorPos X="31" Y="8"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>
       </Unit>
     </Units>
-    <JumpHistory HistoryIndex="2">
+    <JumpHistory HistoryIndex="7">
       <Position>
         <Filename Value="project.pas"/>
         <Caret Line="10" Column="34"/>
@@ -32,6 +33,26 @@
       <Position>
         <Filename Value="project.pas"/>
         <Caret Line="2" Column="15"/>
+      </Position>
+      <Position>
+        <Filename Value="memcontrol.pas"/>
+        <Caret Line="159" TopLine="148"/>
+      </Position>
+      <Position>
+        <Filename Value="project.pas"/>
+        <Caret Line="31" Column="17" TopLine="14"/>
+      </Position>
+      <Position>
+        <Filename Value="project.pas"/>
+        <Caret Line="143" Column="10" TopLine="118"/>
+      </Position>
+      <Position>
+        <Filename Value="project.pas"/>
+        <Caret Line="13" Column="22"/>
+      </Position>
+      <Position>
+        <Filename Value="project.pas"/>
+        <Caret Line="135" Column="23" TopLine="113"/>
       </Position>
     </JumpHistory>
     <RunParams>

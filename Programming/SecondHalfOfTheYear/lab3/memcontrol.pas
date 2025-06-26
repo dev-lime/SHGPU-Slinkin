@@ -5,7 +5,7 @@ interface uses sysUtils;
 type
   TData = Pointer;
 
-  // абстрактный класс с описанием механизма доступа к данным
+  // абстрактный базовый класс
   TAbstractStorage = class
   protected
     function getData(position: qword): TData; virtual; abstract;
