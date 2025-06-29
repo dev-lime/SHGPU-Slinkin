@@ -15,22 +15,100 @@
 11. Методы загрузки и сохранения холста в форматах JPG,PNG,PCX и других, поддерживаемых пакетом fcl-image.
 *)
 
-program Project1;
+program project1;
 
 uses
   XCanvas;
 
 var
-  Canvas: TXCanvas;
+  Canvas, Overlay: TXCanvas;
+  Color: TRGB;
 begin
   Canvas := TXCanvas.Create;
+  Canvas.Initialize(800, 600);
+
+  // Установка цвета карандаша
+  // 1 - через отдельные компоненты
+  Canvas.SetPencilColor(255, 0, 0); // красный
+
+  // 2 - через запись TRGB
+  Color.R := 0;
+  Color.G := 255;
+  Color.B := 0;
+  Canvas.SetPencilColor(Color); // Зеленый
+
+  // Перемещение карандаша и рисование точки
+  Canvas.MovePencilTo(50, 50);
+  Canvas.DrawDot; // зеленая точка в (50,50)
+
+  // Рисование прямоугольника (контур)
+  Canvas.SetPencilColor(0, 0, 255); // Синий
+  Canvas.MovePencilTo(100, 100);
+  Canvas.DrawRectangle(150, 100);
+
+  // Рисование закрашенного прямоугольника
+  Canvas.SetPencilColor(255, 255, 0); // Желтый
+  Canvas.MovePencilTo(300, 200);
+  Canvas.DrawFilledRectangle(120, 80);
+
+  // Рисование линии
+  Canvas.SetPencilColor(128, 0, 128); // Фиолетовый
+  Canvas.MovePencilTo(400, 400);
+  Canvas.DrawLineTo(600, 500); // Линия от 400 400 до 600 500
+
+  // Заливка области
+  Canvas.SetPencilColor(0, 255, 255); // Голубой
+  Canvas.MovePencilTo(150, 150);
+  Canvas.FloodFill;
+
+  // Наложение холстов
+  Overlay := TXCanvas.Create;
   try
-    Canvas.Initialize(800, 600);
-    Canvas.SetPencilColor(255, 0, 0); // Красный цвет
-    Canvas.MovePencilTo(100, 100);
-    Canvas.DrawFilledRectangle(200, 150);
-    Canvas.SaveToPPM('drawing.ppm');
+    Overlay.Initialize(100, 100);
+    Overlay.SetPencilColor(255, 0, 255); // Розовый
+    Overlay.MovePencilTo(0, 0);
+    Overlay.DrawFilledRectangle(100, 100); // Полностью розовый холст
+
+    // Делает часть прозрачной (совпадает с текущим цветом карандаша)
+    Overlay.SetPencilColor(0, 255, 255);
+    Overlay.MovePencilTo(20, 20);
+    Overlay.DrawFilledRectangle(60, 60);
+
+    // Наложение на основной холст
+    Canvas.MovePencilTo(200, 300);
+    Canvas.DrawCanvas(Overlay);
   finally
-    Canvas.Free;
+    Overlay.Free;
   end;
+
+  // Сохранение в PPM
+  Canvas.SaveToPPM('demo.ppm');
+
+  // Загрузка из PPM и изменение
+  Canvas.LoadFromPPM('demo.ppm');
+  Canvas.SetPencilColor(255, 165, 0); // Оранжевый
+  Canvas.MovePencilTo(700, 50);
+  Canvas.DrawDot;
+  Canvas.SaveToPPM('modified.ppm');
+
+  // Получение информации о холсте
+  Writeln('Ширина холста: ', Canvas.GetWidth);
+  Writeln('Высота холста: ', Canvas.GetHeight);
+
+  // Получение цвета пикселя
+  Color := Canvas.GetPixel(50, 50);
+  Writeln('Цвет в точке (50,50): R=', Color.R, ' G=', Color.G, ' B=', Color.B);
+
+  // Изменение размера холста
+  Canvas.Resize(400, 400);
+  Canvas.SetPencilColor(255, 255, 255); // Белый
+  Canvas.MovePencilTo(0, 0);
+  Canvas.DrawFilledRectangle(400, 400); // Очищает холст
+  Canvas.SetPencilColor(0, 0, 0); // Черный
+  Canvas.MovePencilTo(200, 200);
+  Canvas.DrawLineTo(300, 300);
+  Canvas.SaveToPPM('resized.ppm');
+
+  Canvas.Free;
 end.
+

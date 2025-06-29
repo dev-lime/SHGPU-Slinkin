@@ -1,62 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectSession>
+    <PathDelim Value="\"/>
     <Version Value="12"/>
     <BuildModes Active="Default"/>
     <Units>
       <Unit>
         <Filename Value="project1.lpr"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Project1"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="75"/>
-        <CursorPos X="49" Y="106"/>
-        <UsageCount Value="58"/>
-      </Unit>
-      <Unit>
-        <Filename Value="u23030428canvas.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="u23030428Canvas"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos Y="218"/>
-        <UsageCount Value="58"/>
-      </Unit>
-      <Unit>
-        <Filename Value="canvas23030428.pas"/>
-        <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="239"/>
-        <CursorPos X="3" Y="267"/>
-        <UsageCount Value="58"/>
+        <TopLine Value="94"/>
+        <CursorPos X="51" Y="106"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="../../../tmp/unit1.pas"/>
-        <UnitName Value="Unit1"/>
+        <Filename Value="txcanvas.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="TXCanvas"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="13"/>
-        <UsageCount Value="7"/>
+        <TopLine Value="290"/>
+        <CursorPos Y="309"/>
+        <UsageCount Value="20"/>
+      </Unit>
+      <Unit>
+        <Filename Value="xcanvas.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="XCanvas"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="288"/>
+        <CursorPos X="67" Y="296"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
       </Unit>
     </Units>
-    <General>
-      <ActiveWindowIndexAtStart Value="-1"/>
-    </General>
-    <JumpHistory HistoryIndex="-1"/>
+    <JumpHistory HistoryIndex="5">
+      <Position>
+        <Filename Value="project1.lpr"/>
+        <Caret Line="21" Column="10" TopLine="18"/>
+      </Position>
+      <Position>
+        <Filename Value="xcanvas.pas"/>
+        <Caret Line="309" TopLine="290"/>
+      </Position>
+      <Position>
+        <Filename Value="project1.lpr"/>
+        <Caret Line="21" Column="10" TopLine="18"/>
+      </Position>
+      <Position>
+        <Filename Value="xcanvas.pas"/>
+        <Caret Line="61" Column="11" TopLine="51"/>
+      </Position>
+      <Position>
+        <Filename Value="xcanvas.pas"/>
+        <Caret Line="64" Column="15" TopLine="51"/>
+      </Position>
+      <Position>
+        <Filename Value="project1.lpr"/>
+        <Caret Line="47" Column="34" TopLine="36"/>
+      </Position>
+    </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>
-      <Modes ActiveMode="default">
-        <Mode Name="default">
-          <local>
-            <LaunchingApplication Use="True"/>
-          </local>
-        </Mode>
-      </Modes>
+      <Modes ActiveMode=""/>
     </RunParams>
-    <HistoryLists>
-      <List Name="LaunchingApplication" Type="File" Count="2">
-        <Item1 Value="/usr/bin/xterm -T &apos;Lazarus Run Output&apos; -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
-        <Item2 Value="/usr/bin/gnome-terminal -t &apos;Lazarus Run Output&apos; -e &apos;$(LazarusDir)/tools/runwait.sh $(TargetCmdLine)&apos;"/>
-      </List>
-    </HistoryLists>
   </ProjectSession>
 </CONFIG>

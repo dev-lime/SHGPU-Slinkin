@@ -4,6 +4,9 @@ unit XCanvas;
 
 interface
 
+uses
+  SysUtils; // для работы с исключениями
+
 type
   TRGB = record
     R: byte;
@@ -26,26 +29,22 @@ type
     FPencil: TPencil;
     procedure ValidateCoordinates(X, Y: integer);
   public
-    // Основные методы холста
     procedure Initialize(Width, Height: integer);
     procedure SetPixel(X, Y: integer; Color: TRGB);
     function GetPixel(X, Y: integer): TRGB;
     procedure SaveToPPM(const FileName: string);
     procedure LoadFromPPM(const FileName: string);
 
-    // Методы карандаша
     procedure SetPencilColor(Color: TRGB); overload;
     procedure SetPencilColor(R, G, B: byte); overload;
     function GetPencilColor: TRGB;
     procedure MovePencilTo(X, Y: integer);
     procedure DrawDot;
 
-    // Методы размеров холста
     function GetWidth: integer;
     function GetHeight: integer;
     procedure Resize(NewWidth, NewHeight: integer);
 
-    // Методы рисования
     procedure DrawRectangle(Width, Height: integer);
     procedure DrawFilledRectangle(Width, Height: integer);
     procedure DrawLineTo(TargetX, TargetY: integer);
@@ -58,7 +57,7 @@ implementation
 procedure TXCanvas.ValidateCoordinates(X, Y: integer);
 begin
   if (X < 0) or (X >= FWidth) or (Y < 0) or (Y >= FHeight) then
-    raise Exception.Create('Координаты за пределами холста');
+    raise EInOutError.Create('Coordinates are out of canvas bounds');
 end;
 
 procedure TXCanvas.Initialize(Width, Height: integer);
@@ -68,8 +67,8 @@ begin
   FWidth := Width;
   FHeight := Height;
   SetLength(FPixels, FHeight, FWidth);
-  
-  // Заполняем белым цветом
+
+  // Заполнение белым цветом
   for I := 0 to FHeight - 1 do
     for J := 0 to FWidth - 1 do
     begin
@@ -102,7 +101,7 @@ begin
     WriteLn(F, 'P3');
     WriteLn(F, FWidth, ' ', FHeight);
     WriteLn(F, '255');
-    
+
     for I := 0 to FHeight - 1 do
     begin
       for J := 0 to FWidth - 1 do
@@ -128,13 +127,13 @@ begin
     ReadLn(F, Header);
     if Header <> 'P3' then
       raise Exception.Create('Неверный формат PPM файла');
-      
+
     ReadLn(F, FWidth, FHeight);
     Initialize(FWidth, FHeight);
-    
-    // Пропускаем строку с максимальным значением цвета
+
+    // Пропускает строку с максимальным значением цвета
     ReadLn(F, Header);
-    
+
     for I := 0 to FHeight - 1 do
       for J := 0 to FWidth - 1 do
         Read(F, FPixels[I][J].R, FPixels[I][J].G, FPixels[I][J].B);
@@ -197,7 +196,7 @@ begin
     SetPixel(FPencil.X + I, FPencil.Y, FPencil.Color);
     SetPixel(FPencil.X + I, FPencil.Y + Height - 1, FPencil.Color);
   end;
-  
+
   // Боковые линии
   for I := 1 to Height - 2 do
   begin
@@ -227,42 +226,42 @@ begin
   Y1 := FPencil.Y;
   X2 := TargetX;
   Y2 := TargetY;
-  
+
   Dx := X2 - X1;
   Dy := Y2 - Y1;
-  
+
   if Abs(Dx) > Abs(Dy) then
     Step := Abs(Dx)
   else
     Step := Abs(Dy);
-  
+
   XInc := Dx / Step;
   YInc := Dy / Step;
-  
+
   X := X1;
   Y := Y1;
-  
+
   for I := 0 to Step do
   begin
     SetPixel(Round(X), Round(Y), FPencil.Color);
     X := X + XInc;
     Y := Y + YInc;
   end;
-  
+
   MovePencilTo(TargetX, TargetY);
 end;
 
 procedure TXCanvas.FloodFill;
 var
   TargetColor: TRGB;
-  
+
   procedure Fill(X, Y: integer);
   begin
     if (X < 0) or (X >= FWidth) or (Y < 0) or (Y >= FHeight) then
       Exit;
-      
-    if (FPixels[Y][X].R = TargetColor.R) and 
-       (FPixels[Y][X].G = TargetColor.G) and 
+
+    if (FPixels[Y][X].R = TargetColor.R) and
+       (FPixels[Y][X].G = TargetColor.G) and
        (FPixels[Y][X].B = TargetColor.B) then
     begin
       SetPixel(X, Y, FPencil.Color);
@@ -272,15 +271,15 @@ var
       Fill(X, Y - 1);
     end;
   end;
-  
+
 begin
   TargetColor := GetPixel(FPencil.X, FPencil.Y);
-  
-  if (TargetColor.R = FPencil.Color.R) and 
-     (TargetColor.G = FPencil.Color.G) and 
+
+  if (TargetColor.R = FPencil.Color.R) and
+     (TargetColor.G = FPencil.Color.G) and
      (TargetColor.B = FPencil.Color.B) then
     Exit;
-    
+
   Fill(FPencil.X, FPencil.Y);
 end;
 
@@ -293,16 +292,17 @@ begin
     for J := 0 to Source.GetWidth - 1 do
     begin
       SourceColor := Source.GetPixel(J, I);
-      
-      // Пропускаем прозрачные пиксели (совпадающие с текущим цветом карандаша)
+
+      // Пропускаем пиксели совпадающие с текущим цветом карандаша
       if (SourceColor.R = FPencil.Color.R) and
          (SourceColor.G = FPencil.Color.G) and
          (SourceColor.B = FPencil.Color.B) then
         Continue;
-        
+
       if (FPencil.X + J < FWidth) and (FPencil.Y + I < FHeight) then
         SetPixel(FPencil.X + J, FPencil.Y + I, SourceColor);
     end;
 end;
 
 end.
+
