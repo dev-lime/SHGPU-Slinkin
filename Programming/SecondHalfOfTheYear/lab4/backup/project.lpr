@@ -30,28 +30,33 @@ procedure TestBasicOperations;
 var
   List: TPersonList;
   Person1, Person2, Person3: TPerson;
-  I: Integer;
+  I: Integer; // Объявляем переменную цикла заранее
 begin
   WriteLn('Testing basic operations...');
 
   List := TPersonList.Create;
   try
+    // Создаем несколько личностей
     Person1 := TPerson.Create('John Doe', True, EncodeDate(1980, 1, 15), 'ID001');
     Person2 := TPerson.Create('Jane Smith', False, EncodeDate(1985, 5, 20), 'ID002');
     Person3 := TPerson.Create('Mike Johnson', True, EncodeDate(2010, 10, 10), 'ID003');
 
     try
+      // Устанавливаем родителей
       Person3.Father := Person1;
       Person3.Mother := Person2;
 
+      // Добавляем в список
       List.Add(Person1);
       List.Add(Person2);
       List.Add(Person3);
 
+      // Выводим информацию
       WriteLn('List contains ', List.Count, ' persons:');
-      for I := 0 to List.Count - 1 do
+      for I := 0 to List.Count - 1 do // Классический синтаксис цикла
         WriteLn('  ', List[I].ToString);
 
+      // Проверяем валидацию
       try
         List.Validate;
         WriteLn('Validation passed successfully');
@@ -60,16 +65,17 @@ begin
           WriteLn('Validation error: ', E.Message);
       end;
 
-      // в файл
+      // Сохраняем в файл
       List.SaveToFile('persons.txt');
       WriteLn('Saved to file');
 
-      // из файла
+      // Загружаем из файла
       List.Clear;
       List.LoadFromFile('persons.txt');
       WriteLn('Loaded from file: ', List.Count, ' persons');
 
     finally
+      // Объекты удаляются списком, не нужно освобождать вручную
     end;
 
   finally
@@ -84,7 +90,7 @@ var
 begin
   WriteLn('Testing exceptions...');
 
-  // Тестирование исключений с файлами
+  // Тестирование исключений при работе с файлами
   List := TPersonList.Create;
   try
     try
@@ -104,7 +110,7 @@ begin
     List.Free;
   end;
 
-  // Тестирование исключений
+  // Тестирование исключений валидации
   List := TPersonList.Create;
   try
     Person1 := TPerson.Create('John Doe', True, EncodeDate(1980, 1, 15), 'ID001');
@@ -133,6 +139,7 @@ begin
           WriteLn('Caught expected exception: ', E.Message);
       end;
 
+      // Некорректный возраст родителя
       try
         Person2.ID := 'ID002';
         Person2.Gender := False;
@@ -142,7 +149,9 @@ begin
         on E: EInvalidParentAge do
           WriteLn('Caught expected exception: ', E.Message);
       end;
+
     finally
+      // Объекты удаляются списком
     end;
   finally
     List.Free;

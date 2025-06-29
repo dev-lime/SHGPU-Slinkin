@@ -6,9 +6,10 @@
       <Unit>
         <Filename Value="project.lpr"/>
         <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="21"/>
-        <CursorPos X="14" Y="33"/>
+        <TopLine Value="144"/>
+        <CursorPos X="7" Y="165"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
       </Unit>
@@ -16,8 +17,8 @@
         <Filename Value="personclasses.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="PersonClasses"/>
-        <IsVisibleTab Value="True"/>
-        <CursorPos X="16" Y="9"/>
+        <TopLine Value="283"/>
+        <CursorPos Y="301"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
       </Unit>

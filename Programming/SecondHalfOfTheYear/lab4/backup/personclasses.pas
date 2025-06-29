@@ -6,7 +6,7 @@ uses
   SysUtils, Classes, DateUtils;
 
 type
-  // Исключения
+  // Исключительные ситуации
   EFileNotFound = class(Exception);
   EInvalidPropertyType = class(Exception);
   EUnexpectedEndOfFile = class(Exception);
@@ -257,12 +257,15 @@ begin
       // Создание личности
       Person := TPerson.Create(FullName, Gender, BirthDate, ID);
       Add(Person);
+
+      // Установка отца и матери будет после загрузки всех записей
     end;
 
+    // Установка связей отца и матери
     Reset(F);
-
     for Person in FItems do
     begin
+      // Пропускаем уже прочитанные данные
       ReadLn(F); // FullName
       ReadLn(F); // Gender
       ReadLn(F); // BirthDate
@@ -343,16 +346,16 @@ var
     if Start = Current then
       Exit(True);
 
-    // не посещали ли уже этого родителя
+    // Проверяем, не посещали ли уже этого родителя
     for K := 0 to High(Visited) do
       if Visited[K] = Current then
         Exit;
 
-    // Добавляет в посещенные
+    // Добавляем в посещенные
     SetLength(Visited, Length(Visited) + 1);
     Visited[High(Visited)] := Current;
 
-    // Рекурсивно проверяет родителей
+    // Рекурсивно проверяем родителей
     Result := HasCycle(Start, Current.Father) or HasCycle(Start, Current.Mother);
   end;
 
