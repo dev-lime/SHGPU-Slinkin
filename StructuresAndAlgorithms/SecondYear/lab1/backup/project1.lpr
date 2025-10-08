@@ -57,7 +57,8 @@ program Lab1;
 {$mode objfpc}{$H+}
 
 uses
-  SysUtils;
+  SysUtils,
+  TypInfo;
 
 type
   generic TTypeInfo<T> = class
@@ -70,27 +71,37 @@ type
     procedure PrintMemoryContent;
   end;
 
+  // Специализированный generic для Char
+  generic TCharTypeInfo < class(specialize TTypeInfo<Char>)
+  public
+    procedure PrintTypeInfo;
+    procedure PrintValueInfo;
+  end;
+
+  // Специализированный generic для Boolean
+  generic TBooleanTypeInfo = class(specialize TTypeInfo<Boolean>)
+  public
+    procedure PrintTypeInfo;
+    procedure PrintValueInfo;
+  end;
+
+  TShortIntInfo = specialize TTypeInfo<Shortint>;
+  TSmallIntInfo = specialize TTypeInfo<SmallInt>;
+  TLongintInfo = specialize TTypeInfo<Longint>;
+  TLongwordInfo = specialize TTypeInfo<Longword>;
+  TInt64Info = specialize TTypeInfo<Int64>;
+  TByteInfo = specialize TTypeInfo<Byte>;
+  TWordInfo = specialize TTypeInfo<Word>;
+  TCardinalInfo = specialize TTypeInfo<Cardinal>;
+  TQWordInfo = specialize TTypeInfo<QWord>;
+  TCharInfo = specialize TCharTypeInfo;
+  TBooleanInfo = specialize TBooleanTypeInfo;
+
 procedure TTypeInfo.PrintTypeInfo;
 begin
   Writeln('Исследуемый тип: ', PTypeInfo(TypeInfo(T))^.Name);
-  Write('Нижняя граница: ');
-  case PTypeInfo(TypeInfo(T))^.Kind of
-    tkChar: Write('#', Ord(Low(T)));
-    tkBool: Write(Low(T));
-  else
-    Write(Low(T));
-  end;
-  Writeln;
-
-  Write('Верхняя граница: ');
-  case PTypeInfo(TypeInfo(T))^.Kind of
-    tkChar: Write('#', Ord(High(T)));
-    tkBool: Write(High(T));
-  else
-    Write(High(T));
-  end;
-  Writeln;
-
+  Writeln('Нижняя граница: ', Low(T));
+  Writeln('Верхняя граница: ', High(T));
   Writeln('Байт на переменную: ', SizeOf(T));
 end;
 
@@ -111,13 +122,7 @@ var
   IsMin, IsMax: Boolean;
 begin
   Write('Случайное значение: ');
-  case PTypeInfo(TypeInfo(T))^.Kind of
-    tkChar: Write('#', Ord(FValue));
-    tkBool: Write(FValue);
-  else
-    Write(FValue);
-  end;
-  Writeln;
+  Writeln(FValue);
 
   IsMin := FValue = Low(T);
   IsMax := FValue = High(T);
@@ -126,29 +131,13 @@ begin
   if IsMin then
     Writeln('Overflow')
   else
-  begin
-    case PTypeInfo(TypeInfo(T))^.Kind of
-      tkChar: Write('#', Ord(Pred(FValue)));
-      tkBool: Write(Pred(FValue));
-    else
-      Write(Pred(FValue));
-    end;
-    Writeln;
-  end;
+    Writeln(Pred(FValue));
 
   Write('Последующее значение: ');
   if IsMax then
     Writeln('Overflow')
   else
-  begin
-    case PTypeInfo(TypeInfo(T))^.Kind of
-      tkChar: Write('#', Ord(Succ(FValue)));
-      tkBool: Write(Succ(FValue));
-    else
-      Write(Succ(FValue));
-    end;
-    Writeln;
-  end;
+    Writeln(Succ(FValue));
 end;
 
 procedure TTypeInfo.PrintMemoryContent;
@@ -169,19 +158,69 @@ begin
   Writeln;
 end;
 
-// Специализации для всех требуемых типов
-type
-  TShortIntInfo = specialize TTypeInfo<Shortint>;
-  TSmallIntInfo = specialize TTypeInfo<SmallInt>;
-  TLongintInfo = specialize TTypeInfo<Longint>;
-  TLongwordInfo = specialize TTypeInfo<Longword>;
-  TInt64Info = specialize TTypeInfo<Int64>;
-  TByteInfo = specialize TTypeInfo<Byte>;
-  TWordInfo = specialize TTypeInfo<Word>;
-  TCardinalInfo = specialize TTypeInfo<Cardinal>;
-  TQWordInfo = specialize TTypeInfo<QWord>;
-  TCharInfo = specialize TTypeInfo<Char>;
-  TBooleanInfo = specialize TTypeInfo<Boolean>;
+// Специализированные методы для Char
+procedure TCharTypeInfo.PrintTypeInfo;
+begin
+  Writeln('Исследуемый тип: Char');
+  Writeln('Нижняя граница: #', Ord(Low(Char)));
+  Writeln('Верхняя граница: #', Ord(High(Char)));
+  Writeln('Байт на переменную: ', SizeOf(Char));
+end;
+
+procedure TCharTypeInfo.PrintValueInfo;
+var
+  IsMin, IsMax: Boolean;
+begin
+  Write('Случайное значение: #', Ord(FValue));
+  Writeln;
+
+  IsMin := FValue = Low(Char);
+  IsMax := FValue = High(Char);
+
+  Write('Предыдущее значение: ');
+  if IsMin then
+    Writeln('Overflow')
+  else
+    Writeln('#', Ord(Pred(FValue)));
+
+  Write('Последующее значение: ');
+  if IsMax then
+    Writeln('Overflow')
+  else
+    Writeln('#', Ord(Succ(FValue)));
+end;
+
+// Специализированные методы для Boolean
+procedure TBooleanTypeInfo.PrintTypeInfo;
+begin
+  Writeln('Исследуемый тип: Boolean');
+  Writeln('Нижняя граница: ', Low(Boolean));
+  Writeln('Верхняя граница: ', High(Boolean));
+  Writeln('Байт на переменную: ', SizeOf(Boolean));
+end;
+
+procedure TBooleanTypeInfo.PrintValueInfo;
+var
+  IsMin, IsMax: Boolean;
+begin
+  Write('Случайное значение: ', FValue);
+  Writeln;
+
+  IsMin := FValue = Low(Boolean);
+  IsMax := FValue = High(Boolean);
+
+  Write('Предыдущее значение: ');
+  if IsMin then
+    Writeln('Overflow')
+  else
+    Writeln(Pred(FValue));
+
+  Write('Последующее значение: ');
+  if IsMax then
+    Writeln('Overflow')
+  else
+    Writeln(Succ(FValue));
+end;
 
 var
   InputType: string;
@@ -332,3 +371,4 @@ begin
     Writeln('Error');
   end;
 end.
+

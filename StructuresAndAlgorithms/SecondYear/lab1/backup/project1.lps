@@ -10,13 +10,13 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Lab1"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="65"/>
-        <CursorPos X="26" Y="75"/>
+        <TopLine Value="51"/>
+        <CursorPos Y="374"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
       </Unit>
     </Units>
-    <JumpHistory HistoryIndex="9">
+    <JumpHistory HistoryIndex="8">
       <Position>
         <Filename Value="project1.lpr"/>
         <Caret Line="5"/>
@@ -52,10 +52,6 @@
       <Position>
         <Filename Value="project1.lpr"/>
         <Caret Line="326" Column="9" TopLine="313"/>
-      </Position>
-      <Position>
-        <Filename Value="project1.lpr"/>
-        <Caret Line="374" TopLine="51"/>
       </Position>
     </JumpHistory>
     <RunParams>

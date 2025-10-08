@@ -52,4 +52,323 @@ Shortint SmallInt Longint Longword Int64 Byte Word Cardinal QWord Char Boolean.
 
 }
 
+program Lab1;
+
+{$mode objfpc}{$H+}
+
+uses
+  SysUtils,
+  TypInfo;
+
+type
+  generic TTypeInfo<T> = class
+  private
+    FValue: T;
+  public
+    procedure PrintTypeInfo;
+    procedure GenerateRandomValue;
+    procedure PrintValueInfo;
+    procedure PrintMemoryContent;
+  end;
+
+  // Специализированный generic для Char
+  generic TCharTypeInfo = class(specialize TTypeInfo<Char>)
+  public
+    procedure PrintTypeInfo;
+    procedure PrintValueInfo;
+  end;
+
+  // Специализированный generic для Boolean
+  generic TBooleanTypeInfo = class(specialize TTypeInfo<Boolean>)
+  public
+    procedure PrintTypeInfo;
+    procedure PrintValueInfo;
+  end;
+
+  TShortIntInfo = specialize TTypeInfo<Shortint>;
+  TSmallIntInfo = specialize TTypeInfo<SmallInt>;
+  TLongintInfo = specialize TTypeInfo<Longint>;
+  TLongwordInfo = specialize TTypeInfo<Longword>;
+  TInt64Info = specialize TTypeInfo<Int64>;
+  TByteInfo = specialize TTypeInfo<Byte>;
+  TWordInfo = specialize TTypeInfo<Word>;
+  TCardinalInfo = specialize TTypeInfo<Cardinal>;
+  TQWordInfo = specialize TTypeInfo<QWord>;
+  TCharInfo = specialize TCharTypeInfo;
+  TBooleanInfo = specialize TBooleanTypeInfo;
+
+procedure TTypeInfo.PrintTypeInfo;
+begin
+  Writeln('Исследуемый тип: ', PTypeInfo(TypeInfo(T))^.Name);
+  Writeln('Нижняя граница: ', Low(T));
+  Writeln('Верхняя граница: ', High(T));
+  Writeln('Байт на переменную: ', SizeOf(T));
+end;
+
+procedure TTypeInfo.GenerateRandomValue;
+var
+  Bytes: array of Byte;
+  I: Integer;
+begin
+  SetLength(Bytes, SizeOf(T));
+  for I := 0 to High(Bytes) do
+    Bytes[I] := Random(256);
+
+  Move(Bytes[0], FValue, SizeOf(T));
+end;
+
+procedure TTypeInfo.PrintValueInfo;
+var
+  IsMin, IsMax: Boolean;
+begin
+  Write('Случайное значение: ');
+  Writeln(FValue);
+
+  IsMin := FValue = Low(T);
+  IsMax := FValue = High(T);
+
+  Write('Предыдущее значение: ');
+  if IsMin then
+    Writeln('Overflow')
+  else
+    Writeln(Pred(FValue));
+
+  Write('Последующее значение: ');
+  if IsMax then
+    Writeln('Overflow')
+  else
+    Writeln(Succ(FValue));
+end;
+
+procedure TTypeInfo.PrintMemoryContent;
+var
+  Bytes: array of Byte;
+  I: Integer;
+begin
+  Write('Содержимое оперативной памяти: ');
+  SetLength(Bytes, SizeOf(T));
+  Move(FValue, Bytes[0], SizeOf(T));
+
+  for I := 0 to High(Bytes) do
+  begin
+    Write(Bytes[I]);
+    if I < High(Bytes) then
+      Write(' ');
+  end;
+  Writeln;
+end;
+
+// Специализированные методы для Char
+procedure TCharTypeInfo.PrintTypeInfo;
+begin
+  Writeln('Исследуемый тип: Char');
+  Writeln('Нижняя граница: #', Ord(Low(Char)));
+  Writeln('Верхняя граница: #', Ord(High(Char)));
+  Writeln('Байт на переменную: ', SizeOf(Char));
+end;
+
+procedure TCharTypeInfo.PrintValueInfo;
+var
+  IsMin, IsMax: Boolean;
+begin
+  Write('Случайное значение: #', Ord(FValue));
+  Writeln;
+
+  IsMin := FValue = Low(Char);
+  IsMax := FValue = High(Char);
+
+  Write('Предыдущее значение: ');
+  if IsMin then
+    Writeln('Overflow')
+  else
+    Writeln('#', Ord(Pred(FValue)));
+
+  Write('Последующее значение: ');
+  if IsMax then
+    Writeln('Overflow')
+  else
+    Writeln('#', Ord(Succ(FValue)));
+end;
+
+// Специализированные методы для Boolean
+procedure TBooleanTypeInfo.PrintTypeInfo;
+begin
+  Writeln('Исследуемый тип: Boolean');
+  Writeln('Нижняя граница: ', Low(Boolean));
+  Writeln('Верхняя граница: ', High(Boolean));
+  Writeln('Байт на переменную: ', SizeOf(Boolean));
+end;
+
+procedure TBooleanTypeInfo.PrintValueInfo;
+var
+  IsMin, IsMax: Boolean;
+begin
+  Write('Случайное значение: ', FValue);
+  Writeln;
+
+  IsMin := FValue = Low(Boolean);
+  IsMax := FValue = High(Boolean);
+
+  Write('Предыдущее значение: ');
+  if IsMin then
+    Writeln('Overflow')
+  else
+    Writeln(Pred(FValue));
+
+  Write('Последующее значение: ');
+  if IsMax then
+    Writeln('Overflow')
+  else
+    Writeln(Succ(FValue));
+end;
+
+var
+  InputType: string;
+  RandomSeed: Longword;
+
+begin
+  Randomize;
+  RandomSeed := Random(MaxInt);
+  RandSeed := RandomSeed;
+
+  Write('Введите тип данных: ');
+  Readln(InputType);
+
+  if InputType = 'Shortint' then
+  begin
+    with TShortIntInfo.Create do
+    try
+      PrintTypeInfo;
+      GenerateRandomValue;
+      PrintValueInfo;
+      PrintMemoryContent;
+    finally
+      Free;
+    end;
+  end
+  else if InputType = 'SmallInt' then
+  begin
+    with TSmallIntInfo.Create do
+    try
+      PrintTypeInfo;
+      GenerateRandomValue;
+      PrintValueInfo;
+      PrintMemoryContent;
+    finally
+      Free;
+    end;
+  end
+  else if InputType = 'Longint' then
+  begin
+    with TLongintInfo.Create do
+    try
+      PrintTypeInfo;
+      GenerateRandomValue;
+      PrintValueInfo;
+      PrintMemoryContent;
+    finally
+      Free;
+    end;
+  end
+  else if InputType = 'Longword' then
+  begin
+    with TLongwordInfo.Create do
+    try
+      PrintTypeInfo;
+      GenerateRandomValue;
+      PrintValueInfo;
+      PrintMemoryContent;
+    finally
+      Free;
+    end;
+  end
+  else if InputType = 'Int64' then
+  begin
+    with TInt64Info.Create do
+    try
+      PrintTypeInfo;
+      GenerateRandomValue;
+      PrintValueInfo;
+      PrintMemoryContent;
+    finally
+      Free;
+    end;
+  end
+  else if InputType = 'Byte' then
+  begin
+    with TByteInfo.Create do
+    try
+      PrintTypeInfo;
+      GenerateRandomValue;
+      PrintValueInfo;
+      PrintMemoryContent;
+    finally
+      Free;
+    end;
+  end
+  else if InputType = 'Word' then
+  begin
+    with TWordInfo.Create do
+    try
+      PrintTypeInfo;
+      GenerateRandomValue;
+      PrintValueInfo;
+      PrintMemoryContent;
+    finally
+      Free;
+    end;
+  end
+  else if InputType = 'Cardinal' then
+  begin
+    with TCardinalInfo.Create do
+    try
+      PrintTypeInfo;
+      GenerateRandomValue;
+      PrintValueInfo;
+      PrintMemoryContent;
+    finally
+      Free;
+    end;
+  end
+  else if InputType = 'QWord' then
+  begin
+    with TQWordInfo.Create do
+    try
+      PrintTypeInfo;
+      GenerateRandomValue;
+      PrintValueInfo;
+      PrintMemoryContent;
+    finally
+      Free;
+    end;
+  end
+  else if InputType = 'Char' then
+  begin
+    with TCharInfo.Create do
+    try
+      PrintTypeInfo;
+      GenerateRandomValue;
+      PrintValueInfo;
+      PrintMemoryContent;
+    finally
+      Free;
+    end;
+  end
+  else if InputType = 'Boolean' then
+  begin
+    with TBooleanInfo.Create do
+    try
+      PrintTypeInfo;
+      GenerateRandomValue;
+      PrintValueInfo;
+      PrintMemoryContent;
+    finally
+      Free;
+    end;
+  end
+  else
+  begin
+    Writeln('Error');
+  end;
+end.
 

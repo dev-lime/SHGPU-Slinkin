@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Compiler Value="C:\lazarus\fpc\3.2.2\bin\x86_64-win64\fpc.exe" Date="1513316847"/>
+  <Params Value=" -MObjFPC -Scghi -O1 -gw3 -gl -l -vewnhibq -FiC:\Users\user\Documents\GitProjects\SHGPU-Slinkin\StructuresAndAlgorithms\SecondYear\lab1\lib\x86_64-win64 -FuC:\Users\user\Documents\GitProjects\SHGPU-Slinkin\StructuresAndAlgorithms\SecondYear\lab1\ -FUC:\Users\user\Documents\GitProjects\SHGPU-Slinkin\StructuresAndAlgorithms\SecondYear\lab1\lib\x86_64-win64\ -FEC:\Users\user\Documents\GitProjects\SHGPU-Slinkin\StructuresAndAlgorithms\SecondYear\lab1\ -oC:\Users\user\Documents\GitProjects\SHGPU-Slinkin\StructuresAndAlgorithms\SecondYear\lab1\project1.exe project1.lpr"/>
+  <Complete Value="False"/>
+</CONFIG>
