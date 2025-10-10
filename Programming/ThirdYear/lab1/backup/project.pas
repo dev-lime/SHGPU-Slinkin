@@ -92,19 +92,27 @@ end.
         ╰──────────➤ TFileStorage ─➤ TIntFileStorage
 Проверить работоспособность созданных классов.
 
+*)
+(*
+
 Удалить определение типа TData, его заменит шаблон в дженериках.
 Класс TAbstractStorage преобразовать в дженерик, указав TData в качестве шаблона.
 Пример:
 
 generic TAbstractStorage<TData>=class
 ...
-Классы TMemStorage и TFileStorage преобразовать в дженерики, с наследованием от специализации TAbstractStorage.
+Классы TMemStorage и TFileStorage преобразовать в дженерики,
+с наследованием от специализации TAbstractStorage.
+
 Пример:
 generic TMemStorage<TData>=class(specialize TAbstractStorage<TData>)
 ...
+
 Специализировать:
-TMemStorage в классы TInt64MemStorage (хранение значений Int64) и TExtendedMemStorage (хранение значений Extended)
-TFileStorage в классы TBуteFileStorage (хранение значений Byte) и TStringFileStorage (хранение значений ShortString)
+TMemStorage в классы TInt64MemStorage (хранение значений Int64)
+и TExtendedMemStorage (хранение значений Extended)
+TFileStorage в классы TBуteFileStorage (хранение значений Byte)
+и TStringFileStorage (хранение значений ShortString)
 Протестировать работу специализированных классов.
 
 *)
