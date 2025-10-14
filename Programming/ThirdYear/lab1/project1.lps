@@ -7,8 +7,8 @@
         <Filename Value="project1.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="128"/>
-        <CursorPos X="21" Y="159"/>
+        <TopLine Value="139"/>
+        <CursorPos X="13" Y="141"/>
         <UsageCount Value="39"/>
         <Loaded Value="True"/>
       </Unit>
@@ -26,6 +26,7 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Unit2"/>
         <EditorIndex Value="2"/>
+        <TopLine Value="27"/>
         <CursorPos X="87" Y="18"/>
         <UsageCount Value="37"/>
         <Loaded Value="True"/>
@@ -35,7 +36,8 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Unit3"/>
         <EditorIndex Value="3"/>
-        <CursorPos X="31" Y="10"/>
+        <TopLine Value="50"/>
+        <CursorPos Y="58"/>
         <UsageCount Value="37"/>
         <Loaded Value="True"/>
       </Unit>

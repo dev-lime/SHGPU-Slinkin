@@ -55,6 +55,7 @@ begin
     else
         exit(TData(''));
 end;
+
 procedure TFileStorage.setData(position: qword; value: TData);
 begin
     if (value <> TData('')) or (position < filesize(fd)) then
@@ -68,6 +69,7 @@ function TFileStorage.getCount: qword;
 begin
     Result := filesize(fd);
 end;
+
 procedure TFileStorage.setCount(value: qword);
 var p: TData;
 begin
