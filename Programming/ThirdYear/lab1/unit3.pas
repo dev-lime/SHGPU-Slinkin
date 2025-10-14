@@ -53,12 +53,14 @@ begin
         BlockRead(fd, Result, 1);
     end
     else
-        exit(TData(''));
+        Result := Default(TData);
 end;
 
 procedure TFileStorage.setData(position: qword; value: TData);
+var empty: TData;
 begin
-    if (value <> TData('')) or (position < filesize(fd)) then
+    empty := Default(TData);
+    if (position < filesize(fd)) or (not CompareMem(@value, @empty, SizeOf(TData))) then
     begin
         seek(fd, position);
         BlockWrite(fd, value, 1);
@@ -73,7 +75,7 @@ end;
 procedure TFileStorage.setCount(value: qword);
 var p: TData;
 begin
-    p := TData('');
+    p := Default(TData);
     seek(fd, value);
     if (value >= getCount) then
         BlockWrite(fd, p, 1)
@@ -82,4 +84,3 @@ begin
 end;
 
 end.
-

@@ -27,12 +27,15 @@ implementation
 
 function TMemStorage.getData(position: qword): TData;
 begin
-    if (position >= getCount) then exit(0);
-    Result := fdata[position];
+    if (position >= getCount)
+    then Result := Default(TData)
+    else Result := fdata[position];
 end;
 procedure TMemStorage.setData(position: qword; value: TData);
+var empty: TData;
 begin
-    if (value <> TData(0)) or (position < getCount) then
+    empty := Default(TData);
+    if (position < getCount) or (not CompareMem(@value, @empty, SizeOf(TData))) then
     begin
         if (position >= getCount) then
             setCount(position + 1);
@@ -50,8 +53,7 @@ begin
     old := getCount;
     setlength(fdata, value);
     for old := old to value-1 do
-        fdata[old] := 0;
+        fdata[old] := Default(TData);
 end;
 
 end.
-
