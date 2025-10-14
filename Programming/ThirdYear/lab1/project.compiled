@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<CONFIG>
-  <Compiler Value="C:\lazarus\fpc\3.2.2\bin\x86_64-win64\fpc.exe" Date="1513316847"/>
-  <Params Value=" -MObjFPC -Scgi -O1 -gw3 -gl -l -vewnhibq -FuC:\Users\user\Documents\GitProjects\SHGPU-Slinkin\Programming\ThirdYear\lab1\ -oC:\Users\user\Documents\GitProjects\SHGPU-Slinkin\Programming\ThirdYear\lab1\project.exe -Fr/usr/lib64/fpc/msg/errore.msg project.pas"/>
-</CONFIG>
