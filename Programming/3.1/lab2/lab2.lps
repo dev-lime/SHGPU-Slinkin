@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <Version Value="12"/>
+    <Units>
+      <Unit>
+        <Filename Value="lab2.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <CursorPos X="15" Y="177"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="listsunit.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ListsUnit"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="577"/>
+        <CursorPos X="34" Y="586"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit>
+    </Units>
+    <JumpHistory HistoryIndex="2">
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="7"/>
+      </Position>
+      <Position>
+        <Filename Value="listsunit.pas"/>
+        <Caret Column="16" TopLine="154"/>
+      </Position>
+      <Position>
+        <Filename Value="listsunit.pas"/>
+        <Caret Line="588" Column="57" TopLine="566"/>
+      </Position>
+    </JumpHistory>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes ActiveMode=""/>
+    </RunParams>
+  </ProjectSession>
+</CONFIG>
