@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <Version Value="12"/>
+    <Units>
+      <Unit>
+        <Filename Value="project.pas"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="39"/>
+        <CursorPos X="21" Y="119"/>
+        <UsageCount Value="25"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="memcontrol.pas"/>
+        <UnitName Value="MemControl"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="185"/>
+        <CursorPos X="24" Y="144"/>
+        <UsageCount Value="11"/>
+        <Loaded Value="True"/>
+      </Unit>
+    </Units>
+    <JumpHistory HistoryIndex="16">
+      <Position>
+        <Filename Value="project.pas"/>
+        <Caret Line="10" Column="34"/>
+      </Position>
+      <Position>
+        <Filename Value="project.pas"/>
+        <Caret Line="8" Column="6"/>
+      </Position>
+      <Position>
+        <Filename Value="project.pas"/>
+        <Caret Line="2" Column="15"/>
+      </Position>
+      <Position>
+        <Filename Value="memcontrol.pas"/>
+        <Caret Line="159" TopLine="148"/>
+      </Position>
+      <Position>
+        <Filename Value="project.pas"/>
+        <Caret Line="31" Column="17" TopLine="14"/>
+      </Position>
+      <Position>
+        <Filename Value="project.pas"/>
+        <Caret Line="143" Column="10" TopLine="118"/>
+      </Position>
+      <Position>
+        <Filename Value="project.pas"/>
+        <Caret Line="13" Column="22"/>
+      </Position>
+      <Position>
+        <Filename Value="project.pas"/>
+        <Caret Line="135" Column="23" TopLine="113"/>
+      </Position>
+      <Position>
+        <Filename Value="memcontrol.pas"/>
+        <Caret Line="37" TopLine="28"/>
+      </Position>
+      <Position>
+        <Filename Value="memcontrol.pas"/>
+        <Caret Line="54" Column="23" TopLine="31"/>
+      </Position>
+      <Position>
+        <Filename Value="memcontrol.pas"/>
+        <Caret Line="32" Column="32"/>
+      </Position>
+      <Position>
+        <Filename Value="memcontrol.pas"/>
+        <Caret Line="253" TopLine="223"/>
+      </Position>
+      <Position>
+        <Filename Value="memcontrol.pas"/>
+        <Caret Line="240" Column="26" TopLine="217"/>
+      </Position>
+      <Position>
+        <Filename Value="memcontrol.pas"/>
+        <Caret Line="134" TopLine="118"/>
+      </Position>
+      <Position>
+        <Filename Value="project.pas"/>
+        <Caret Line="127" Column="17" TopLine="106"/>
+      </Position>
+      <Position>
+        <Filename Value="memcontrol.pas"/>
+        <Caret Line="14" Column="12"/>
+      </Position>
+      <Position>
+        <Filename Value="project.pas"/>
+        <Caret Line="119" Column="21" TopLine="94"/>
+      </Position>
+    </JumpHistory>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes ActiveMode=""/>
+    </RunParams>
+  </ProjectSession>
+</CONFIG>

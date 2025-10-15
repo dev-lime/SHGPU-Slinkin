@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<!-- saved from url=(0066)http://xdsl.pst.shgpi/web/2024_25/1_half/kurs2/prog/lab2/lab2.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	
+
+
+</head>
+<body>
+<center>
+<h1>ЛР2. Множества и массивы</h1>
+</center>
+<h2> Задания</h2>
+<ol>
+<li>
+Разработать функции для управления множествами, с преодолением ограничения на 256 элементов,
+обеспечивающие создание и уничтожение множеств, реализующие операции in, +, -, *,
+аналоги функций include, exclude.
+Функции должны обрабатывать динамический массив, каждый элемент которого содержит байтовое множество. Таким образом, массив из двух элементов
+позволит обрабатывать 512 элементов множества, из четырех - 1024 элемента и т.д.
+
+<pre> { тип множества }
+type 
+    TSingleSet=set of byte;
+    TLongSet=array of TSingleSet;
+
+ { создание множества на count элементов
+   реальное кол-во элементов всегда будет выравнено по границе, кратной 256
+   пример: createSet(3) создаст множество на 256 элементов, 
+   createSet(321) - на 512 элементов }
+function createSet(count:integer):TLongSet;
+
+ { изменение размера множества
+   множество может как увеличено, так и уменьшено
+   в последнем случае возможна утеря элементов }
+procedure setSize(var dstSet:TLongSet; newCount:integer);
+
+ { получение размера множества (кратно 256) }
+function getSize(bSet:TLongSet): integer;
+
+ { уничтожение множества }
+procedure destroySet(var dstSet:TLongSet);
+
+ { аналог операции in }
+function inSet(bSet:TLongSet; e:integer):boolean;
+
+ { аналог операции +, возвращает новое множество минимально необходимого размера}
+function sumSet(set1,set2:TLongSet):TLongSet; 
+
+ { аналог операции -, возвращает новое множество минимально необходимого размера}
+function subSet(set1,set2:TLongSet):TLongSet; 
+
+ { аналог операции *, возвращает новое множество минимально необходимого размера}
+function mulSet(set1,set2:TLongSet):TLongSet; 
+
+ { аналог функции include, изменяет переданное множество
+   при необходимости увеличивает его размер }
+procedure includeSet(var dstSet:TLongSet; e:integer);
+
+ { аналог функции exclude, изменяет переданное множество  }
+procedure excludeSet(var dstSet:TLongSet; e:integer);
+
+Обеспечить поддержку вычисления симметричной разности множеств.
+</pre>
+<p>
+Проверить работу функций.
+</p><p>
+</body></html>
