@@ -1,6 +1,4 @@
-{
-
-Лабораторная 1. Простые типы данных в оперативной памяти
+(*
 Разработать консольную программу на языке FreePascal, получающую на вводе строку,
 значение которой может быть равным одному из следующих вариантов:
 Shortint SmallInt Longint Longword Int64 Byte Word Cardinal QWord Char Boolean.
@@ -49,57 +47,43 @@ Shortint SmallInt Longint Longword Int64 Byte Word Cardinal QWord Char Boolean.
 Содержимое оперативной памяти: 65
 
 Для уменьшения копипастинга рекомендуется разработать шаблон (дженерик) класса, решающий поставленную задачу и специализировать его для всех используемых типов данных.
+*)
 
-}
-
-program Lab1;
+program project1;
 
 {$mode objfpc}{$H+}
 
 uses
-  SysUtils,
-  TypInfo;
+  SysUtils;
 
 type
   generic TTypeInfo<T> = class
   private
     FValue: T;
   public
-    procedure PrintTypeInfo;
+    procedure PrintTypeInfo(const TypeName: string);
     procedure GenerateRandomValue;
     procedure PrintValueInfo;
     procedure PrintMemoryContent;
   end;
 
-  // Специализированный generic для Char
-  generic TCharTypeInfo = class(specialize TTypeInfo<Char>)
+  // Специализированный класс для Char
+  TCharTypeInfo = class(specialize TTypeInfo<Char>)
   public
     procedure PrintTypeInfo;
     procedure PrintValueInfo;
   end;
 
-  // Специализированный generic для Boolean
-  generic TBooleanTypeInfo = class(specialize TTypeInfo<Boolean>)
+  // Специализированный класс для Boolean
+  TBooleanTypeInfo = class(specialize TTypeInfo<Boolean>)
   public
     procedure PrintTypeInfo;
     procedure PrintValueInfo;
   end;
 
-  TShortIntInfo = specialize TTypeInfo<Shortint>;
-  TSmallIntInfo = specialize TTypeInfo<SmallInt>;
-  TLongintInfo = specialize TTypeInfo<Longint>;
-  TLongwordInfo = specialize TTypeInfo<Longword>;
-  TInt64Info = specialize TTypeInfo<Int64>;
-  TByteInfo = specialize TTypeInfo<Byte>;
-  TWordInfo = specialize TTypeInfo<Word>;
-  TCardinalInfo = specialize TTypeInfo<Cardinal>;
-  TQWordInfo = specialize TTypeInfo<QWord>;
-  TCharInfo = specialize TCharTypeInfo;
-  TBooleanInfo = specialize TBooleanTypeInfo;
-
-procedure TTypeInfo.PrintTypeInfo;
+procedure TTypeInfo.PrintTypeInfo(const TypeName: string);
 begin
-  Writeln('Исследуемый тип: ', PTypeInfo(TypeInfo(T))^.Name);
+  Writeln('Исследуемый тип: ', TypeName);
   Writeln('Нижняя граница: ', Low(T));
   Writeln('Верхняя граница: ', High(T));
   Writeln('Байт на переменную: ', SizeOf(T));
@@ -236,9 +220,9 @@ begin
 
   if InputType = 'Shortint' then
   begin
-    with TShortIntInfo.Create do
+    with specialize TTypeInfo<Shortint>.Create do
     try
-      PrintTypeInfo;
+      PrintTypeInfo('Shortint');
       GenerateRandomValue;
       PrintValueInfo;
       PrintMemoryContent;
@@ -248,9 +232,9 @@ begin
   end
   else if InputType = 'SmallInt' then
   begin
-    with TSmallIntInfo.Create do
+    with specialize TTypeInfo<SmallInt>.Create do
     try
-      PrintTypeInfo;
+      PrintTypeInfo('SmallInt');
       GenerateRandomValue;
       PrintValueInfo;
       PrintMemoryContent;
@@ -260,9 +244,9 @@ begin
   end
   else if InputType = 'Longint' then
   begin
-    with TLongintInfo.Create do
+    with specialize TTypeInfo<Longint>.Create do
     try
-      PrintTypeInfo;
+      PrintTypeInfo('Longint');
       GenerateRandomValue;
       PrintValueInfo;
       PrintMemoryContent;
@@ -272,9 +256,9 @@ begin
   end
   else if InputType = 'Longword' then
   begin
-    with TLongwordInfo.Create do
+    with specialize TTypeInfo<Longword>.Create do
     try
-      PrintTypeInfo;
+      PrintTypeInfo('Longword');
       GenerateRandomValue;
       PrintValueInfo;
       PrintMemoryContent;
@@ -284,9 +268,9 @@ begin
   end
   else if InputType = 'Int64' then
   begin
-    with TInt64Info.Create do
+    with specialize TTypeInfo<Int64>.Create do
     try
-      PrintTypeInfo;
+      PrintTypeInfo('Int64');
       GenerateRandomValue;
       PrintValueInfo;
       PrintMemoryContent;
@@ -296,9 +280,9 @@ begin
   end
   else if InputType = 'Byte' then
   begin
-    with TByteInfo.Create do
+    with specialize TTypeInfo<Byte>.Create do
     try
-      PrintTypeInfo;
+      PrintTypeInfo('Byte');
       GenerateRandomValue;
       PrintValueInfo;
       PrintMemoryContent;
@@ -308,9 +292,9 @@ begin
   end
   else if InputType = 'Word' then
   begin
-    with TWordInfo.Create do
+    with specialize TTypeInfo<Word>.Create do
     try
-      PrintTypeInfo;
+      PrintTypeInfo('Word');
       GenerateRandomValue;
       PrintValueInfo;
       PrintMemoryContent;
@@ -320,9 +304,9 @@ begin
   end
   else if InputType = 'Cardinal' then
   begin
-    with TCardinalInfo.Create do
+    with specialize TTypeInfo<Cardinal>.Create do
     try
-      PrintTypeInfo;
+      PrintTypeInfo('Cardinal');
       GenerateRandomValue;
       PrintValueInfo;
       PrintMemoryContent;
@@ -332,9 +316,9 @@ begin
   end
   else if InputType = 'QWord' then
   begin
-    with TQWordInfo.Create do
+    with specialize TTypeInfo<QWord>.Create do
     try
-      PrintTypeInfo;
+      PrintTypeInfo('QWord');
       GenerateRandomValue;
       PrintValueInfo;
       PrintMemoryContent;
@@ -344,7 +328,7 @@ begin
   end
   else if InputType = 'Char' then
   begin
-    with TCharInfo.Create do
+    with TCharTypeInfo.Create do
     try
       PrintTypeInfo;
       GenerateRandomValue;
@@ -356,7 +340,7 @@ begin
   end
   else if InputType = 'Boolean' then
   begin
-    with TBooleanInfo.Create do
+    with TBooleanTypeInfo.Create do
     try
       PrintTypeInfo;
       GenerateRandomValue;
@@ -371,4 +355,3 @@ begin
     Writeln('Error');
   end;
 end.
-
