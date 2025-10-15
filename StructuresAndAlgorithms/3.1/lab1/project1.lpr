@@ -77,6 +77,7 @@ type
   // Специализированный класс для Boolean
   TBooleanTypeInfo = class(specialize TTypeInfo<Boolean>)
   public
+    procedure GenerateRandomValue;
     procedure PrintTypeInfo;
     procedure PrintValueInfo;
   end;
@@ -175,6 +176,11 @@ begin
 end;
 
 // Специализированные методы для Boolean
+procedure TBooleanTypeInfo.GenerateRandomValue;
+begin
+  FValue := Boolean(Random(2));
+end;
+
 procedure TBooleanTypeInfo.PrintTypeInfo;
 begin
   Writeln('Исследуемый тип: Boolean');

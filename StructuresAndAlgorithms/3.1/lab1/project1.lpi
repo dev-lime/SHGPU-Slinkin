@@ -28,7 +28,6 @@
       <Unit>
         <Filename Value="project1.lpr"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Lab1"/>
       </Unit>
     </Units>
   </ProjectOptions>
