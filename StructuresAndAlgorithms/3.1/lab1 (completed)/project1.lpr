@@ -218,8 +218,6 @@ var
 
 begin
   Randomize;
-  RandomSeed := Random(MaxInt);
-  RandSeed := RandomSeed;
 
   Write('Введите тип данных: ');
   Readln(InputType);
