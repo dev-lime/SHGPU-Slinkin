@@ -124,7 +124,7 @@ void listOutL1(pnodeL1 ph)
     while (current != NULL) {
         printf("%s", current->data);
         if (current->pnext != NULL) {
-            printf(" -> ");
+            printf(" > ");
         }
         current = current->pnext;
     }
