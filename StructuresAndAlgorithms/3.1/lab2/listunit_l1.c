@@ -10,14 +10,14 @@ pnodeL1 createNodeL1(char *data)
     pnodeL1 newNode = (pnodeL1)malloc(sizeof(tnodeL1));
     if (newNode == NULL) return NULL;
     
-    newNode->data = (char*)malloc(strlen(data) + 1);
-    if (newNode->data == NULL) {
+    (*newNode).data = (char*)malloc(strlen(data) + 1);
+    if ((*newNode).data == NULL) {
         free(newNode);
         return NULL;
     }
     
-    strcpy(newNode->data, data);
-    newNode->pnext = NULL;
+    strcpy((*newNode).data, data);
+    (*newNode).pnext = NULL;
     
     return newNode;
 }
@@ -26,7 +26,7 @@ pnodeL1 addFirstNodeL1(pnodeL1 *ph, pnodeL1 p)
 {
     if (p == NULL) return NULL;
     
-    p->pnext = *ph;
+    (*p).pnext = *ph;
     *ph = p;
     
     return p;
@@ -42,12 +42,12 @@ pnodeL1 addLastNodeL1(pnodeL1 *ph, pnodeL1 p)
     }
     
     pnodeL1 current = *ph;
-    while (current->pnext != NULL) {
-        current = current->pnext;
+    while ((*current).pnext != NULL) {
+        current = (*current).pnext;
     }
     
-    current->pnext = p;
-    p->pnext = NULL;
+    (*current).pnext = p;
+    (*p).pnext = NULL;
     
     return p;
 }
@@ -56,8 +56,8 @@ pnodeL1 insertAfterNodeL1(pnodeL1 pn, pnodeL1 p)
 {
     if (pn == NULL || p == NULL) return NULL;
     
-    p->pnext = pn->pnext;
-    pn->pnext = p;
+    (*p).pnext = (*pn).pnext;
+    (*pn).pnext = p;
     
     return p;
 }
@@ -66,18 +66,18 @@ void disposeNodeL1(pnodeL1 *pn)
 {
     if (pn == NULL || *pn == NULL) return;
     
-    free((*pn)->data);
+    free((*(*pn)).data);
     free(*pn);
     *pn = NULL;
 }
 
 pnodeL1 deleteAfterNodeL1(pnodeL1 pn)
 {
-    if (pn == NULL || pn->pnext == NULL) return NULL;
+    if (pn == NULL || (*pn).pnext == NULL) return NULL;
     
-    pnodeL1 deleted = pn->pnext;
-    pn->pnext = deleted->pnext;
-    deleted->pnext = NULL;
+    pnodeL1 deleted = (*pn).pnext;
+    (*pn).pnext = (*deleted).pnext;
+    (*deleted).pnext = NULL;
     
     return deleted;
 }
@@ -96,7 +96,7 @@ void disposeListL1(pnodeL1 *ph)
     
     pnodeL1 current = *ph;
     while (current != NULL) {
-        pnodeL1 next = current->pnext;
+        pnodeL1 next = (*current).pnext;
         disposeNodeL1(&current);
         current = next;
     }
@@ -110,10 +110,10 @@ void listActionL1(pnodeL1 ph, listfunc func)
     
     pnodeL1 current = ph;
     while (current != NULL) {
-        if (func(current->data) == 0) {
+        if (func((*current).data) == 0) {
             break;
         }
-        current = current->pnext;
+        current = (*current).pnext;
     }
 }
 
@@ -122,11 +122,11 @@ void listOutL1(pnodeL1 ph)
     pnodeL1 current = ph;
     printf("List: ");
     while (current != NULL) {
-        printf("%s", current->data);
-        if (current->pnext != NULL) {
+        printf("%s", (*current).data);
+        if ((*current).pnext != NULL) {
             printf(" > ");
         }
-        current = current->pnext;
+        current = (*current).pnext;
     }
     printf("\n");
 }
@@ -138,7 +138,7 @@ int listCountL1(pnodeL1 ph)
     
     while (current != NULL) {
         count++;
-        current = current->pnext;
+        current = (*current).pnext;
     }
     
     return count;
@@ -153,20 +153,20 @@ char *listSumStr(char *dest, int maxsize, pnodeL1 ph, char *delimiter)
     
     while (current != NULL) {
         int current_len = strlen(dest);
-        int data_len = strlen(current->data);
-        int delim_len = (current->pnext != NULL && delimiter != NULL) ? strlen(delimiter) : 0;
+        int data_len = strlen((*current).data);
+        int delim_len = ((*current).pnext != NULL && delimiter != NULL) ? strlen(delimiter) : 0;
         
         if (current_len + data_len + delim_len >= maxsize) {
             break;
         }
         
-        strcat(dest, current->data);
+        strcat(dest, (*current).data);
         
-        if (current->pnext != NULL && delimiter != NULL) {
+        if ((*current).pnext != NULL && delimiter != NULL) {
             strcat(dest, delimiter);
         }
         
-        current = current->pnext;
+        current = (*current).pnext;
     }
     
     return dest;
