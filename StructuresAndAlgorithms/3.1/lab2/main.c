@@ -30,12 +30,6 @@ int sumNum(char *data)
 
 int main()
 {
-    // golova
-    // 3 uzla
-    // udalit 2' uzel
-    // ochistit 2' uzel
-    // dobavit uzel v seredinu
-
 	pnodeL1 head = NULL;
 	listOutL1(head);
 
@@ -71,7 +65,7 @@ int main()
 	char buffer[100];
 	listSumStr(buffer, sizeof(buffer), head, " | ");
 	printf("%s\n", buffer);
-	
+
 	pnodeL1 node5 = createNodeL1("5");
 	addLastNodeL1(&head, node5);
 	listOutL1(head);
