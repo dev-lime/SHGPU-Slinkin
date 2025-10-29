@@ -75,6 +75,27 @@ int main()
 
 	disposeListL1(&head);
 	listOutL1(head);
+
+
+	printf("\n======\n");
+	pnodeL1 testHead = NULL;
+	addLastNodeL1(&testHead, createNodeL1("ОченьДлиннаяСтрока1"));
+	addLastNodeL1(&testHead, createNodeL1("ОченьДлиннаяСтрока2"));
+	addLastNodeL1(&testHead, createNodeL1("ОченьДлиннаяСтрока3"));
+
+	char smallBuffer[20];
+	listSumStr(smallBuffer, sizeof(smallBuffer), testHead, " | ");
+	printf("%ld: %s\n", sizeof(smallBuffer), smallBuffer);
+
+	char exBuffer[40];
+	listSumStr(exBuffer, sizeof(exBuffer), testHead, " | ");
+	printf("%ld: %s\n", sizeof(exBuffer), exBuffer);
+
+	char largeBuffer[118];
+	listSumStr(largeBuffer, sizeof(largeBuffer), testHead, " | ");
+	printf("%ld: %s\n", sizeof(largeBuffer), largeBuffer);
+
+	disposeListL1(&testHead);
 	
     return 0;
 }
