@@ -299,17 +299,17 @@ char *listSumStr(char *dest, int maxsize, pnodeL1 ph, char *delimiter)
     int remaining = maxsize - 1;
     
     while (current != NULL && remaining > 0) {
-        int data_len = strlen(current->data);
+        int data_len = strlen((*current).data);
         if (data_len > remaining) {
-            strncat(dest, current->data, remaining);
+            strncat(dest, (*current).data, remaining);
             remaining = 0;
             break;
         }
         
-        strncat(dest, current->data, remaining);
+        strncat(dest, (*current).data, remaining);
         remaining -= data_len;
         
-        if (current->pnext != NULL && delimiter != NULL && remaining > 0) {
+        if ((*current).pnext != NULL && delimiter != NULL && remaining > 0) {
             int delim_len = strlen(delimiter);
             if (delim_len > remaining) {
                 strncat(dest, delimiter, remaining);
@@ -321,7 +321,7 @@ char *listSumStr(char *dest, int maxsize, pnodeL1 ph, char *delimiter)
             remaining -= delim_len;
         }
         
-        current = current->pnext;
+        current = (*current).pnext;
     }
     
     return dest;
