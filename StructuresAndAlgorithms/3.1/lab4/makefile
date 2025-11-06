@@ -1,8 +1,16 @@
-main : squnit.o squnit.h main.c
-	cc -o main main.c squnit.o -fsanitize=address
+CFLAGS = -Wall -Wextra -std=c99
+TARGET = main
+SOURCES = main.c squnitA.c squnitL.c
 
-squnit.o : squnit.c squnit.h
-	cc -c squnit.c -fsanitize=address
+all: $(TARGET)
 
-clean :
-	rm -f squnit.o main
+$(TARGET): $(SOURCES)
+	gcc $(CFLAGS) -o $(TARGET) $(SOURCES)
+
+clean:
+	rm -f $(TARGET)
+
+test: $(TARGET)
+	./$(TARGET)
+
+.PHONY: all clean test
