@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Compiler Value="C:\lazarus\fpc\3.2.2\bin\i386-win32\fpc.exe" Date="1525896643"/>
+  <Params Value="-MObjFPC -Scaghi -CirotR -O1 -gw3 -gl -l -vewnhibq -FiC:\Users\LicenDrinc\Desktop\SHGPU-Slinkin\330Б\ПРОГ\P3_3\lib\i386-win32 -FuC:\Users\LicenDrinc\Desktop\SHGPU-Slinkin\330Б\ПРОГ\P3_3\ -FUC:\Users\LicenDrinc\Desktop\SHGPU-Slinkin\330Б\ПРОГ\P3_3\lib\i386-win32\ -FEC:\Users\LicenDrinc\Desktop\SHGPU-Slinkin\330Б\ПРОГ\P3_3\ -oC:\Users\LicenDrinc\Desktop\SHGPU-Slinkin\330Б\ПРОГ\P3_3\project1.exe project1.lpr"/>
+</CONFIG>
