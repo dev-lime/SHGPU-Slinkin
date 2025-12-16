@@ -43,7 +43,7 @@ pnodeL2C addFirstNodeL2C(pnodeL2C *ph, pnodeL2C p)
     }
     else
     {
-        // вставляем перед первым узлом
+        // вставляет перед первым узлом
         pnodeL2C last = (*(*ph)).pprev;
         (*p).pnext = *ph;
         (*p).pprev = last;
@@ -68,7 +68,7 @@ pnodeL2C addLastNodeL2C(pnodeL2C *ph, pnodeL2C p)
     }
     else
     {
-        // вставляем после последнего узла
+        // вставляет после последнего узла
         pnodeL2C last = (*(*ph)).pprev;
         (*p).pnext = *ph;
         (*p).pprev = last;
@@ -124,7 +124,7 @@ pnodeL2C deleteNodeL2C(pnodeL2C *ph, pnodeL2C pn)
         }
     }
     
-    // отвязываем узел
+    // отвязывает узел
     (*pn).pnext = NULL;
     (*pn).pprev = NULL;
     
