@@ -16,14 +16,6 @@ static int countFunction(double data)
     return 1;
 }
 
-static int testFunctionWrapper(double data)
-{
-    static int count = 0;
-    printf("Элемент %d: %.2f\n", ++count, data);
-    if (count >= 3) return 0;
-    return 1;
-}
-
 // создает узел и возвращает его
 pnodeL2C createNodeL2C(double data)
 {
