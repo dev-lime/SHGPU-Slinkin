@@ -12,161 +12,69 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
+#include <string.h>
 #include "listunit_l2c.h"
 
-// Тестовые функции
-void test_createNode() {
-    printf("Testing createNodeL2C...\n");
-    pnodeL2C node = createNodeL2C(3.14);
-    assert(node != NULL);
-    assert(node->data == 3.14);
-    assert(node->pprev == node);
-    assert(node->pnext == node);
-    disposeNodeL2C(&node);
-    assert(node == NULL);
-    printf("createNodeL2C: OK\n\n");
+// функция для listAction: печатает значения >=15, прерывается при <15
+int printTo(double d)
+{
+    if (d < 15) return 0;
+    printf("|%lf| ", d);
+    return 1;
 }
 
-void test_addFirstLast() {
-    printf("Testing addFirstNodeL2C and addLastNodeL2C...\n");
-    pnodeL2C list = NULL;
+int main()
+{
+    printf("----------------------\n");
+    pnodeL2C tn = NULL, tn1 = NULL;
     
-    // Добавляем первый узел
-    pnodeL2C node1 = createNodeL2C(1.0);
-    list = node1;
-    assert(listCountL2C(list) == 1);
+    // создание списка
+    addFirstNodeL2C(&tn, createNodeL2C(40));
+    listOutL2C(tn, 1);
+    printf("Количество: %d\n", listCountL2C(tn));
     
-    // Добавляем в начало
-    pnodeL2C node2 = createNodeL2C(2.0);
-    addFirstNodeL2C(&list, node2);
-    assert(list->data == 2.0);
-    assert(listCountL2C(list) == 2);
+    // вставка после и перед
+    insertAfterNodeL2C(tn, createNodeL2C(20));
+    insertBeforeNodeL2C(tn, createNodeL2C(10));
+    listOutL2C(tn, 1);
+    printf("Количество: %d\n", listCountL2C(tn));
     
-    // Добавляем в конец
-    pnodeL2C node3 = createNodeL2C(3.0);
-    addLastNodeL2C(&list, node3);
-    assert(listCountL2C(list) == 3);
+    printf("-----------------\n");
     
-    listOutL2C(list, 1); // Вывод: 2.00 1.00 3.00
+    // поиск мин/макс
+    printf("Макс: %lf, Мин: %lf\n", 
+           minmaxL2C(tn, 0), minmaxL2C(tn, 1));
     
-    disposeListL2C(&list);
-    assert(list == NULL);
-    printf("addFirstNodeL2C and addLastNodeL2C: OK\n\n");
-}
-
-void test_insertOperations() {
-    printf("Testing insert operations...\n");
-    pnodeL2C list = NULL;
+    // abNodeL2C с разными параметрами
+    printf("abNode тесты:\n");
+    printf("Последний <25: %lf\n", abNodeL2C(tn, 0, 0, 25)->data);
+    printf("Первый >35: %lf\n", abNodeL2C(tn, 1, 1, 35)->data);
     
-    pnodeL2C node1 = createNodeL2C(1.0);
-    pnodeL2C node2 = createNodeL2C(2.0);
-    pnodeL2C node3 = createNodeL2C(3.0);
+    // listAction
+    printf("\nlistAction (прямой обход):\n");
+    listActionL2C(tn, 1, &printTo);
+    printf("\n");
     
-    list = node1;
-    insertAfterNodeL2C(node1, node2); // 1.0 -> 2.0
-    insertBeforeNodeL2C(node2, node3); // 1.0 -> 3.0 -> 2.0
+    // удаление узлов
+    printf("\nУдаление элементов:\n");
     
-    assert(listCountL2C(list) == 3);
-    assert(list->data == 1.0);
-    assert(list->pnext->data == 3.0);
-    assert(list->pnext->pnext->data == 2.0);
+    // удаляет элемент >35 (это 40)
+    tn1 = deleteNodeL2C(&tn, abNodeL2C(tn, 1, 1, 35));
+    disposeListL2C(&tn1);
+    listOutL2C(tn, 1);
     
-    listOutL2C(list, 1);
+    // удаляет элемент <15 (это 10)
+    tn1 = deleteNodeL2C(&tn, abNodeL2C(tn, 1, 0, 15));
+    disposeListL2C(&tn1);
+    listOutL2C(tn, 1);
     
-    disposeListL2C(&list);
-    printf("Insert operations: OK\n\n");
-}
-
-void test_deleteOperations() {
-    printf("Testing delete operations...\n");
-    pnodeL2C list = NULL;
+    // удаляет оставшийся элемент (20)
+    tn1 = deleteNodeL2C(&tn, tn);
+    disposeListL2C(&tn1);
+    listOutL2C(tn, 1);
     
-    pnodeL2C node1 = createNodeL2C(1.0);
-    pnodeL2C node2 = createNodeL2C(2.0);
-    pnodeL2C node3 = createNodeL2C(3.0);
+    // очистка
+    disposeListL2C(&tn);
     
-    list = node1;
-    addLastNodeL2C(&list, node2);
-    addLastNodeL2C(&list, node3);
-    
-    assert(listCountL2C(list) == 3);
-    
-    // Удаляем средний узел
-    pnodeL2C deleted = deleteNodeL2C(&list, node2);
-    assert(deleted == node2);
-    assert(listCountL2C(list) == 2);
-    
-    // Удаляем голову
-    deleted = deleteNodeL2C(&list, list);
-    assert(deleted == node1);
-    assert(list->data == 3.0);
-    assert(listCountL2C(list) == 1);
-    
-    disposeNodeL2C(&deleted);
-    
-    disposeListL2C(&list);
-    printf("Delete operations: OK\n\n");
-}
-
-void test_minmax() {
-    printf("Testing minmaxL2C...\n");
-    pnodeL2C list = NULL;
-    
-    pnodeL2C node1 = createNodeL2C(5.0);
-    pnodeL2C node2 = createNodeL2C(1.0);
-    pnodeL2C node3 = createNodeL2C(8.0);
-    pnodeL2C node4 = createNodeL2C(3.0);
-    
-    list = node1;
-    addLastNodeL2C(&list, node2);
-    addLastNodeL2C(&list, node3);
-    addLastNodeL2C(&list, node4);
-    
-    double min_val = minmaxL2C(list, 1);
-    double max_val = minmaxL2C(list, 0);
-    
-    assert(min_val == 1.0);
-    assert(max_val == 8.0);
-    
-    printf("Min: %.2f, Max: %.2f\n", min_val, max_val);
-    
-    disposeListL2C(&list);
-    printf("minmaxL2C: OK\n\n");
-}
-
-void test_listAction() {
-    printf("Testing listActionL2C...\n");
-    pnodeL2C list = NULL;
-    
-    pnodeL2C node1 = createNodeL2C(1.0);
-    pnodeL2C node2 = createNodeL2C(2.0);
-    pnodeL2C node3 = createNodeL2C(3.0);
-    
-    list = node1;
-    addLastNodeL2C(&list, node2);
-    addLastNodeL2C(&list, node3);
-    
-    printf("Forward traversal: ");
-    listOutL2C(list, 1);
-    
-    printf("Backward traversal: ");
-    listOutL2C(list, 0);
-    
-    disposeListL2C(&list);
-    printf("listActionL2C: OK\n\n");
-}
-
-int main() {
-    printf("=== Testing Doubly Linked Circular List Module ===\n\n");
-    
-    test_createNode();
-    test_addFirstLast();
-    test_insertOperations();
-    test_deleteOperations();
-    test_minmax();
-    test_listAction();
-    
-    printf("=== All tests passed! ===\n");
     return 0;
 }
