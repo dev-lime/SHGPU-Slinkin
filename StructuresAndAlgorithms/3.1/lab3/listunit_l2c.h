@@ -5,7 +5,7 @@
 
 // структура для хранения узла списка
 typedef struct tnodeL2C *pnodeL2C;
-typedef struct
+typedef struct tnodeL2C
 	{   double data;
 	    pnodeL2C pprev,pnext;
 	} tnodeL2C;
