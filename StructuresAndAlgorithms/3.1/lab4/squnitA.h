@@ -5,7 +5,7 @@
 
 // структура для хранения стека целочисленных значений на базе массивов
 typedef struct AStack *pAStack;
-typedef struct
+typedef struct AStack
 	{   int *data;   // массив для хранения элементов стека
 	    int maxsize; // максимальный размер массива
 	    int count;   // количество элементов в массиве
@@ -29,7 +29,7 @@ typedef struct
 
 // структура для хранения очереди целочисленных значений на базе кольцевых массивов
 typedef struct aQueue *paQueue;
-typedef struct
+typedef struct aQueue
 	{   int *data;   // массив для хранения элементов очереди
 	    int maxsize; // максимальный размер массива
 	    int first,last;   // индексы начала и конца очереди
@@ -52,4 +52,3 @@ typedef struct
 
 
 #endif // SQUNIT
-

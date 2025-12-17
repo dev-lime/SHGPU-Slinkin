@@ -1,13 +1,12 @@
 #ifndef SQUNITL
 #define SQUNITL
 
-#include "squnitA.h" // для совместимости интерфейсов
+#include <stdio.h>
+#include <stdlib.h>
 
-// Переопределяем структуры для совместимости
-typedef struct AStack *pAStack;
-typedef struct aQueue *paQueue;
+// Структуры для стеков и очередей на списках
 
-// Создаем новые структуры для списков
+// Стек на односвязном списке
 typedef struct LStackNode {
     int data;
     struct LStackNode* next;
@@ -18,6 +17,7 @@ typedef struct LStack {
     int count;
 } LStack;
 
+// Очередь на двусвязном кольцевом списке
 typedef struct LQueueNode {
     int data;
     struct LQueueNode* next;
@@ -29,22 +29,22 @@ typedef struct LQueue {
     int count;
 } LQueue;
 
-// Функции для работы со стеком (односвязный список)
-pAStack AStack_create(int maxsize);
-void AStack_destroy(pAStack stack);
-void AStack_push(pAStack stack, int number);
-int AStack_pop(pAStack stack);
-int AStack_empty(pAStack stack);
-int AStack_full(pAStack stack);
-int AStack_count(pAStack stack);
+// Функции для работы со стеком (списки)
+LStack* LStack_create(int maxsize);
+void LStack_destroy(LStack* stack);
+void LStack_push(LStack* stack, int number);
+int LStack_pop(LStack* stack);
+int LStack_empty(LStack* stack);
+int LStack_full(LStack* stack);
+int LStack_count(LStack* stack);
 
-// Функции для работы с очередью (двусвязный кольцевой список)
-paQueue aQueue_create(int maxsize);
-void aQueue_destroy(paQueue que);
-void aQueue_put(paQueue que, int number);
-int aQueue_get(paQueue que);
-int aQueue_empty(paQueue que);
-int aQueue_full(paQueue que);
-int aQueue_count(paQueue que);
+// Функции для работы с очередью (списки)
+LQueue* LQueue_create(int maxsize);
+void LQueue_destroy(LQueue* que);
+void LQueue_put(LQueue* que, int number);
+int LQueue_get(LQueue* que);
+int LQueue_empty(LQueue* que);
+int LQueue_full(LQueue* que);
+int LQueue_count(LQueue* que);
 
 #endif // SQUNITL

@@ -1,4 +1,4 @@
-CFLAGS = -Wall -Wextra -std=c99
+CFLAGS = -Wall -Wextra -std=c99 -Wno-unused-parameter
 TARGET = main
 SOURCES = main.c squnitA.c squnitL.c
 

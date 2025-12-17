@@ -1,125 +1,115 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "squnitL.h"
 
 // ========== РЕАЛИЗАЦИЯ СТЕКА НА ОДНОСВЯЗНОМ СПИСКЕ ==========
 
-pAStack AStack_create(int maxsize) {
+LStack* LStack_create(int maxsize) {
     LStack* stack = (LStack*)malloc(sizeof(LStack));
     if (!stack) return NULL;
     
     stack->top = NULL;
     stack->count = 0;
-    return (pAStack)stack;
+    return stack;
 }
 
-void AStack_destroy(pAStack stack) {
-    LStack* lstack = (LStack*)stack;
-    while (lstack->top != NULL) {
-        LStackNode* temp = lstack->top;
-        lstack->top = lstack->top->next;
+void LStack_destroy(LStack* stack) {
+    while (stack->top != NULL) {
+        LStackNode* temp = stack->top;
+        stack->top = stack->top->next;
         free(temp);
     }
-    free(lstack);
+    free(stack);
 }
 
-void AStack_push(pAStack stack, int number) {
-    LStack* lstack = (LStack*)stack;
+void LStack_push(LStack* stack, int number) {
     LStackNode* newNode = (LStackNode*)malloc(sizeof(LStackNode));
     if (!newNode) return;
     
     newNode->data = number;
-    newNode->next = lstack->top;
-    lstack->top = newNode;
-    lstack->count++;
+    newNode->next = stack->top;
+    stack->top = newNode;
+    stack->count++;
 }
 
-int AStack_pop(pAStack stack) {
-    LStack* lstack = (LStack*)stack;
-    if (lstack->top == NULL) return -1;
+int LStack_pop(LStack* stack) {
+    if (stack->top == NULL) return -1;
     
-    LStackNode* temp = lstack->top;
+    LStackNode* temp = stack->top;
     int value = temp->data;
-    lstack->top = lstack->top->next;
+    stack->top = stack->top->next;
     free(temp);
-    lstack->count--;
+    stack->count--;
     return value;
 }
 
-int AStack_empty(pAStack stack) {
-    LStack* lstack = (LStack*)stack;
-    return lstack->top == NULL;
+int LStack_empty(LStack* stack) {
+    return stack->top == NULL;
 }
 
-int AStack_full(pAStack stack) {
+int LStack_full(LStack* stack) {
     // Для списковой реализации стек никогда не бывает полным
     // (ограничено только памятью)
     return 0;
 }
 
-int AStack_count(pAStack stack) {
-    LStack* lstack = (LStack*)stack;
-    return lstack->count;
+int LStack_count(LStack* stack) {
+    return stack->count;
 }
 
 // ========== РЕАЛИЗАЦИЯ ОЧЕРЕДИ НА ДВУСВЯЗНОМ КОЛЬЦЕВОМ СПИСКЕ ==========
 
-paQueue aQueue_create(int maxsize) {
+LQueue* LQueue_create(int maxsize) {
     LQueue* queue = (LQueue*)malloc(sizeof(LQueue));
     if (!queue) return NULL;
     
     queue->head = NULL;
     queue->count = 0;
-    return (paQueue)queue;
+    return queue;
 }
 
-void aQueue_destroy(paQueue que) {
-    LQueue* lqueue = (LQueue*)que;
-    if (lqueue->head != NULL) {
-        LQueueNode* current = lqueue->head;
+void LQueue_destroy(LQueue* que) {
+    if (que->head != NULL) {
+        LQueueNode* current = que->head;
         do {
             LQueueNode* temp = current;
             current = current->next;
             free(temp);
-        } while (current != lqueue->head);
+        } while (current != que->head);
     }
-    free(lqueue);
+    free(que);
 }
 
-void aQueue_put(paQueue que, int number) {
-    LQueue* lqueue = (LQueue*)que;
+void LQueue_put(LQueue* que, int number) {
     LQueueNode* newNode = (LQueueNode*)malloc(sizeof(LQueueNode));
     if (!newNode) return;
     
     newNode->data = number;
     
-    if (lqueue->head == NULL) {
+    if (que->head == NULL) {
         // Первый элемент
         newNode->next = newNode;
         newNode->prev = newNode;
-        lqueue->head = newNode;
+        que->head = newNode;
     } else {
         // Добавляем перед head (в конец очереди)
-        LQueueNode* tail = lqueue->head->prev;
-        newNode->next = lqueue->head;
+        LQueueNode* tail = que->head->prev;
+        newNode->next = que->head;
         newNode->prev = tail;
         tail->next = newNode;
-        lqueue->head->prev = newNode;
+        que->head->prev = newNode;
     }
-    lqueue->count++;
+    que->count++;
 }
 
-int aQueue_get(paQueue que) {
-    LQueue* lqueue = (LQueue*)que;
-    if (lqueue->head == NULL) return -1;
+int LQueue_get(LQueue* que) {
+    if (que->head == NULL) return -1;
     
-    LQueueNode* headNode = lqueue->head;
+    LQueueNode* headNode = que->head;
     int value = headNode->data;
     
-    if (lqueue->head->next == lqueue->head) {
+    if (que->head->next == que->head) {
         // Последний элемент
-        free(lqueue->head);
-        lqueue->head = NULL;
+        free(que->head);
+        que->head = NULL;
     } else {
         LQueueNode* newHead = headNode->next;
         LQueueNode* tail = headNode->prev;
@@ -128,24 +118,22 @@ int aQueue_get(paQueue que) {
         newHead->prev = tail;
         
         free(headNode);
-        lqueue->head = newHead;
+        que->head = newHead;
     }
-    lqueue->count--;
+    que->count--;
     return value;
 }
 
-int aQueue_empty(paQueue que) {
-    LQueue* lqueue = (LQueue*)que;
-    return lqueue->head == NULL;
+int LQueue_empty(LQueue* que) {
+    return que->head == NULL;
 }
 
-int aQueue_full(paQueue que) {
+int LQueue_full(LQueue* que) {
     // Для списковой реализации очередь никогда не бывает полной
     // (ограничено только памятью)
     return 0;
 }
 
-int aQueue_count(paQueue que) {
-    LQueue* lqueue = (LQueue*)que;
-    return lqueue->count;
+int LQueue_count(LQueue* que) {
+    return que->count;
 }
