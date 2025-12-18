@@ -179,13 +179,18 @@ void listActionL2C(pnodeL2C ph, int fwd, listfunc func)
     
     do
     {
-        if (!func((*current).data)) break;
-        
         if (fwd)
+        {
+            // прямой обход
+            if (!func((*current).data)) break;
             current = (*current).pnext;
+        }
         else
+        {
+            // обратный обход
             current = (*current).pprev;
-            
+            if (!func((*current).data)) break;
+        }
     } while (current != start);
 }
 

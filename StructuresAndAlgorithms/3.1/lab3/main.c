@@ -5,8 +5,7 @@
 /*
 
 // Terminal:
-> make
-> ./main
+> make clean && make && ./main
 
 */
 
@@ -37,6 +36,7 @@ int main()
     insertAfterNodeL2C(tn, createNodeL2C(20));
     insertBeforeNodeL2C(tn, createNodeL2C(10));
     listOutL2C(tn, 1);
+    listOutL2C(tn, 0);
     printf("Количество: %d\n", listCountL2C(tn));
     
     printf("-----------------\n");
@@ -53,6 +53,7 @@ int main()
     // listAction
     printf("\nlistAction (прямой обход):\n");
     listActionL2C(tn, 1, &printTo);
+    listActionL2C(tn, 0, &printTo);
     printf("\n");
     
     // удаление узлов
@@ -62,16 +63,19 @@ int main()
     tn1 = deleteNodeL2C(&tn, abNodeL2C(tn, 1, 1, 35));
     disposeListL2C(&tn1);
     listOutL2C(tn, 1);
+    listOutL2C(tn, 0);
     
     // удаляет элемент <15 (это 10)
     tn1 = deleteNodeL2C(&tn, abNodeL2C(tn, 1, 0, 15));
     disposeListL2C(&tn1);
     listOutL2C(tn, 1);
+    listOutL2C(tn, 0);
     
     // удаляет оставшийся элемент (20)
     tn1 = deleteNodeL2C(&tn, tn);
     disposeListL2C(&tn1);
     listOutL2C(tn, 1);
+    listOutL2C(tn, 0);
     
     // очистка
     disposeListL2C(&tn);
