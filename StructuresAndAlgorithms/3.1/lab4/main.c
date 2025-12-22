@@ -192,16 +192,14 @@ void test_edge_cases() {
     LQueue_destroy(empty_lqueue);
 }
 
-int main() {
-    printf("=== ТЕСТИРОВАНИЕ МОДУЛЕЙ SQUNIT ===\n");
-    
+int main() {    
     // Тестирование версии на массивах
-    printf("\n*** ВЕРСИЯ НА МАССИВАХ (SQUNITA) ***\n");
+    printf("\n=== ВЕРСИЯ НА МАССИВАХ (SQUNITA) ===\n");
     test_array_stack();
     test_array_queue();
     
     // Тестирование версии на списках
-    printf("\n*** ВЕРСИЯ НА СПИСКАХ (SQUNITL) ***\n");
+    printf("\n=== ВЕРСИЯ НА СПИСКАХ (SQUNITL) ===\n");
     test_list_stack();
     test_list_queue();
     
