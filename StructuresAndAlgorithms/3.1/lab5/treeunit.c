@@ -10,6 +10,7 @@ PTree createNTree(int number)
 	r->data = number; r->left = r->right = NULL;
 	return r;
 }
+
 void pushNTree(PTree* HPTree, PTree ntree)
 {
 	if (ntree == NULL) return;
@@ -24,6 +25,7 @@ void pushNTree(PTree* HPTree, PTree ntree)
 	if (ntree->data < r1->data) r1->left = ntree;
 	else r1->right = ntree;
 }
+
 PTree pullNTree(PTree* HPTree, int number)
 {
 	if (*HPTree == NULL) return NULL;
@@ -42,6 +44,7 @@ PTree pullNTree(PTree* HPTree, int number)
 	r->left = r->right = NULL;
 	return r;
 }
+
 void destroyNTree(PTree* HPTree)
 {
 	if (*HPTree == NULL) return;
@@ -50,6 +53,7 @@ void destroyNTree(PTree* HPTree)
 	free(*HPTree);
 	*HPTree = NULL;
 }
+
 void funcNTree(PTree HTRee, int mode, listfunc func)
 {
 	if (HTRee == NULL) return;
@@ -94,6 +98,7 @@ void funcNTree(PTree HTRee, int mode, listfunc func)
 		default: break;
 	}
 }
+
 void printAltNTree(PTree HTRee, int mode)
 {
 	if (HTRee == NULL) return;
@@ -102,6 +107,7 @@ void printAltNTree(PTree HTRee, int mode)
 	printf("%d\n", HTRee->data);
 	printAltNTree(HTRee->right, mode + 1);
 }
+
 PTree findNTree(PTree HTRee, int number)
 {
 	if (HTRee == NULL) return NULL;
@@ -114,6 +120,7 @@ PTree findNTree(PTree HTRee, int number)
 	}
 	return NULL;
 }
+
 int deepthNTree(PTree HTRee, PTree ntree)
 {
 	if (HTRee == NULL) return -1;
@@ -128,6 +135,7 @@ int deepthNTree(PTree HTRee, PTree ntree)
 	}
 	return 0;
 }
+
 int maxDeepthNTree(PTree HTRee)
 {
 	if (HTRee == NULL) return -1;
@@ -136,11 +144,13 @@ int maxDeepthNTree(PTree HTRee)
 	int rightd = maxDeepthNTree(r->right);
 	return (leftd > rightd ? leftd : rightd) + 1;
 }
+
 int countNTree(PTree HTRee)
 {
 	if (HTRee == NULL) return 0;
 	return countNTree(HTRee->left) + countNTree(HTRee->right) + 1;
 }
+
 int balancedNTree(PTree HTRee)
 {
 	if (HTRee == NULL) return 1;
