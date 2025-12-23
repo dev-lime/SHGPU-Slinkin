@@ -1,16 +1,11 @@
-CFLAGS = -Wall -Wextra -std=c99 -Wno-unused-parameter
-TARGET = main
-SOURCES = main.c squnitA.c squnitL.c
+main : main.c squnitA.o squnitL.o
+	cc -o main main.c squnitA.o squnitL.o -fsanitize=address -g
 
-all: $(TARGET)
+squnitA.o : squnitA.c squnitA.h
+	cc -c squnitA.c -fsanitize=address -g
 
-$(TARGET): $(SOURCES)
-	gcc $(CFLAGS) -o $(TARGET) $(SOURCES)
+squnitL.o : squnitL.c squnitL.h
+	cc -c squnitL.c -fsanitize=address -g
 
-clean:
-	rm -f $(TARGET)
-
-test: $(TARGET)
-	./$(TARGET)
-
-.PHONY: all clean test
+clean :
+	rm -f squnitA.o squnitL.o main

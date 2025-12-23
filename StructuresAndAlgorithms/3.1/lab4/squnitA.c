@@ -27,7 +27,7 @@ void AStack_destroy(pAStack stack) {
 }
 
 void AStack_push(pAStack stack, int number) {
-    if (stack->count < stack->maxsize) {
+    if (!AStack_full(stack)) {
         stack->data[stack->count] = number;
         stack->count++;
     }
