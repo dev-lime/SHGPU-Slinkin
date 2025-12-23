@@ -46,7 +46,7 @@ int AStack_empty(pAStack stack) {
 }
 
 int AStack_full(pAStack stack) {
-    return stack->count == stack->maxsize;
+    return stack && stack->count >= stack->maxsize;
 }
 
 int AStack_count(pAStack stack) {
