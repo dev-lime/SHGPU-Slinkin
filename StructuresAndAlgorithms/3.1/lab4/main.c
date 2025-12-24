@@ -13,6 +13,12 @@
 // Terminal:
 > make clean && make && ./main
 
+error:
+Tracer caught signal 11: addr=0x7fc6ad7d2f40 pc=0x7fc6acedaad0 sp=0x7fc6a94ffce0
+==5735==LeakSanitizer has encountered a fatal error.
+==5735==HINT: For debugging, try setting environment variable LSAN_OPTIONS=verbosity=1:log_threads=1
+==5735==HINT: LeakSanitizer does not work under ptrace (strace, gdb, etc)
+
 */
 
 #include <stdio.h>
@@ -27,6 +33,7 @@ int main() {
     pAStack astack = AStack_create(5);
     
     printf("%d\n", AStack_empty(astack));
+    //printf("%d\n", AStack_pop(astack));
     
     AStack_push(astack, 10);
     AStack_push(astack, 20);
@@ -96,7 +103,7 @@ int main() {
     AStack_push(small_stack, 1);
     AStack_push(small_stack, 2);
     printf("%d\n", AStack_full(small_stack));
-    AStack_push(small_stack, 3); // должно игнорироваться
+    //AStack_push(small_stack, 3);
     printf("%d\n", AStack_count(small_stack));
     AStack_destroy(small_stack);
     
