@@ -7,8 +7,8 @@
         <Filename Value="lab2.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="145"/>
-        <CursorPos X="36" Y="179"/>
+        <TopLine Value="79"/>
+        <CursorPos X="51" Y="102"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
       </Unit>
@@ -17,121 +17,13 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Lists"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="491"/>
-        <CursorPos X="19" Y="528"/>
+        <TopLine Value="822"/>
+        <CursorPos X="30" Y="841"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
       </Unit>
     </Units>
     <JumpHistory HistoryIndex="29">
-      <Position>
-        <Filename Value="lab2.lpr"/>
-        <Caret Line="7"/>
-      </Position>
-      <Position>
-        <Filename Value="lab2.lpr"/>
-        <Caret Line="15" Column="30"/>
-      </Position>
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="787" Column="18" TopLine="764"/>
-      </Position>
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="42" Column="57" TopLine="16"/>
-      </Position>
-      <Position>
-        <Filename Value="lab2.lpr"/>
-        <Caret Line="86" Column="4" TopLine="58"/>
-      </Position>
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="860" TopLine="275"/>
-      </Position>
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="181" Column="13" TopLine="158"/>
-      </Position>
-      <Position>
-        <Filename Value="lab2.lpr"/>
-        <Caret Line="102" Column="26" TopLine="69"/>
-      </Position>
-      <Position>
-        <Filename Value="lab2.lpr"/>
-        <Caret Line="78" TopLine="33"/>
-      </Position>
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="248" TopLine="228"/>
-      </Position>
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="435" Column="32" TopLine="397"/>
-      </Position>
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="849" Column="49" TopLine="815"/>
-      </Position>
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="842" TopLine="816"/>
-      </Position>
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="159" TopLine="136"/>
-      </Position>
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="239" TopLine="213"/>
-      </Position>
-      <Position>
-        <Filename Value="lab2.lpr"/>
-        <Caret Line="52" Column="45" TopLine="33"/>
-      </Position>
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="499" TopLine="476"/>
-      </Position>
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="169" Column="5" TopLine="141"/>
-      </Position>
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="849" Column="25" TopLine="822"/>
-      </Position>
-      <Position>
-        <Filename Value="lab2.lpr"/>
-        <Caret Line="24" Column="28"/>
-      </Position>
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="14" Column="31"/>
-      </Position>
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="758" Column="27" TopLine="732"/>
-      </Position>
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="838" Column="17" TopLine="817"/>
-      </Position>
-      <Position>
-        <Filename Value="lab2.lpr"/>
-        <Caret Line="22" Column="128" TopLine="12"/>
-      </Position>
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="898" Column="18" TopLine="875"/>
-      </Position>
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="26"/>
-      </Position>
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="153" Column="19" TopLine="115"/>
-      </Position>
       <Position>
         <Filename Value="lists.pas"/>
         <Caret Line="239" Column="15" TopLine="223"/>
@@ -143,6 +35,114 @@
       <Position>
         <Filename Value="lists.pas"/>
         <Caret Line="889" Column="31" TopLine="868"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="109" Column="26" TopLine="100"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="930" Column="11" TopLine="919"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="897" TopLine="870"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="157" Column="17" TopLine="129"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="877" Column="4" TopLine="848"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="899" Column="50" TopLine="854"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="911" TopLine="872"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="14" Column="25"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="15" Column="25"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="458" Column="8" TopLine="432"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="602" Column="10" TopLine="575"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="892" Column="26" TopLine="854"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="14" Column="25"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="15" Column="25"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="106" Column="25" TopLine="68"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="14" Column="25"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="15" Column="25"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="107" Column="25" TopLine="69"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="14" Column="25"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="15" Column="25"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="106" Column="25" TopLine="68"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="14" Column="25"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="108" Column="72" TopLine="92"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="342" Column="19" TopLine="322"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="112" Column="46" TopLine="79"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="847" Column="70" TopLine="825"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="153" Column="20" TopLine="153"/>
       </Position>
     </JumpHistory>
     <RunParams>

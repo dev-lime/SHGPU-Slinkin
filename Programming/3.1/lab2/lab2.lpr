@@ -86,7 +86,7 @@ begin
     floatList1 := TArrayList.Create;
     floatList2 := TArrayList.Create;
 
-    Writeln('Тест для целых чисел');
+    Writeln('> Тест для целых чисел');
     intList1.addLast(TIntegerNode.Create(5));
     intList1.addLast(TIntegerNode.Create(1));
     intList1.addLast(TIntegerNode.Create(8));
@@ -139,7 +139,7 @@ begin
     Write('После сортировки по возрастанию: '); WriteList(intList1, ' ');
 
     Writeln;
-    Writeln('Тест для вещественных чисел');
+    Writeln('> Тест для вещественных чисел');
 
     floatList1.addLast(TFloatNode.Create(3.14));
     floatList1.addLast(TFloatNode.Create(2.71));
@@ -156,7 +156,7 @@ begin
     Write('После сортировки по невозрастанию: '); WriteList(floatList1, ' ');
 
     Writeln;
-    Writeln('Тест для строк');
+    Writeln('> Тест для строк');
 
     try
       intList1.destroyList;

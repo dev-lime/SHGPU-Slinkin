@@ -321,7 +321,7 @@ function TClassicList.addFirst(node: TObject): TObject;
 begin
   CheckNodeType(node);
 
-  // Используем insertAfter с nil в качестве предыдущего узла
+  // Использует insertAfter с nil в качестве предыдущего узла
   Result := insertAfter(nil, node);
 end;
 
@@ -329,7 +329,7 @@ function TClassicList.addLast(node: TObject): TObject;
 begin
   CheckNodeType(node);
 
-  // Используем insertAfter с последним узлом в качестве предыдущего
+  // Использует insertAfter с последним узлом в качестве предыдущего
   Result := insertAfter(last, node);
 end;
 
@@ -343,7 +343,7 @@ begin
 
   Result := FHeadPtr^.Data;
 
-  // Используем deleteAfter с nil в качестве предыдущего узла
+  // Использует deleteAfter с nil в качестве предыдущего узла
   // deleteAfter(nil) будет удалять первый элемент
   deleteAfter(nil);
 end;
@@ -360,7 +360,7 @@ begin
 
   if prevNode = nil then
   begin
-    // Удаляем первый элемент
+    // Удаляет первый элемент
     Result := FHeadPtr^.Data;
     CurrPtr := FHeadPtr;
     FHeadPtr := FHeadPtr^.Next;
@@ -375,7 +375,7 @@ begin
     Exit;
   end;
 
-  // Находим узел prevNode
+  // Находит узел prevNode
   PrevPtr := FHeadPtr;
   while (PrevPtr <> nil) and (PrevPtr^.Data <> prevNode) do
     PrevPtr := PrevPtr^.Next;
@@ -407,7 +407,7 @@ begin
 
   if FHeadPtr = nil then
   begin
-    // Создаем первый узел
+    // Создает первый узел
     New(NewNode);
     NewNode^.Data := insnode;
     NewNode^.Next := nil;
@@ -428,19 +428,19 @@ begin
     Exit;
   end;
 
-  // Находим узел prevNode
+  // Находит узел prevNode
   PrevPtr := FHeadPtr;
   while (PrevPtr <> nil) and (PrevPtr^.Data <> prevNode) do
     PrevPtr := PrevPtr^.Next;
 
   if PrevPtr = nil then
   begin
-    // Узел не найден, вставляем в конец
+    // Узел не найден, вставляет в конец
     Result := addLast(insnode);
     Exit;
   end;
 
-  // Вставляем после найденного узла
+  // Вставляет после найденного узла
   New(NewNode);
   NewNode^.Data := insnode;
   NewNode^.Next := PrevPtr^.Next;
@@ -833,43 +833,47 @@ end;
 
 procedure ListChessMerge(LResult: IList; L: IList);
 var
-  NodeL, NodeResult, PrevNode: TObject;
-  Skip: Boolean;
+  NodeL, CurrentNode: TObject;
+  Step: Integer;
 begin
   NodeL := L.first;
-  PrevNode := nil;
-  Skip := False; // Флаг для пропуска узла в целевом списке
+  CurrentNode := LResult.first;
+  Step := 0; // Счетчик
 
+  // Проходит по всем узлам в L
   while NodeL <> nil do
   begin
-    if PrevNode = nil then
+    // На нечетных шагах пропускает позицию
+    if (Step mod 2 = 0) then
     begin
-      // Первый элемент или список пустой
-      LResult.addLast(LResult.copyNode(NodeL));
-      PrevNode := LResult.last;
-    end
-    else if not Skip then
-    begin
-      // Вставляет после предыдущего узла
-      LResult.insertAfter(PrevNode, LResult.copyNode(NodeL));
-      PrevNode := LResult.next; // Переходит к вставленному узлу
-    end;
-
-    // Переключает флаг пропуска
-    Skip := not Skip;
-
-    // Если нужно пропустить, двигается по целевому списку
-    if Skip then
-    begin
-      if PrevNode <> nil then
+      // Вставляет узел из L
+      if CurrentNode = nil then
       begin
-        NodeResult := LResult.next;
-        if NodeResult <> nil then
-          PrevNode := NodeResult;
+        // Если список LResult пустой, добавляет в начало
+        LResult.addLast(LResult.copyNode(NodeL));
+        CurrentNode := LResult.last;
+      end
+      else
+      begin
+        // Вставляет после текущего узла
+        LResult.insertAfter(CurrentNode, LResult.copyNode(NodeL));
+        CurrentNode := LResult.next;
+      end;
+
+      // Переходит к следующему узлу в L
+      NodeL := L.next;
+    end
+    else
+    begin
+      // Пропускает позицию в LResult
+      if CurrentNode <> nil then
+      begin
+        // Переходит к следующему узлу в LResult
+        CurrentNode := LResult.next;
       end;
     end;
 
-    NodeL := L.next;
+    Inc(Step);
   end;
 end;
 

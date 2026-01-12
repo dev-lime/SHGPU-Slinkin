@@ -176,7 +176,7 @@ begin
     floatList1.destroyList;
     floatList2.destroyList;
 
-    Writeln('Все тесты завершены успешно!');
+    Writeln('Все тесты завершены');
 
   except
     on E: Exception do
