@@ -11,13 +11,14 @@ LStack* LStack_create(int maxsize) {
     return stack;
 }
 
-void LStack_destroy(LStack* stack) {
-    while (stack->top != NULL) {
-        LStackNode* temp = stack->top;
-        stack->top = stack->top->next;
-        free(temp);
+void LQueue_destroy(LQueue* que) {
+    if (!que) return;
+    
+    while (!LQueue_empty(que)) {
+        LQueue_get(que);
     }
-    free(stack);
+    
+    free(que);
 }
 
 void LStack_push(LStack* stack, int number) {
