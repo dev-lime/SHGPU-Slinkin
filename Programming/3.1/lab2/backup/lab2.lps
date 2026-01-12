@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <Version Value="12"/>
+    <Units>
+      <Unit>
+        <Filename Value="lab2.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="project1"/>
+        <TopLine Value="33"/>
+        <CursorPos X="45" Y="52"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="lists.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Lists"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="819"/>
+        <CursorPos Y="863"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit>
+    </Units>
+    <JumpHistory HistoryIndex="19">
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="850" TopLine="805"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="7"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="15" Column="30"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="787" Column="18" TopLine="764"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="42" Column="57" TopLine="16"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="86" Column="4" TopLine="58"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="860" TopLine="275"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="181" Column="13" TopLine="158"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="102" Column="26" TopLine="69"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="78" TopLine="33"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="248" TopLine="228"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="435" Column="32" TopLine="397"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="849" Column="49" TopLine="815"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="842" TopLine="816"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="159" TopLine="136"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="239" TopLine="213"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="52" Column="45" TopLine="33"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="499" TopLine="476"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="169" Column="5" TopLine="141"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="849" Column="25" TopLine="822"/>
+      </Position>
+    </JumpHistory>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes ActiveMode=""/>
+    </RunParams>
+  </ProjectSession>
+</CONFIG>
