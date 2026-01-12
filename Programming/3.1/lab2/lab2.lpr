@@ -53,7 +53,7 @@ procedure ListSort(LResult:IList; L:IList; ASC:boolean);
 По окончании сортировки список L должен быть пустым.
 }
 
-program project1;
+program lab2;
 
 {$mode objfpc}{$H+}
 {$INTERFACES CORBA}
@@ -76,56 +76,114 @@ begin
 end;
 
 var
-  data, data2: IList;
-  dataA, dataA2: IList;
+  intList1, intList2: IList;
+  floatList1, floatList2: IList;
 begin
-  data := TClassicList.Create;
-  data2 := TClassicList.Create;
-  dataA := TArrayList.Create;
-  dataA2 := TArrayList.Create;
+  try
+    intList1 := TClassicList.Create;
+    intList2 := TClassicList.Create;
 
-  data.addLast(TIntegerNode.Create(1));
-  data.addLast(TFloatNode.Create(2));
-  data.addLast(TIntegerNode.Create(3));
-  data.addLast(TFloatNode.Create(3.5));
-  data.addLast(TIntegerNode.Create(2));
+    floatList1 := TArrayList.Create;
+    floatList2 := TArrayList.Create;
 
-  dataA.addLast(TIntegerNode.Create(12));
-  dataA.addLast(TFloatNode.Create(11));
-  dataA.addLast(TIntegerNode.Create(50));
-  dataA.addLast(TFloatNode.Create(50.5));
-  dataA.addLast(TIntegerNode.Create(11));
+    Writeln('Тест для целых чисел');
+    intList1.addLast(TIntegerNode.Create(5));
+    intList1.addLast(TIntegerNode.Create(1));
+    intList1.addLast(TIntegerNode.Create(8));
+    intList1.addLast(TIntegerNode.Create(3));
+    intList1.addLast(TIntegerNode.Create(6));
 
-  data2.addLast(TIntegerNode.Create(1));
-  data2.addLast(TFloatNode.Create(6.0001));
-  data2.addLast(TIntegerNode.Create(6));
-  data2.addLast(TFloatNode.Create(7));
-  data2.addLast(TIntegerNode.Create(2));
+    intList2.addLast(TIntegerNode.Create(2));
+    intList2.addLast(TIntegerNode.Create(7));
+    intList2.addLast(TIntegerNode.Create(4));
+    intList2.addLast(TIntegerNode.Create(9));
+    intList2.addLast(TIntegerNode.Create(0));
 
-  dataA2.addLast(TIntegerNode.Create(1));
-  dataA2.addLast(TFloatNode.Create(3.5001));
-  dataA2.addLast(TIntegerNode.Create(1));
-  dataA2.addLast(TFloatNode.Create(3));
-  dataA2.addLast(TIntegerNode.Create(1));
+    Write('Список 1: '); WriteList(intList1, ' ');
+    Write('Список 2: '); WriteList(intList2, ' ');
 
-  Write('---'); WriteList(data, ' ');
-  Write('+++'); WriteList(data2, ' ');
-  Write('///'); WriteList(dataA, ' ');
-  Write('==='); WriteList(dataA2, ' ');
-  Writeln('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'); Writeln;
+    // Слияние
+    ListMerge(intList1, intList2);
+    Write('После простого слияния: '); WriteList(intList1, ' ');
 
-  // ListMerge(data, dataA);
-  // ListChessMerge(data, data2);
-  ListSort(data, data2, true);
+    intList1.destroyList;
+    intList2.destroyList;
 
-  Write('---'); WriteList(data, ' ');
-  Write('+++'); WriteList(data2, ' ');
-  Write('///'); WriteList(dataA, ' ');
-  Write('==='); WriteList(dataA2, ' ');
+    intList1.addLast(TIntegerNode.Create(1));
+    intList1.addLast(TIntegerNode.Create(3));
+    intList1.addLast(TIntegerNode.Create(5));
 
-  data.destroyList;
-  data2.destroyList;
-  dataA.destroyList;
-  dataA2.destroyList;
+    intList2.addLast(TIntegerNode.Create(2));
+    intList2.addLast(TIntegerNode.Create(4));
+    intList2.addLast(TIntegerNode.Create(6));
+
+    Write('Новый список 1: '); WriteList(intList1, ' ');
+    Write('Новый список 2: '); WriteList(intList2, ' ');
+
+    ListChessMerge(intList1, intList2);
+    Write('После шахматного слияния: '); WriteList(intList1, ' ');
+
+    // Сортировка
+    intList1.destroyList;
+    intList2.destroyList;
+
+    intList2.addLast(TIntegerNode.Create(9));
+    intList2.addLast(TIntegerNode.Create(2));
+    intList2.addLast(TIntegerNode.Create(7));
+    intList2.addLast(TIntegerNode.Create(1));
+    intList2.addLast(TIntegerNode.Create(5));
+
+    Write('Список для сортировки: '); WriteList(intList2, ' ');
+
+    ListSort(intList1, intList2, True);
+    Write('После сортировки по возрастанию: '); WriteList(intList1, ' ');
+
+    Writeln;
+    Writeln('Тест для вещественных чисел');
+
+    floatList1.addLast(TFloatNode.Create(3.14));
+    floatList1.addLast(TFloatNode.Create(2.71));
+    floatList1.addLast(TFloatNode.Create(1.41));
+
+    floatList2.addLast(TFloatNode.Create(1.61));
+    floatList2.addLast(TFloatNode.Create(0.57));
+    floatList2.addLast(TFloatNode.Create(2.35));
+
+    Write('Вещественный список 1: '); WriteList(floatList1, ' ');
+    Write('Вещественный список 2: '); WriteList(floatList2, ' ');
+
+    ListSort(floatList1, floatList2, False);
+    Write('После сортировки по невозрастанию: '); WriteList(floatList1, ' ');
+
+    Writeln;
+    Writeln('Тест для строк');
+
+    try
+      intList1.destroyList;
+      intList1.addLast(TStringNode.Create('banana'));
+      intList1.addLast(TStringNode.Create('apple'));
+      intList1.addLast(TStringNode.Create('cherry'));
+
+      Write('Строковый список: '); WriteList(intList1, ' ');
+    except
+      on E: Exception do
+        Writeln('Ожидаемая ошибка при смешивании типов: ', E.Message);
+    end;
+
+    // Очистка
+    intList1.destroyList;
+    intList2.destroyList;
+    floatList1.destroyList;
+    floatList2.destroyList;
+
+    Writeln('Все тесты завершены');
+
+  except
+    on E: Exception do
+    begin
+      Writeln('Ошибка: ', E.Message);
+      Readln;
+    end;
+  end;
 end.
 

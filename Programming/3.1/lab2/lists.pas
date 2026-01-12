@@ -32,6 +32,7 @@ type
     function CompareTo(Other: TObject): Integer; virtual; abstract;
     function Clone: TBaseNode; virtual; abstract;
     procedure Show; virtual; abstract;
+    function GetTypeName: string; virtual; abstract;
     property Value: Variant read GetValue;
   end;
 
@@ -46,6 +47,7 @@ type
     function CompareTo(Other: TObject): Integer; override;
     function Clone: TBaseNode; override;
     procedure Show; override;
+    function GetTypeName: string; override;
     property ValueInt: Integer read FValue;
   end;
 
@@ -60,6 +62,7 @@ type
     function CompareTo(Other: TObject): Integer; override;
     function Clone: TBaseNode; override;
     procedure Show; override;
+    function GetTypeName: string; override;
     property ValueStr: string read FValue;
   end;
 
@@ -74,13 +77,16 @@ type
     function CompareTo(Other: TObject): Integer; override;
     function Clone: TBaseNode; override;
     procedure Show; override;
+    function GetTypeName: string; override;
     property ValueFloat: Double read FValue;
   end;
 
   // Классический связный список
   TClassicList = class(TInterfacedObject, IList)
   private
-    function FindNodePtr(node: TObject): Pointer;
+    FNodeType: string; // Тип узлов, хранящихся в списке
+    function GetNodeType(node: TObject): string;
+    procedure CheckNodeType(node: TObject);
   protected
     type
       PNode = ^TNode;
@@ -108,15 +114,19 @@ type
     function copyNode(node: TObject): TObject;
     procedure destroyList;
     function isEmpty: Boolean;
+    property NodeType: string read FNodeType;
   end;
 
   // Список на основе динамического массива
   TArrayList = class(TInterfacedObject, IList)
   private
+    FNodeType: string;
     FItems: array of TObject;
     FCurrentIndex: Integer;
     FCount: Integer;
     FCapacity: Integer;
+    function GetNodeType(node: TObject): string;
+    procedure CheckNodeType(node: TObject);
     procedure Grow;
   public
     constructor Create;
@@ -134,6 +144,7 @@ type
     function copyNode(node: TObject): TObject;
     procedure destroyList;
     function isEmpty: Boolean;
+    property NodeType: string read FNodeType;
   end;
 
 // Процедуры работы со списками
@@ -152,18 +163,13 @@ begin
 end;
 
 function TIntegerNode.CompareTo(Other: TObject): Integer;
-var
-  OtherNode: TBaseNode;
 begin
-  if not (Other is TBaseNode) then
-    raise Exception.Create('Type mismatch in comparison');
+  if not (Other is TIntegerNode) then
+    raise Exception.Create('Type mismatch in comparison: expected TIntegerNode');
 
-  OtherNode := TBaseNode(Other);
-
-  // Сравнивает по значению Variant
-  if FValue < OtherNode.Value then
+  if FValue < TIntegerNode(Other).FValue then
     Result := -1
-  else if FValue > OtherNode.Value then
+  else if FValue > TIntegerNode(Other).FValue then
     Result := 1
   else
     Result := 0;
@@ -184,6 +190,11 @@ begin
   Result := FValue;
 end;
 
+function TIntegerNode.GetTypeName: string;
+begin
+  Result := 'Integer';
+end;
+
 { TStringNode }
 
 constructor TStringNode.Create(AValue: string);
@@ -193,18 +204,13 @@ begin
 end;
 
 function TStringNode.CompareTo(Other: TObject): Integer;
-var
-  OtherNode: TBaseNode;
 begin
-  if not (Other is TBaseNode) then
-    raise Exception.Create('Type mismatch in comparison');
+  if not (Other is TStringNode) then
+    raise Exception.Create('Type mismatch in comparison: expected TStringNode');
 
-  OtherNode := TBaseNode(Other);
-
-  // Для строк использует сравнение как Variant
-  if FValue < OtherNode.Value then
+  if FValue < TStringNode(Other).FValue then
     Result := -1
-  else if FValue > OtherNode.Value then
+  else if FValue > TStringNode(Other).FValue then
     Result := 1
   else
     Result := 0;
@@ -225,6 +231,11 @@ begin
   Result := FValue;
 end;
 
+function TStringNode.GetTypeName: string;
+begin
+  Result := 'String';
+end;
+
 { TFloatNode }
 
 constructor TFloatNode.Create(AValue: Double);
@@ -234,17 +245,13 @@ begin
 end;
 
 function TFloatNode.CompareTo(Other: TObject): Integer;
-var
-  OtherNode: TBaseNode;
 begin
-  if not (Other is TBaseNode) then
-    raise Exception.Create('Type mismatch in comparison');
+  if not (Other is TFloatNode) then
+    raise Exception.Create('Type mismatch in comparison: expected TFloatNode');
 
-  OtherNode := TBaseNode(Other);
-
-  if FValue < OtherNode.Value then
+  if FValue < TFloatNode(Other).FValue then
     Result := -1
-  else if FValue > OtherNode.Value then
+  else if FValue > TFloatNode(Other).FValue then
     Result := 1
   else
     Result := 0;
@@ -265,6 +272,11 @@ begin
   Result := FValue;
 end;
 
+function TFloatNode.GetTypeName: string;
+begin
+  Result := 'Float';
+end;
+
 { TClassicList }
 
 constructor TClassicList.Create;
@@ -273,6 +285,7 @@ begin
   FHeadPtr := nil;
   FTailPtr := nil;
   FCurrentPtr := nil;
+  FNodeType := '';
 end;
 
 destructor TClassicList.Destroy;
@@ -281,45 +294,46 @@ begin
   inherited;
 end;
 
-function TClassicList.addFirst(node: TObject): TObject;
-var
-  NewNode: PNode;
+function TClassicList.GetNodeType(node: TObject): string;
 begin
-  New(NewNode);
-  NewNode^.Data := node;
-  NewNode^.Next := FHeadPtr;
-  FHeadPtr := NewNode;
+  if node is TBaseNode then
+    Result := TBaseNode(node).GetTypeName
+  else
+    Result := '';
+end;
 
-  if FTailPtr = nil then
-    FTailPtr := FHeadPtr;
+procedure TClassicList.CheckNodeType(node: TObject);
+var
+  NodeTypeStr: string;
+begin
+  NodeTypeStr := GetNodeType(node);
+  if NodeTypeStr = '' then
+    raise Exception.Create('Invalid node type');
 
-  Result := node;
+  if FNodeType = '' then
+    FNodeType := NodeTypeStr
+  else if FNodeType <> NodeTypeStr then
+    raise Exception.CreateFmt('Cannot mix node types. Expected %s, got %s',
+      [FNodeType, NodeTypeStr]);
+end;
+
+function TClassicList.addFirst(node: TObject): TObject;
+begin
+  CheckNodeType(node);
+
+  // Используем insertAfter с nil в качестве предыдущего узла
+  Result := insertAfter(nil, node);
 end;
 
 function TClassicList.addLast(node: TObject): TObject;
-var
-  NewNode: PNode;
 begin
-  if FHeadPtr = nil then
-  begin
-    Result := addFirst(node);
-    Exit;
-  end;
+  CheckNodeType(node);
 
-  New(NewNode);
-  NewNode^.Data := node;
-  NewNode^.Next := nil;
-
-  if FTailPtr <> nil then
-    FTailPtr^.Next := NewNode;
-
-  FTailPtr := NewNode;
-  Result := node;
+  // Используем insertAfter с последним узлом в качестве предыдущего
+  Result := insertAfter(last, node);
 end;
 
 function TClassicList.deleteFirst: TObject;
-var
-  Temp: PNode;
 begin
   if FHeadPtr = nil then
   begin
@@ -327,22 +341,16 @@ begin
     Exit;
   end;
 
-  Temp := FHeadPtr;
-  Result := Temp^.Data;
-  FHeadPtr := FHeadPtr^.Next;
+  Result := FHeadPtr^.Data;
 
-  if FHeadPtr = nil then
-    FTailPtr := nil;
-
-  if FCurrentPtr = Temp then
-    FCurrentPtr := FHeadPtr;
-
-  Dispose(Temp);
+  // Используем deleteAfter с nil в качестве предыдущего узла
+  // deleteAfter(nil) будет удалять первый элемент
+  deleteAfter(nil);
 end;
 
 function TClassicList.deleteAfter(prevNode: TObject): TObject;
 var
-  PrevPtr, CurrPtr, NextPtr: PNode;
+  PrevPtr, CurrPtr: PNode;
 begin
   if FHeadPtr = nil then
   begin
@@ -350,7 +358,28 @@ begin
     Exit;
   end;
 
-  PrevPtr := FindNodePtr(prevNode);
+  if prevNode = nil then
+  begin
+    // Удаляем первый элемент
+    Result := FHeadPtr^.Data;
+    CurrPtr := FHeadPtr;
+    FHeadPtr := FHeadPtr^.Next;
+
+    if FHeadPtr = nil then
+      FTailPtr := nil;
+
+    if FCurrentPtr = CurrPtr then
+      FCurrentPtr := FHeadPtr;
+
+    Dispose(CurrPtr);
+    Exit;
+  end;
+
+  // Находим узел prevNode
+  PrevPtr := FHeadPtr;
+  while (PrevPtr <> nil) and (PrevPtr^.Data <> prevNode) do
+    PrevPtr := PrevPtr^.Next;
+
   if (PrevPtr = nil) or (PrevPtr^.Next = nil) then
   begin
     Result := nil;
@@ -358,60 +387,60 @@ begin
   end;
 
   CurrPtr := PrevPtr^.Next;
-  NextPtr := CurrPtr^.Next;
   Result := CurrPtr^.Data;
-
-  PrevPtr^.Next := NextPtr;
+  PrevPtr^.Next := CurrPtr^.Next;
 
   if FTailPtr = CurrPtr then
     FTailPtr := PrevPtr;
 
   if FCurrentPtr = CurrPtr then
-    FCurrentPtr := NextPtr;
+    FCurrentPtr := CurrPtr^.Next;
 
   Dispose(CurrPtr);
 end;
 
-function TClassicList.FindNodePtr(node: TObject): Pointer;
-var
-  Current: PNode;
-begin
-  Current := FHeadPtr;
-  while Current <> nil do
-  begin
-    if Current^.Data = node then
-    begin
-      Result := Current;
-      Exit;
-    end;
-    Current := Current^.Next;
-  end;
-  Result := nil;
-end;
-
 function TClassicList.insertAfter(prevNode: TObject; insnode: TObject): TObject;
 var
-  PrevPtr, NewNode: PNode;
+  NewNode, PrevPtr: PNode;
 begin
+  CheckNodeType(insnode);
+
   if FHeadPtr = nil then
   begin
-    Result := addFirst(insnode);
+    // Создаем первый узел
+    New(NewNode);
+    NewNode^.Data := insnode;
+    NewNode^.Next := nil;
+    FHeadPtr := NewNode;
+    FTailPtr := NewNode;
+    Result := insnode;
     Exit;
   end;
 
   if prevNode = nil then
   begin
-    Result := addFirst(insnode);
+    // Вставка в начало
+    New(NewNode);
+    NewNode^.Data := insnode;
+    NewNode^.Next := FHeadPtr;
+    FHeadPtr := NewNode;
+    Result := insnode;
     Exit;
   end;
 
-  PrevPtr := FindNodePtr(prevNode);
+  // Находим узел prevNode
+  PrevPtr := FHeadPtr;
+  while (PrevPtr <> nil) and (PrevPtr^.Data <> prevNode) do
+    PrevPtr := PrevPtr^.Next;
+
   if PrevPtr = nil then
   begin
+    // Узел не найден, вставляем в конец
     Result := addLast(insnode);
     Exit;
   end;
 
+  // Вставляем после найденного узла
   New(NewNode);
   NewNode^.Data := insnode;
   NewNode^.Next := PrevPtr^.Next;
@@ -424,8 +453,6 @@ begin
 end;
 
 function TClassicList.compare(node1, node2: TObject): integer;
-var
-  BaseNode1, BaseNode2: TBaseNode;
 begin
   if not (node1 is TBaseNode) or not (node2 is TBaseNode) then
   begin
@@ -433,10 +460,7 @@ begin
     Exit;
   end;
 
-  BaseNode1 := TBaseNode(node1);
-  BaseNode2 := TBaseNode(node2);
-
-  Result := BaseNode1.CompareTo(BaseNode2);
+  Result := TBaseNode(node1).CompareTo(node2);
 end;
 
 function TClassicList.first: TObject;
@@ -450,15 +474,15 @@ end;
 
 function TClassicList.next: TObject;
 begin
-  if (FCurrentPtr = nil) or (FCurrentPtr^.Next = nil) then
-  begin
-    FCurrentPtr := nil;
-    Result := nil;
-  end
+  if FCurrentPtr = nil then
+    Result := nil
   else
   begin
     FCurrentPtr := FCurrentPtr^.Next;
-    Result := FCurrentPtr^.Data;
+    if FCurrentPtr <> nil then
+      Result := FCurrentPtr^.Data
+    else
+      Result := nil;
   end;
 end;
 
@@ -496,13 +520,14 @@ begin
   begin
     Temp := Current;
     Current := Current^.Next;
-
-    // Удаляет узел, но не данные
+    if Temp^.Data <> nil then
+      Temp^.Data.Free;
     Dispose(Temp);
   end;
   FHeadPtr := nil;
   FTailPtr := nil;
   FCurrentPtr := nil;
+  FNodeType := '';
 end;
 
 function TClassicList.isEmpty: Boolean;
@@ -519,12 +544,36 @@ begin
   SetLength(FItems, FCapacity);
   FCount := 0;
   FCurrentIndex := -1;
+  FNodeType := '';
 end;
 
 destructor TArrayList.Destroy;
 begin
   destroyList;
   inherited;
+end;
+
+function TArrayList.GetNodeType(node: TObject): string;
+begin
+  if node is TBaseNode then
+    Result := TBaseNode(node).GetTypeName
+  else
+    Result := '';
+end;
+
+procedure TArrayList.CheckNodeType(node: TObject);
+var
+  NodeTypeStr: string;
+begin
+  NodeTypeStr := GetNodeType(node);
+  if NodeTypeStr = '' then
+    raise Exception.Create('Invalid node type');
+
+  if FNodeType = '' then
+    FNodeType := NodeTypeStr
+  else if FNodeType <> NodeTypeStr then
+    raise Exception.CreateFmt('Cannot mix node types. Expected %s, got %s',
+      [FNodeType, NodeTypeStr]);
 end;
 
 procedure TArrayList.Grow;
@@ -534,33 +583,18 @@ begin
 end;
 
 function TArrayList.addFirst(node: TObject): TObject;
-var
-  i: Integer;
 begin
-  if FCount = FCapacity then
-    Grow;
-
-  for i := FCount downto 1 do
-    FItems[i] := FItems[i - 1];
-
-  FItems[0] := node;
-  Inc(FCount);
-  Result := node;
+  CheckNodeType(node);
+  Result := insertAfter(nil, node);
 end;
 
 function TArrayList.addLast(node: TObject): TObject;
 begin
-  if FCount = FCapacity then
-    Grow;
-
-  FItems[FCount] := node;
-  Inc(FCount);
-  Result := node;
+  CheckNodeType(node);
+  Result := insertAfter(last, node);
 end;
 
 function TArrayList.deleteFirst: TObject;
-var
-  i: Integer;
 begin
   if FCount = 0 then
   begin
@@ -569,21 +603,37 @@ begin
   end;
 
   Result := FItems[0];
-  for i := 0 to FCount - 2 do
-    FItems[i] := FItems[i + 1];
-
-  Dec(FCount);
-  FItems[FCount] := nil;
-
-  if FCurrentIndex >= FCount then
-    FCurrentIndex := FCount - 1;
+  deleteAfter(nil);
 end;
 
 function TArrayList.deleteAfter(prevNode: TObject): TObject;
 var
   i, idx: Integer;
 begin
-  Result := nil;
+  if FCount = 0 then
+  begin
+    Result := nil;
+    Exit;
+  end;
+
+  if prevNode = nil then
+  begin
+    // Удаляет первый элемент
+    Result := FItems[0];
+    if FItems[0] <> nil then
+      FItems[0].Free;
+
+    for i := 0 to FCount - 2 do
+      FItems[i] := FItems[i + 1];
+
+    Dec(FCount);
+    FItems[FCount] := nil;
+
+    if FCurrentIndex >= FCount then
+      FCurrentIndex := FCount - 1;
+
+    Exit;
+  end;
 
   // Находит индекс prevNode
   idx := -1;
@@ -595,9 +645,14 @@ begin
     end;
 
   if (idx = -1) or (idx >= FCount - 1) then
+  begin
+    Result := nil;
     Exit;
+  end;
 
   Result := FItems[idx + 1];
+  if FItems[idx + 1] <> nil then
+    FItems[idx + 1].Free;
 
   for i := idx + 1 to FCount - 2 do
     FItems[i] := FItems[i + 1];
@@ -613,15 +668,32 @@ function TArrayList.insertAfter(prevNode: TObject; insnode: TObject): TObject;
 var
   i, idx: Integer;
 begin
+  CheckNodeType(insnode);
+
   if FCount = 0 then
   begin
-    Result := addFirst(insnode);
+    // Первый элемент
+    if FCount = FCapacity then
+      Grow;
+
+    FItems[0] := insnode;
+    Inc(FCount);
+    Result := insnode;
     Exit;
   end;
 
   if prevNode = nil then
   begin
-    Result := addFirst(insnode);
+    // Вставка в начало
+    if FCount = FCapacity then
+      Grow;
+
+    for i := FCount downto 1 do
+      FItems[i] := FItems[i - 1];
+
+    FItems[0] := insnode;
+    Inc(FCount);
+    Result := insnode;
     Exit;
   end;
 
@@ -636,14 +708,20 @@ begin
 
   if idx = -1 then
   begin
-    Result := addLast(insnode);
+    // Узел не найден, вставляет в конец
+    if FCount = FCapacity then
+      Grow;
+
+    FItems[FCount] := insnode;
+    Inc(FCount);
+    Result := insnode;
     Exit;
   end;
 
+  // Вставляет после найденного узла
   if FCount = FCapacity then
     Grow;
 
-  // Сдвигает элементы
   for i := FCount downto idx + 2 do
     FItems[i] := FItems[i - 1];
 
@@ -653,8 +731,6 @@ begin
 end;
 
 function TArrayList.compare(node1, node2: TObject): integer;
-var
-  BaseNode1, BaseNode2: TBaseNode;
 begin
   if not (node1 is TBaseNode) or not (node2 is TBaseNode) then
   begin
@@ -662,10 +738,7 @@ begin
     Exit;
   end;
 
-  BaseNode1 := TBaseNode(node1);
-  BaseNode2 := TBaseNode(node2);
-
-  Result := BaseNode1.CompareTo(BaseNode2);
+  Result := TBaseNode(node1).CompareTo(node2);
 end;
 
 function TArrayList.first: TObject;
@@ -727,10 +800,16 @@ begin
 end;
 
 procedure TArrayList.destroyList;
+var
+  i: Integer;
 begin
-  // Обнуляет счетчик
+  for i := 0 to FCount - 1 do
+    if FItems[i] <> nil then
+      FItems[i].Free;
+
   FCount := 0;
   FCurrentIndex := -1;
+  FNodeType := '';
 end;
 
 function TArrayList.isEmpty: Boolean;
@@ -754,49 +833,65 @@ end;
 
 procedure ListChessMerge(LResult: IList; L: IList);
 var
-  NodeFromL: TObject;
-  NodeFromResult: TObject;
-  InsertAfterNode: TObject;
+  NodeL, NodeResult, PrevNode: TObject;
+  Skip: Boolean;
 begin
-  NodeFromL := L.first;
-  InsertAfterNode := LResult.first;
+  NodeL := L.first;
+  PrevNode := nil;
+  Skip := False; // Флаг для пропуска узла в целевом списке
 
-  while NodeFromL <> nil do
+  while NodeL <> nil do
   begin
-    if InsertAfterNode = nil then
-      LResult.addLast(LResult.copyNode(NodeFromL))
-    else
-      LResult.insertAfter(InsertAfterNode, LResult.copyNode(NodeFromL));
-
-    NodeFromL := L.next;
-
-    // Пропускает один узел в целевом списке
-    if InsertAfterNode <> nil then
+    if PrevNode = nil then
     begin
-      NodeFromResult := LResult.next;
-      if NodeFromResult <> nil then
-        InsertAfterNode := NodeFromResult
-      else
-        InsertAfterNode := LResult.last;
+      // Первый элемент или список пустой
+      LResult.addLast(LResult.copyNode(NodeL));
+      PrevNode := LResult.last;
+    end
+    else if not Skip then
+    begin
+      // Вставляет после предыдущего узла
+      LResult.insertAfter(PrevNode, LResult.copyNode(NodeL));
+      PrevNode := LResult.next; // Переходит к вставленному узлу
     end;
+
+    // Переключает флаг пропуска
+    Skip := not Skip;
+
+    // Если нужно пропустить, двигается по целевому списку
+    if Skip then
+    begin
+      if PrevNode <> nil then
+      begin
+        NodeResult := LResult.next;
+        if NodeResult <> nil then
+          PrevNode := NodeResult;
+      end;
+    end;
+
+    NodeL := L.next;
   end;
 end;
 
 procedure ListSort(LResult: IList; L: IList; ASC: boolean);
 var
-  SourceNode, DestNode, TempNode: TObject;
+  SourceNode, DestNode, PrevNode, TempNode, CopiedNode: TObject;
   Inserted: Boolean;
-  PrevNode: TObject;
 begin
-  // Если LResult не пустой, переносит его содержимое в L
+  // Если LResult не пустой, переносит его содержимое в L (с копированием)
   if not LResult.isEmpty then
   begin
-    TempNode := LResult.first;
-    while TempNode <> nil do
+    // Копирует все узлы из LResult в L
+    SourceNode := LResult.first;
+    while SourceNode <> nil do
     begin
-      L.addLast(TempNode);
-      TempNode := LResult.next;
+      CopiedNode := L.copyNode(SourceNode);
+      if CopiedNode <> nil then
+        L.addLast(CopiedNode);
+      SourceNode := LResult.next;
     end;
+
+    // Очищает LResult через destroyList
     LResult.destroyList;
   end;
 
@@ -804,10 +899,15 @@ begin
   SourceNode := L.first;
   while SourceNode <> nil do
   begin
-    // Копирует узел для вставки
+    // Создает копию узла для вставки в отсортированный список
     TempNode := LResult.copyNode(SourceNode);
+    if TempNode = nil then
+    begin
+      SourceNode := L.next;
+      Continue;
+    end;
 
-    // Вставляет в отсортированный список
+    // Находит место для вставки в LResult
     DestNode := LResult.first;
     PrevNode := nil;
     Inserted := False;
@@ -816,6 +916,7 @@ begin
     begin
       if ASC then
       begin
+        // Сортировка по возрастанию
         if LResult.compare(TempNode, DestNode) < 0 then
         begin
           if PrevNode = nil then
@@ -828,6 +929,7 @@ begin
       end
       else
       begin
+        // Сортировка по убыванию
         if LResult.compare(TempNode, DestNode) > 0 then
         begin
           if PrevNode = nil then
@@ -842,7 +944,7 @@ begin
       DestNode := LResult.next;
     end;
 
-    // Если не вставил, добавляет в конец
+    // Если не нашел подходящее место, вставляет в конец
     if not Inserted then
     begin
       if PrevNode = nil then
