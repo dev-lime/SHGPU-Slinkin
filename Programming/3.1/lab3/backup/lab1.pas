@@ -1,10 +1,19 @@
 program DynamicDatabase;
 
 uses
-  SysUtils, Classes, DataTypes, StreamManager, ReaderWriterManager;
+  SysUtils, Classes, StreamManager, ReaderWriterManager, unit1;
+
+type
+  TPerson = record
+    FullName: AnsiString;
+    Gender: AnsiString;
+    BirthDate: AnsiString;
+    IDNumber: AnsiString;
+    ChildrenIDs: array of AnsiString;
+  end;
 
 var
-  People: TPeopleArray;
+  People: array of TPerson;
 
 procedure AddPerson;
 var
@@ -188,7 +197,7 @@ end;
 procedure ShowMenu;
 var
   Choice: Integer;
-  FileName: string;
+  FileName: AnsiString;
 begin
   repeat
     WriteLn;
