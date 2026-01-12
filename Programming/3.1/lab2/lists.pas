@@ -312,9 +312,6 @@ begin
 
   if FNodeType = '' then
     FNodeType := NodeTypeStr
-  else if FNodeType <> NodeTypeStr then
-    raise Exception.CreateFmt('Cannot mix node types. Expected %s, got %s',
-      [FNodeType, NodeTypeStr]);
 end;
 
 function TClassicList.addFirst(node: TObject): TObject;

@@ -7,8 +7,8 @@
         <Filename Value="lab2.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="79"/>
-        <CursorPos X="51" Y="102"/>
+        <TopLine Value="118"/>
+        <CursorPos X="67" Y="156"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
       </Unit>
@@ -17,17 +17,13 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Lists"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="822"/>
-        <CursorPos X="30" Y="841"/>
+        <TopLine Value="293"/>
+        <CursorPos X="34" Y="317"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
       </Unit>
     </Units>
     <JumpHistory HistoryIndex="29">
-      <Position>
-        <Filename Value="lists.pas"/>
-        <Caret Line="239" Column="15" TopLine="223"/>
-      </Position>
       <Position>
         <Filename Value="lab2.lpr"/>
         <Caret Line="56" Column="13" TopLine="34"/>
@@ -143,6 +139,10 @@
       <Position>
         <Filename Value="lists.pas"/>
         <Caret Line="153" Column="20" TopLine="153"/>
+      </Position>
+      <Position>
+        <Filename Value="lists.pas"/>
+        <Caret Line="886" Column="30" TopLine="864"/>
       </Position>
     </JumpHistory>
     <RunParams>
