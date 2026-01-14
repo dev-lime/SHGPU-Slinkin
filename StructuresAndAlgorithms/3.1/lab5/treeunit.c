@@ -68,11 +68,26 @@ PTree pullNTree(PTree* HPTree, int number) {
 	
 	if (current == NULL) return NULL; // Узел не найден
 	
-	// Случай 1: узел без детей или с одним ребенком
+	// Если узел найден, обрабатываем три случая:
+	
+	// Случай 1: Узел является листом (нет детей)
+	if (current->left == NULL && current->right == NULL) {
+		if (parent == NULL) { // Удаляем корень-лист
+			*HPTree = NULL;
+		} else if (parent->left == current) {
+			parent->left = NULL;
+		} else {
+			parent->right = NULL;
+		}
+		current->left = current->right = NULL;
+		return current;
+	}
+	
+	// Случай 2: Узел имеет только одного ребенка
 	if (current->left == NULL || current->right == NULL) {
 		PTree child = (current->left != NULL) ? current->left : current->right;
 		
-		if (parent == NULL) { // Удаляем корень
+		if (parent == NULL) { // Удаляем корень с одним ребенком
 			*HPTree = child;
 		} else if (parent->left == current) {
 			parent->left = child;
@@ -84,7 +99,7 @@ PTree pullNTree(PTree* HPTree, int number) {
 		return current;
 	}
 	
-	// Случай 2: узел с двумя детьми
+	// Случай 3: Узел имеет двух детей (самый сложный случай)
 	// Находим преемника (минимальный узел в правом поддереве)
 	PTree successorParent = current;
 	PTree successor = current->right;
@@ -95,15 +110,16 @@ PTree pullNTree(PTree* HPTree, int number) {
 	}
 	
 	// Копируем данные преемника в текущий узел
-	int tempData = current->data;
 	current->data = successor->data;
-	successor->data = tempData;
 	
-	// Удаляем преемника (теперь он содержит значение, которое нужно удалить)
-	if (successorParent->left == successor) {
-		successorParent->left = successor->right;
-	} else {
+	// Теперь удаляем преемника (у него не более одного ребенка)
+	// Преемник не может иметь левого ребенка, так как он минимальный
+	if (successorParent == current) {
+		// Преемник - непосредственный правый ребенок
 		successorParent->right = successor->right;
+	} else {
+		// Преемник где-то глубже в левом поддереве
+		successorParent->left = successor->right;
 	}
 	
 	successor->left = successor->right = NULL;
