@@ -134,60 +134,60 @@ void destroyNTree(PTree* HPTree) {
 	*HPTree = NULL;
 }
 
-void funcNTree(PTree HTRee, int mode, listfunc func) {
-	if (HTRee == NULL) return;
+void funcNTree(PTree HTree, int mode, listfunc func) {
+	if (HTree == NULL) return;
 	switch (mode) {
 		case 1: { // Pre-order
-			func(HTRee->data);
-			funcNTree(HTRee->left, mode, func);
-			funcNTree(HTRee->right, mode, func);
+			func(HTree->data);
+			funcNTree(HTree->left, mode, func);
+			funcNTree(HTree->right, mode, func);
 			break;
 		}
 		case 2: { // In-order
-			funcNTree(HTRee->left, mode, func);
-			func(HTRee->data);
-			funcNTree(HTRee->right, mode, func);
+			funcNTree(HTree->left, mode, func);
+			func(HTree->data);
+			funcNTree(HTree->right, mode, func);
 			break;
 		}
 		case 3: { // Post-order
-			funcNTree(HTRee->left, mode, func);
-			funcNTree(HTRee->right, mode, func);
-			func(HTRee->data);
+			funcNTree(HTree->left, mode, func);
+			funcNTree(HTree->right, mode, func);
+			func(HTree->data);
 			break;
 		}
 		case 4: { // rev-pre-order
-			func(HTRee->data);
-			funcNTree(HTRee->right, mode, func);
-			funcNTree(HTRee->left, mode, func);
+			func(HTree->data);
+			funcNTree(HTree->right, mode, func);
+			funcNTree(HTree->left, mode, func);
 			break;
 		}
 		case 5: { // rev-in-order
-			funcNTree(HTRee->right, mode, func);
-			func(HTRee->data);
-			funcNTree(HTRee->left, mode, func);
+			funcNTree(HTree->right, mode, func);
+			func(HTree->data);
+			funcNTree(HTree->left, mode, func);
 			break;
 		}
 		case 6: { // rev-post-order
-			funcNTree(HTRee->right, mode, func);
-			funcNTree(HTRee->left, mode, func);
-			func(HTRee->data);
+			funcNTree(HTree->right, mode, func);
+			funcNTree(HTree->left, mode, func);
+			func(HTree->data);
 			break;
 		}
 		default: break;
 	}
 }
 
-void printAltNTree(PTree HTRee, int mode) {
-	if (HTRee == NULL) return;
-	printAltNTree(HTRee->left, mode + 1);
+void printAltNTree(PTree HTree, int mode) {
+	if (HTree == NULL) return;
+	printAltNTree(HTree->left, mode + 1);
 	for (int i = 0; i < mode; i++) printf(">");
-	printf("%d\n", HTRee->data);
-	printAltNTree(HTRee->right, mode + 1);
+	printf("%d\n", HTree->data);
+	printAltNTree(HTree->right, mode + 1);
 }
 
-PTree findNTree(PTree HTRee, int number) {
-	if (HTRee == NULL) return NULL;
-	PTree r = HTRee;
+PTree findNTree(PTree HTree, int number) {
+	if (HTree == NULL) return NULL;
+	PTree r = HTree;
 	while (r != NULL) {
 		if (r->data == number) return r;
 		if (number < r->data) r = r->left;
@@ -196,9 +196,9 @@ PTree findNTree(PTree HTRee, int number) {
 	return NULL;
 }
 
-int depthNTree(PTree HTRee, PTree ntree) {
-	if (HTRee == NULL || ntree == NULL) return -1;
-	PTree r = HTRee;
+int depthNTree(PTree HTree, PTree ntree) {
+	if (HTree == NULL || ntree == NULL) return -1;
+	PTree r = HTree;
 	int depth = 0;
 	while (r != NULL) {
 		if (r == ntree) return depth;
@@ -209,24 +209,24 @@ int depthNTree(PTree HTRee, PTree ntree) {
 	return -1; // Узел не найден в дереве
 }
 
-int maxDepthNTree(PTree HTRee) {
-	if (HTRee == NULL) return -1;
-	int leftd = maxDepthNTree(HTRee->left);
-	int rightd = maxDepthNTree(HTRee->right);
+int maxDepthNTree(PTree HTree) {
+	if (HTree == NULL) return -1;
+	int leftd = maxDepthNTree(HTree->left);
+	int rightd = maxDepthNTree(HTree->right);
 	return (leftd > rightd ? leftd : rightd) + 1;
 }
 
-int countNTree(PTree HTRee) {
-	if (HTRee == NULL) return 0;
-	return countNTree(HTRee->left) + countNTree(HTRee->right) + 1;
+int countNTree(PTree HTree) {
+	if (HTree == NULL) return 0;
+	return countNTree(HTree->left) + countNTree(HTree->right) + 1;
 }
 
-int balancedNTree(PTree HTRee) {
-	if (HTRee == NULL) return 1;
-	int leftd = maxDepthNTree(HTRee->left);
-	int rightd = maxDepthNTree(HTRee->right);
+int balancedNTree(PTree HTree) {
+	if (HTree == NULL) return 1;
+	int leftd = maxDepthNTree(HTree->left);
+	int rightd = maxDepthNTree(HTree->right);
 	if (leftd - rightd > 1 || rightd - leftd > 1) return 0;
-	if (!balancedNTree(HTRee->left)) return 0;
-	if (!balancedNTree(HTRee->right)) return 0;
+	if (!balancedNTree(HTree->left)) return 0;
+	if (!balancedNTree(HTree->right)) return 0;
 	return 1;
 }
