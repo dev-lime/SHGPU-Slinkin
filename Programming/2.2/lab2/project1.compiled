@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<CONFIG>
-  <Compiler Value="/usr/bin/fpc" Date="1654788744"/>
-  <Params Value=" -MObjFPC -Scgi -Cg -O1 -g -gl -l -vewnhibq -Fu/home/student/Документы/lime/SecondHalfOfTheYear/lab2/ -o/home/student/Документы/lime/SecondHalfOfTheYear/lab2/project1 -Fr/usr/lib64/fpc/msg/errore.msg project1.lpr"/>
-</CONFIG>
