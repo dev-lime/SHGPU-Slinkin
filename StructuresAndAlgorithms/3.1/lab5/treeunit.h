@@ -1,5 +1,5 @@
-#ifndef treeunit
-#define treeunit
+#ifndef TREEUNIT_H
+#define TREEUNIT_H
 
 typedef struct NTree* PTree;
 typedef struct NTree {
@@ -20,10 +20,9 @@ void funcNTree(PTree HTRee, int mode, listfunc func);
 void printAltNTree(PTree HTRee, int mode);
 PTree findNTree(PTree HTRee, int number);
 
-int deepthNTree(PTree HTRee, PTree ntree);
-int maxDeepthNTree(PTree HTRee);
+int depthNTree(PTree HTRee, PTree ntree);
+int maxDepthNTree(PTree HTRee);
 int countNTree(PTree HTRee);
 int balancedNTree(PTree HTRee);
 
 #endif
-

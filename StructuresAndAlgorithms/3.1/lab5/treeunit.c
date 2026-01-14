@@ -2,51 +2,115 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
 
-PTree createNTree(int number)
-{
+PTree createNTree(int number) {
 	PTree r = (PTree)malloc(sizeof(NTree));
-	r->data = number; r->left = r->right = NULL;
+	if (r) {
+		r->data = number;
+		r->left = r->right = NULL;
+	}
 	return r;
 }
 
-void pushNTree(PTree* HPTree, PTree ntree)
-{
+void pushNTree(PTree* HPTree, PTree ntree) {
 	if (ntree == NULL) return;
-	if (*HPTree == NULL) { *HPTree = ntree; return; }
-	PTree r = *HPTree, r1 = NULL;
-	while (r != NULL)
-	{
-		r1 = r;
-		if (ntree->data < r->data) r = r->left;
-		else r = r->right;
+	
+	// Обработка дубликатов
+	if (findNTree(*HPTree, ntree->data) != NULL) {
+		free(ntree); // Освобождаем память, т.к. дубликат не нужен
+		return;
 	}
-	if (ntree->data < r1->data) r1->left = ntree;
-	else r1->right = ntree;
+	
+	if (*HPTree == NULL) {
+		*HPTree = ntree;
+		return;
+	}
+	
+	PTree r = *HPTree, parent = NULL;
+	while (r != NULL) {
+		parent = r;
+		if (ntree->data < r->data) {
+			r = r->left;
+		} else {
+			r = r->right;
+		}
+	}
+	
+	if (ntree->data < parent->data) {
+		parent->left = ntree;
+	} else {
+		parent->right = ntree;
+	}
 }
 
-PTree pullNTree(PTree* HPTree, int number)
-{
+// Вспомогательная функция для нахождения минимального узла в поддереве
+static PTree findMinNode(PTree node) {
+	while (node && node->left != NULL) {
+		node = node->left;
+	}
+	return node;
+}
+
+PTree pullNTree(PTree* HPTree, int number) {
 	if (*HPTree == NULL) return NULL;
-	PTree r = *HPTree, r1 = *HPTree;
-	while (r->data != number && r != NULL)
-	{
-		r1 = r;
-		if (number < r->data) r = r->left;
-		else r = r->right;
+	
+	PTree parent = NULL, current = *HPTree;
+	
+	// Поиск узла для удаления
+	while (current != NULL && current->data != number) {
+		parent = current;
+		if (number < current->data) {
+			current = current->left;
+		} else {
+			current = current->right;
+		}
 	}
-	if (r == NULL) return NULL;
-	if (r == *HPTree) *HPTree = r->left;
-	else if (number < r1->data) r1->left = r->left;
-	else r1->right = r->left;
-	pushNTree(HPTree, r->right);
-	r->left = r->right = NULL;
-	return r;
+	
+	if (current == NULL) return NULL; // Узел не найден
+	
+	// Случай 1: узел без детей или с одним ребенком
+	if (current->left == NULL || current->right == NULL) {
+		PTree child = (current->left != NULL) ? current->left : current->right;
+		
+		if (parent == NULL) { // Удаляем корень
+			*HPTree = child;
+		} else if (parent->left == current) {
+			parent->left = child;
+		} else {
+			parent->right = child;
+		}
+		
+		current->left = current->right = NULL;
+		return current;
+	}
+	
+	// Случай 2: узел с двумя детьми
+	// Находим преемника (минимальный узел в правом поддереве)
+	PTree successorParent = current;
+	PTree successor = current->right;
+	
+	while (successor->left != NULL) {
+		successorParent = successor;
+		successor = successor->left;
+	}
+	
+	// Копируем данные преемника в текущий узел
+	int tempData = current->data;
+	current->data = successor->data;
+	successor->data = tempData;
+	
+	// Удаляем преемника (теперь он содержит значение, которое нужно удалить)
+	if (successorParent->left == successor) {
+		successorParent->left = successor->right;
+	} else {
+		successorParent->right = successor->right;
+	}
+	
+	successor->left = successor->right = NULL;
+	return successor;
 }
 
-void destroyNTree(PTree* HPTree)
-{
+void destroyNTree(PTree* HPTree) {
 	if (*HPTree == NULL) return;
 	destroyNTree(&((*HPTree)->left));
 	destroyNTree(&((*HPTree)->right));
@@ -54,11 +118,9 @@ void destroyNTree(PTree* HPTree)
 	*HPTree = NULL;
 }
 
-void funcNTree(PTree HTRee, int mode, listfunc func)
-{
+void funcNTree(PTree HTRee, int mode, listfunc func) {
 	if (HTRee == NULL) return;
-	switch (mode)
-	{
+	switch (mode) {
 		case 1: { // Pre-order
 			func(HTRee->data);
 			funcNTree(HTRee->left, mode, func);
@@ -99,8 +161,7 @@ void funcNTree(PTree HTRee, int mode, listfunc func)
 	}
 }
 
-void printAltNTree(PTree HTRee, int mode)
-{
+void printAltNTree(PTree HTRee, int mode) {
 	if (HTRee == NULL) return;
 	printAltNTree(HTRee->left, mode + 1);
 	for (int i = 0; i < mode; i++) printf(">");
@@ -108,12 +169,10 @@ void printAltNTree(PTree HTRee, int mode)
 	printAltNTree(HTRee->right, mode + 1);
 }
 
-PTree findNTree(PTree HTRee, int number)
-{
+PTree findNTree(PTree HTRee, int number) {
 	if (HTRee == NULL) return NULL;
 	PTree r = HTRee;
-	while (r != NULL)
-	{
+	while (r != NULL) {
 		if (r->data == number) return r;
 		if (number < r->data) r = r->left;
 		else r = r->right;
@@ -121,41 +180,35 @@ PTree findNTree(PTree HTRee, int number)
 	return NULL;
 }
 
-int deepthNTree(PTree HTRee, PTree ntree)
-{
-	if (HTRee == NULL) return -1;
+int depthNTree(PTree HTRee, PTree ntree) {
+	if (HTRee == NULL || ntree == NULL) return -1;
 	PTree r = HTRee;
 	int depth = 0;
-	while (r != NULL)
-	{
+	while (r != NULL) {
 		if (r == ntree) return depth;
 		if (ntree->data < r->data) r = r->left;
 		else r = r->right;
 		depth++;
 	}
-	return 0;
+	return -1; // Узел не найден в дереве
 }
 
-int maxDeepthNTree(PTree HTRee)
-{
+int maxDepthNTree(PTree HTRee) {
 	if (HTRee == NULL) return -1;
-	PTree r = HTRee;
-	int leftd = maxDeepthNTree(r->left);
-	int rightd = maxDeepthNTree(r->right);
+	int leftd = maxDepthNTree(HTRee->left);
+	int rightd = maxDepthNTree(HTRee->right);
 	return (leftd > rightd ? leftd : rightd) + 1;
 }
 
-int countNTree(PTree HTRee)
-{
+int countNTree(PTree HTRee) {
 	if (HTRee == NULL) return 0;
 	return countNTree(HTRee->left) + countNTree(HTRee->right) + 1;
 }
 
-int balancedNTree(PTree HTRee)
-{
+int balancedNTree(PTree HTRee) {
 	if (HTRee == NULL) return 1;
-	int leftd = maxDeepthNTree(HTRee->left);
-	int rightd = maxDeepthNTree(HTRee->right);
+	int leftd = maxDepthNTree(HTRee->left);
+	int rightd = maxDepthNTree(HTRee->right);
 	if (leftd - rightd > 1 || rightd - leftd > 1) return 0;
 	if (!balancedNTree(HTRee->left)) return 0;
 	if (!balancedNTree(HTRee->right)) return 0;
