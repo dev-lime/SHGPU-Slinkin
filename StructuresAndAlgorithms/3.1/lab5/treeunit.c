@@ -137,37 +137,37 @@ void destroyNTree(PTree* HPTree) {
 void funcNTree(PTree HTree, int mode, listfunc func) {
 	if (HTree == NULL) return;
 	switch (mode) {
-		case 1: { // Pre-order
+		case 1: { // Pre-order	|	Корень > Лево > Право	|	Прямой порядок
 			func(HTree->data);
 			funcNTree(HTree->left, mode, func);
 			funcNTree(HTree->right, mode, func);
 			break;
 		}
-		case 2: { // In-order
+		case 2: { // In-order	|	Лево > Корень > Право	|	Возрастающий порядок
 			funcNTree(HTree->left, mode, func);
 			func(HTree->data);
 			funcNTree(HTree->right, mode, func);
 			break;
 		}
-		case 3: { // Post-order
+		case 3: { // Post-order	|	Лево > Право > Корень	|	Обратный порядок
 			funcNTree(HTree->left, mode, func);
 			funcNTree(HTree->right, mode, func);
 			func(HTree->data);
 			break;
 		}
-		case 4: { // rev-pre-order
+		case 4: { // rev-pre-order	|	Корень > Право > Лево	|	Обратный прямой
 			func(HTree->data);
 			funcNTree(HTree->right, mode, func);
 			funcNTree(HTree->left, mode, func);
 			break;
 		}
-		case 5: { // rev-in-order
+		case 5: { // rev-in-order	|	Право > Корень > Лево	|	Убывающий порядок
 			funcNTree(HTree->right, mode, func);
 			func(HTree->data);
 			funcNTree(HTree->left, mode, func);
 			break;
 		}
-		case 6: { // rev-post-order
+		case 6: { // rev-post-order	|	Право > Лево > Корень	|	Обратный обратный
 			funcNTree(HTree->right, mode, func);
 			funcNTree(HTree->left, mode, func);
 			func(HTree->data);
