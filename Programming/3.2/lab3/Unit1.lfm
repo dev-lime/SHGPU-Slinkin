@@ -1,0 +1,190 @@
+object Form1: TForm1
+  Left = 100
+  Top = 50
+  Width = 900
+  Height = 600
+  Caption = 'Графики функций'
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  Position = poScreenCenter
+  OnCreate = FormCreate
+  object PanelLeft: TPanel
+    Left = 0
+    Top = 0
+    Width = 200
+    Height = 561
+    Align = alLeft
+    TabOrder = 0
+    object lblFormula: TLabel
+      Left = 10
+      Top = 15
+      Width = 80
+      Height = 13
+      Caption = 'Formula:'
+    end
+    object lblScaleX: TLabel
+      Left = 10
+      Top = 80
+      Width = 80
+      Height = 13
+      Caption = 'Scale X:'
+    end
+    object lblScaleY: TLabel
+      Left = 10
+      Top = 120
+      Width = 80
+      Height = 13
+      Caption = 'Scale Y:'
+    end
+    object lblColor: TLabel
+      Left = 10
+      Top = 200
+      Width = 80
+      Height = 13
+      Caption = 'Color:'
+    end
+    object lblInfo: TLabel
+      Left = 10
+      Top = 300
+      Width = 100
+      Height = 13
+      Caption = 'Info'
+    end
+    object lblOriginX: TLabel
+      Left = 10
+      Top = 160
+      Width = 80
+      Height = 13
+      Caption = 'Origin X:'
+    end
+    object lblOriginY: TLabel
+      Left = 10
+      Top = 190
+      Width = 80
+      Height = 13
+      Caption = 'Origin Y:'
+    end
+    object edtFormula: TEdit
+      Left = 10
+      Top = 35
+      Width = 175
+      Height = 21
+      TabOrder = 0
+      Text = 'sin(x)'
+    end
+    object btnDraw: TButton
+      Left = 10
+      Top = 60
+      Width = 175
+      Height = 25
+      Caption = 'Draw'
+      TabOrder = 1
+      OnClick = btnDrawClick
+    end
+    object spinScaleX: TFloatSpinEdit
+      Left = 10
+      Top = 95
+      Width = 120
+      Height = 23
+      MaxValue = 10000
+      MinValue = 1
+      TabOrder = 2
+      Value = 50
+      OnChange = btnDrawClick
+    end
+    object spinScaleY: TFloatSpinEdit
+      Left = 10
+      Top = 135
+      Width = 120
+      Height = 23
+      MaxValue = 10000
+      MinValue = 1
+      TabOrder = 3
+      Value = 50
+      OnChange = btnDrawClick
+    end
+    object spinOriginX: TFloatSpinEdit
+      Left = 10
+      Top = 175
+      Width = 120
+      Height = 23
+      DecimalPlaces = 2
+      MaxValue = 1000
+      MinValue = -1000
+      TabOrder = 4
+      Value = 0
+      OnChange = btnDrawClick
+    end
+    object spinOriginY: TFloatSpinEdit
+      Left = 10
+      Top = 205
+      Width = 120
+      Height = 23
+      DecimalPlaces = 2
+      MaxValue = 1000
+      MinValue = -1000
+      TabOrder = 5
+      Value = 0
+      OnChange = btnDrawClick
+    end
+    object clrGraph: TColorBox
+      Left = 10
+      Top = 235
+      Width = 150
+      Height = 22
+      Selected = clRed
+      TabOrder = 6
+    end
+    object btnHelp: TButton
+      Left = 10
+      Top = 270
+      Width = 175
+      Height = 25
+      Caption = 'Help'
+      TabOrder = 7
+      OnClick = btnHelpClick
+    end
+  end
+  object PaintBox: TPaintBox
+    Left = 200
+    Top = 0
+    Width = 700
+    Height = 561
+    Align = alClient
+    OnMouseDown = PaintBoxMouseDown
+    OnMouseMove = PaintBoxMouseMove
+    OnMouseUp = PaintBoxMouseUp
+    OnMouseWheel = PaintBoxMouseWheel
+    OnPaint = PaintBoxPaint
+    OnResize = PaintBoxResize
+  end
+  object PanelHelp: TPanel
+    Left = 200
+    Top = 300
+    Width = 400
+    Height = 261
+    Visible = False
+    Align = alBottom
+    TabOrder = 2
+    object lblHelp: TLabel
+      Left = 10
+      Top = 5
+      Width = 80
+      Height = 13
+      Caption = 'Help:'
+    end
+    object memHelp: TMemo
+      Left = 10
+      Top = 20
+      Width = 380
+      Height = 230
+      ReadOnly = True
+      ScrollBars = ssVertical
+      TabOrder = 0
+    end
+  end
+end
