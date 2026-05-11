@@ -168,8 +168,10 @@ procedure TForm1.Timer1Timer(Sender: TObject);
 var
   Direction: Integer;
   NewW, NewH: Integer;
+  Finished: Boolean;
 begin
   Direction := Timer1.Tag;
+  Finished := False;
 
   if Direction = 1 then
   begin
@@ -181,14 +183,11 @@ begin
     if NewH > MAX_HEIGHT then
       NewH := MAX_HEIGHT;
 
-    if (NewW >= MAX_WIDTH) and (NewH >= MAX_HEIGHT) then
-    begin
-      Timer1.Enabled := False;
-      SetControlsEnabled(True);
-    end;
-
     Width := NewW;
     Height := NewH;
+
+    if (NewW >= MAX_WIDTH) and (NewH >= MAX_HEIGHT) then
+      Finished := True;
   end
   else if Direction = -1 then
   begin
@@ -200,18 +199,21 @@ begin
     if NewH < MIN_HEIGHT then
       NewH := MIN_HEIGHT;
 
-    if (NewW <= MIN_WIDTH) and (NewH <= MIN_HEIGHT) then
-    begin
-      Timer1.Enabled := False;
-      SetControlsEnabled(True);
-    end;
-
     Width := NewW;
     Height := NewH;
+
+    if (NewW <= MIN_WIDTH) and (NewH <= MIN_HEIGHT) then
+      Finished := True;
   end;
 
   Left := (Screen.Width - Width) div 2;
   Top := (Screen.Height - Height) div 2;
+
+  if Finished then
+  begin
+    Timer1.Enabled := False;
+    SetControlsEnabled(True);
+  end;
 end;
 
 procedure TForm1.SetControlsEnabled(AEnabled: Boolean);

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <Version Value="12"/>
+    <BuildModes Active="Default"/>
+    <Units>
+      <Unit>
+        <Filename Value="lab2.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="222"/>
+        <CursorPos Y="241"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit>
+    </Units>
+    <JumpHistory HistoryIndex="4">
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="16" Column="20"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="155" Column="30" TopLine="143"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="277" Column="5" TopLine="256"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="233" Column="49" TopLine="222"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="132" Column="21" TopLine="121"/>
+      </Position>
+    </JumpHistory>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes ActiveMode=""/>
+    </RunParams>
+  </ProjectSession>
+</CONFIG>
