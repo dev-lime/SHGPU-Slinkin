@@ -160,8 +160,6 @@ begin
     NewH := Height + STEP;
     if NewW > MAX_WIDTH then NewW := MAX_WIDTH;
     if NewH > MAX_HEIGHT then NewH := MAX_HEIGHT;
-    Width := NewW;
-    Height := NewH;
     if (NewW >= MAX_WIDTH) and (NewH >= MAX_HEIGHT) then Finished := True;
   end
   else if Direction = -1 then
@@ -170,10 +168,11 @@ begin
     NewH := Height - STEP;
     if NewW < MIN_WIDTH then NewW := MIN_WIDTH;
     if NewH < MIN_HEIGHT then NewH := MIN_HEIGHT;
-    Width := NewW;
-    Height := NewH;
     if (NewW <= MIN_WIDTH) and (NewH <= MIN_HEIGHT) then Finished := True;
   end;
+
+  Width := NewW;
+  Height := NewH;
 
   Left := (Screen.Width - Width) div 2;
   Top := (Screen.Height - Height) div 2;
