@@ -6,8 +6,10 @@ object Form1: TForm1
   Caption = 'Неваляшка'
   ClientHeight = 100
   ClientWidth = 500
-  DesignTimePPI = 102
-  object Edit1: TEdit
+  OnChangeBounds = FormChangeBounds
+  OnCreate = FormCreate
+  OnResize = FormResize
+  object Edit_Width: TEdit
     Left = 240
     Height = 28
     Top = 20
@@ -16,8 +18,9 @@ object Form1: TForm1
     ParentFont = False
     TabOrder = 0
     Text = '500'
+    OnEditingDone = Edit_EditingDone
   end
-  object Label1: TLabel
+  object Lbl_Width: TLabel
     Left = 56
     Height = 30
     Top = 18
@@ -26,7 +29,7 @@ object Form1: TForm1
     Font.Height = -26
     ParentFont = False
   end
-  object Label2: TLabel
+  object Lbl_Height: TLabel
     Left = 56
     Height = 30
     Top = 56
@@ -35,7 +38,7 @@ object Form1: TForm1
     Font.Height = -26
     ParentFont = False
   end
-  object Edit2: TEdit
+  object Edit_Height: TEdit
     Left = 240
     Height = 28
     Top = 56
@@ -44,8 +47,9 @@ object Form1: TForm1
     ParentFont = False
     TabOrder = 1
     Text = '100'
+    OnEditingDone = Edit_EditingDone
   end
-  object Button1: TButton
+  object Btn_DemoPlus: TButton
     Left = 352
     Height = 32
     Top = 16
@@ -54,8 +58,9 @@ object Form1: TForm1
     Font.Height = -14
     ParentFont = False
     TabOrder = 2
+    OnClick = Btn_DemoPlusClick
   end
-  object Button2: TButton
+  object Btn_DemoMinus: TButton
     Left = 352
     Height = 32
     Top = 56
@@ -64,5 +69,10 @@ object Form1: TForm1
     Font.Height = -14
     ParentFont = False
     TabOrder = 3
+    OnClick = Btn_DemoMinusClick
+  end
+  object Timer1: TTimer
+    Interval = 50
+    OnTimer = Timer1Timer
   end
 end

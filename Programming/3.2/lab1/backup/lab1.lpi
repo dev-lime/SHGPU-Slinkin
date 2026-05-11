@@ -32,7 +32,6 @@
         <Filename Value="unit1.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="Form1"/>
-        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Unit1"/>
       </Unit>
@@ -48,11 +47,6 @@
         <UseAnsiStrings Value="False"/>
       </SyntaxOptions>
     </Parsing>
-    <Linking>
-      <Debugging>
-        <DebugInfoType Value="dsDwarf3"/>
-      </Debugging>
-    </Linking>
     <Other>
       <CustomOptions Value="-Fr/usr/lib64/fpc/msg/errore.msg"/>
     </Other>
