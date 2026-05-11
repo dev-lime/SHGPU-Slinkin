@@ -55,8 +55,10 @@ type
     FUpdating: Boolean;
     FLastWidth: Integer;
     FLastHeight: Integer;
+    FInitializing: Boolean;
     procedure SetControlsEnabled(AEnabled: Boolean);
     procedure UpdateEditFields;
+    procedure UpdateLayout;
   public
 
   end;
@@ -71,6 +73,7 @@ implementation
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   FUpdating := False;
+  FInitializing := True;
   Constraints.MinWidth := MIN_WIDTH;
   Constraints.MaxWidth := MAX_WIDTH;
   Constraints.MinHeight := MIN_HEIGHT;
@@ -78,17 +81,20 @@ begin
   FLastWidth := Width;
   FLastHeight := Height;
   UpdateEditFields;
+  UpdateLayout;
   Timer1.Interval := TIMER_INTERVAL;
+  FInitializing := False;
 end;
 
 procedure TForm1.FormResize(Sender: TObject);
 begin
-  if not FUpdating then
+  if not FUpdating and not FInitializing then
   begin
     FUpdating := True;
     FLastWidth := Width;
     FLastHeight := Height;
     UpdateEditFields;
+    UpdateLayout;
     FUpdating := False;
   end;
 end;
@@ -141,6 +147,7 @@ begin
 
   Width := NewWidth;
   Height := NewHeight;
+  UpdateLayout;
 end;
 
 procedure TForm1.Btn_DemoPlusClick(Sender: TObject);
@@ -160,35 +167,51 @@ end;
 procedure TForm1.Timer1Timer(Sender: TObject);
 var
   Direction: Integer;
+  NewW, NewH: Integer;
 begin
   Direction := Timer1.Tag;
 
   if Direction = 1 then
   begin
-    if (Width >= MAX_WIDTH) and (Height >= MAX_HEIGHT) then
+    NewW := Width + STEP;
+    NewH := Height + STEP;
+
+    if NewW > MAX_WIDTH then
+      NewW := MAX_WIDTH;
+    if NewH > MAX_HEIGHT then
+      NewH := MAX_HEIGHT;
+
+    if (NewW >= MAX_WIDTH) and (NewH >= MAX_HEIGHT) then
     begin
       Timer1.Enabled := False;
       SetControlsEnabled(True);
-      Exit;
     end;
-    if Width < MAX_WIDTH then
-      Width := Width + STEP;
-    if Height < MAX_HEIGHT then
-      Height := Height + STEP;
+
+    Width := NewW;
+    Height := NewH;
   end
   else if Direction = -1 then
   begin
-    if (Width <= MIN_WIDTH) and (Height <= MIN_HEIGHT) then
+    NewW := Width - STEP;
+    NewH := Height - STEP;
+
+    if NewW < MIN_WIDTH then
+      NewW := MIN_WIDTH;
+    if NewH < MIN_HEIGHT then
+      NewH := MIN_HEIGHT;
+
+    if (NewW <= MIN_WIDTH) and (NewH <= MIN_HEIGHT) then
     begin
       Timer1.Enabled := False;
       SetControlsEnabled(True);
-      Exit;
     end;
-    if Width > MIN_WIDTH then
-      Width := Width - STEP;
-    if Height > MIN_HEIGHT then
-      Height := Height - STEP;
+
+    Width := NewW;
+    Height := NewH;
   end;
+
+  Left := (Screen.Width - Width) div 2;
+  Top := (Screen.Height - Height) div 2;
 end;
 
 procedure TForm1.SetControlsEnabled(AEnabled: Boolean);
@@ -203,6 +226,33 @@ procedure TForm1.UpdateEditFields;
 begin
   Edit_Width.Text := IntToStr(Width);
   Edit_Height.Text := IntToStr(Height);
+end;
+
+procedure TForm1.UpdateLayout;
+var
+  TotalWidth, TotalHeight, StartX, StartY: Integer;
+begin
+  TotalWidth := Lbl_Width.Width + 10 + Edit_Width.Width + 10 + Btn_DemoPlus.Width;
+  TotalHeight := 100;
+
+  StartX := (ClientWidth - TotalWidth) div 2;
+  StartY := (ClientHeight - TotalHeight) div 2;
+
+  Lbl_Width.Left := StartX;
+  Edit_Width.Left := StartX + Lbl_Width.Width + 10;
+  Btn_DemoPlus.Left := StartX + Lbl_Width.Width + 10 + Edit_Width.Width + 10;
+
+  Lbl_Width.Top := StartY;
+  Edit_Width.Top := StartY;
+  Btn_DemoPlus.Top := StartY;
+
+  Lbl_Height.Left := StartX;
+  Edit_Height.Left := StartX + Lbl_Width.Width + 10;
+  Btn_DemoMinus.Left := StartX + Lbl_Width.Width + 10 + Edit_Width.Width + 10;
+
+  Lbl_Height.Top := StartY + 38;
+  Edit_Height.Top := StartY + 38;
+  Btn_DemoMinus.Top := StartY + 38;
 end;
 
 end.
