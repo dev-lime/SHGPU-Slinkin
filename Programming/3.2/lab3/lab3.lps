@@ -7,11 +7,10 @@
       <Unit>
         <Filename Value="lab3.lpr"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <WindowIndex Value="-1"/>
-        <TopLine Value="-1"/>
-        <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="22"/>
+        <EditorIndex Value="2"/>
+        <CursorPos X="14" Y="13"/>
+        <UsageCount Value="30"/>
+        <Loaded Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="graf.pas"/>
@@ -21,16 +20,17 @@
         <ResourceBaseClass Value="Form"/>
         <IsVisibleTab Value="True"/>
         <TopLine Value="82"/>
-        <CursorPos X="5" Y="100"/>
-        <UsageCount Value="22"/>
+        <CursorPos X="5" Y="93"/>
+        <UsageCount Value="30"/>
         <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="/usr/lib/lazarus/4.4/components/PascalScript/Source/uPSRuntime.pas"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="3"/>
         <TopLine Value="1343"/>
         <CursorPos X="17" Y="1377"/>
-        <UsageCount Value="11"/>
+        <UsageCount Value="15"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
@@ -38,12 +38,12 @@
         <EditorIndex Value="1"/>
         <TopLine Value="26"/>
         <CursorPos X="6" Y="46"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="14"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="LFM"/>
       </Unit>
     </Units>
-    <JumpHistory HistoryIndex="13">
+    <JumpHistory HistoryIndex="15">
       <Position>
         <Filename Value="graf.pas"/>
         <Caret Line="11" Column="5"/>
@@ -99,6 +99,14 @@
       <Position>
         <Filename Value="graf.lfm"/>
         <Caret Line="76" Column="15" TopLine="57"/>
+      </Position>
+      <Position>
+        <Filename Value="graf.lfm"/>
+        <Caret Line="46" Column="6" TopLine="26"/>
+      </Position>
+      <Position>
+        <Filename Value="graf.pas"/>
+        <Caret Line="89" TopLine="82"/>
       </Position>
     </JumpHistory>
     <RunParams>

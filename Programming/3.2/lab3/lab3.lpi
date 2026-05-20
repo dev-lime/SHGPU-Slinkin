@@ -27,9 +27,6 @@
       <Item>
         <PackageName Value="LCL"/>
       </Item>
-      <Item>
-        <PackageName Value="pascalscript"/>
-      </Item>
     </RequiredPackages>
     <Units>
       <Unit>

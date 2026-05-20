@@ -10,7 +10,7 @@ uses
   athreads,
   {$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, pascalscript, graf
+  Forms, graf
   { you can add units after this };
 
 {$R *.res}
