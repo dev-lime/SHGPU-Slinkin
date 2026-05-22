@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  ColorBox, Spin;
+  ColorBox, Spin, uPSComponent;
 
 type
 
@@ -46,6 +46,7 @@ type
     Label3: TLabel;
     Label4: TLabel;
     PaintBox1: TPaintBox;
+    PSScript1: TPSScript;
     procedure Btn_DrawClick(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure PaintBox1Paint(Sender: TObject);
@@ -344,12 +345,12 @@ begin
   PaintBox1.Canvas.FillRect(Rect(0, 0, w, h));
 
   PaintBox1.Canvas.Pen.Color := clBlack;
-  PaintBox1.Canvas.Pen.Width := 2;
+  PaintBox1.Canvas.Pen.Width := 1;
 
-  xStart := -cx / (FScaleX * 50);
-  xEnd := cx / (FScaleX * 50);
-  yStart := cy / (FScaleY * 50);
-  yEnd := -cy / (FScaleY * 50);
+  xStart := -FScaleX;//-cx / (FScaleX * 50);
+  xEnd := FScaleX;//cx / (FScaleX * 50);
+  yStart := FScaleY;//cy / (FScaleY * 50);
+  yEnd := -FScaleY;//-cy / (FScaleY * 50);
 
   PaintBox1.Canvas.MoveTo(0, cy);
   PaintBox1.Canvas.LineTo(w, cy);
@@ -358,7 +359,7 @@ begin
   PaintBox1.Canvas.LineTo(cx, h);
 
   PaintBox1.Canvas.Font.Color := clBlack;
-  PaintBox1.Canvas.Font.Size := 8;
+  PaintBox1.Canvas.Font.Size := 10;
 
   if Abs(xStart) < 1e6 then
     labelX := Format('%.2f', [xStart])
@@ -372,7 +373,7 @@ begin
     labelX := Format('%.0e', [xEnd]);
   PaintBox1.Canvas.TextOut(w - PaintBox1.Canvas.TextWidth(labelX) - 2, cy + 5, labelX);
 
-  PaintBox1.Canvas.TextOut(cx + 5, cy + 5, '0');
+  PaintBox1.Canvas.TextOut(cx + 5, cy + 5, '(0,0)');
 
   if Abs(yStart) < 1e6 then
     labelX := Format('%.2f', [yStart])
@@ -391,25 +392,29 @@ procedure TForm1.DrawGraph;
 var
   w, h, cx, cy: Integer;
   x, xStart, xEnd, dx: Double;
-  px, py, prevPx, prevPy: Integer;
+  px, py, prevPy: Integer;
   firstPoint: Boolean;
   val: Double;
   valid: Boolean;
+  sx, sy: Double;
 begin
   w := PaintBox1.Width;
   h := PaintBox1.Height;
   cx := w div 2;
   cy := h div 2;
+  
+  xStart := -FScaleX;
+  xEnd := FScaleX;
 
-  xStart := -cx / (FScaleX * 50);
-  xEnd := cx / (FScaleX * 50);
   dx := (xEnd - xStart) / w;
+
+  sx := w / (2 * FScaleX);
+  sy := h / (2 * FScaleY);
 
   PaintBox1.Canvas.Pen.Color := FGraphColor;
   PaintBox1.Canvas.Pen.Width := 2;
 
   firstPoint := True;
-  prevPx := 0;
   prevPy := 0;
 
   x := xStart;
@@ -417,18 +422,15 @@ begin
   begin
     val := EvaluateFormula(x, valid);
 
-    if not valid or IsInfinite(val) or IsNan(val) then
+    if (not valid) or IsInfinite(val) or IsNan(val) then
     begin
       firstPoint := True;
       x := x + dx;
       Continue;
     end;
 
-    px := cx + Round(x * FScaleX * 50);
-    py := cy - Round(val * FScaleY * 50);
-
-    if py < -10000 then py := -10000;
-    if py > h + 10000 then py := h + 10000;
+    px := cx + Round(x * sx);
+    py := cy - Round(val * sy);
 
     if firstPoint then
     begin
@@ -443,7 +445,6 @@ begin
         PaintBox1.Canvas.LineTo(px, py);
     end;
 
-    prevPx := px;
     prevPy := py;
     x := x + dx;
   end;

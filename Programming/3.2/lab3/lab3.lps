@@ -8,8 +8,8 @@
         <Filename Value="lab3.lpr"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="2"/>
-        <CursorPos X="14" Y="13"/>
-        <UsageCount Value="68"/>
+        <CursorPos X="28" Y="13"/>
+        <UsageCount Value="70"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
@@ -19,31 +19,30 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="82"/>
-        <CursorPos X="5" Y="101"/>
-        <UsageCount Value="68"/>
+        <TopLine Value="420"/>
+        <CursorPos X="40" Y="443"/>
+        <UsageCount Value="70"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="/usr/lib/lazarus/4.4/components/PascalScript/Source/uPSRuntime.pas"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="1343"/>
         <CursorPos X="17" Y="1377"/>
         <UsageCount Value="34"/>
-        <Loaded Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="graf.lfm"/>
         <EditorIndex Value="1"/>
         <TopLine Value="26"/>
-        <CursorPos X="6" Y="46"/>
-        <UsageCount Value="33"/>
+        <CursorPos X="20" Y="45"/>
+        <UsageCount Value="34"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="LFM"/>
       </Unit>
     </Units>
-    <JumpHistory HistoryIndex="15">
+    <JumpHistory HistoryIndex="17">
       <Position>
         <Filename Value="graf.pas"/>
         <Caret Line="11" Column="5"/>
@@ -89,10 +88,6 @@
         <Caret Line="102" Column="11" TopLine="82"/>
       </Position>
       <Position>
-        <Filename Value="/usr/lib/lazarus/4.4/components/PascalScript/Source/uPSRuntime.pas"/>
-        <Caret Line="1377" Column="17" TopLine="1343"/>
-      </Position>
-      <Position>
         <Filename Value="graf.lfm"/>
         <Caret Line="45" Column="25" TopLine="29"/>
       </Position>
@@ -107,6 +102,18 @@
       <Position>
         <Filename Value="graf.pas"/>
         <Caret Line="89" TopLine="82"/>
+      </Position>
+      <Position>
+        <Filename Value="graf.pas"/>
+        <Caret Line="99" Column="6" TopLine="82"/>
+      </Position>
+      <Position>
+        <Filename Value="graf.pas"/>
+        <Caret Line="133" Column="36" TopLine="101"/>
+      </Position>
+      <Position>
+        <Filename Value="graf.pas"/>
+        <Caret Line="490" Column="22" TopLine="112"/>
       </Position>
     </JumpHistory>
     <RunParams>

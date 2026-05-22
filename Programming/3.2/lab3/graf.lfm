@@ -1,111 +1,132 @@
 object Form1: TForm1
   Left = 191
-  Height = 350
+  Height = 460
   Top = 200
-  Width = 600
+  Width = 640
   Caption = 'Гэомэтр 1.0'
-  ClientHeight = 350
-  ClientWidth = 600
-  LCLVersion = '4.4.0.0'
+  ClientHeight = 460
+  ClientWidth = 640
+  Constraints.MinHeight = 460
+  Constraints.MinWidth = 640
+  DesignTimePPI = 102
+  Font.Height = 14
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  OnResize = FormResize
   OnMouseWheel = FormMouseWheel
+  OnResize = FormResize
   object PaintBox1: TPaintBox
-    Left = 8
-    Height = 280
-    Top = 8
-    Width = 584
+    Left = 0
+    Height = 386
+    Top = 0
+    Width = 640
+    Anchors = [akTop, akLeft, akRight, akBottom]
     OnPaint = PaintBox1Paint
   end
   object Label1: TLabel
-    Left = 8
-    Height = 15
-    Top = 296
-    Width = 57
-    Caption = 'Формула'
     Cursor = crHelp
-    OnClick = Label1Click
-    ShowHint = True
+    Left = 8
+    Height = 16
     Hint = 'Нажмите для справки'
+    Top = 400
+    Width = 60
+    Anchors = [akLeft, akBottom]
+    Caption = 'Формула'
+    ParentShowHint = False
+    ShowHint = True
+    OnClick = Label1Click
   end
   object Label2: TLabel
-    Left = 8
-    Height = 15
-    Top = 326
-    Width = 66
-    Caption = 'МасштабX'
     Cursor = crHelp
-    OnClick = Label2Click
-    ShowHint = True
+    Left = 8
+    Height = 16
     Hint = 'Нажмите для справки'
+    Top = 434
+    Width = 69
+    Anchors = [akLeft, akBottom]
+    Caption = 'МасштабX'
+    ParentShowHint = False
+    ShowHint = True
+    OnClick = Label2Click
   end
   object Label3: TLabel
-    Left = 160
-    Height = 15
-    Top = 326
-    Width = 66
-    Caption = 'МасштабY'
     Cursor = crHelp
-    OnClick = Label3Click
-    ShowHint = True
+    Left = 170
+    Height = 16
     Hint = 'Нажмите для справки'
+    Top = 434
+    Width = 69
+    Anchors = [akLeft, akBottom]
+    Caption = 'МасштабY'
+    ParentShowHint = False
+    ShowHint = True
+    OnClick = Label3Click
   end
   object Label4: TLabel
-    Left = 310
-    Height = 15
-    Top = 326
-    Width = 31
+    Left = 336
+    Height = 16
+    Top = 434
+    Width = 30
+    Anchors = [akLeft, akBottom]
     Caption = 'Цвет'
   end
   object Edit_Formula: TEdit
-    Left = 80
-    Height = 23
-    Top = 294
-    Width = 410
+    Left = 85
+    Height = 28
+    Top = 392
+    Width = 420
+    Anchors = [akLeft, akBottom]
     TabOrder = 0
     Text = 'sin(x)'
   end
   object Btn_Draw: TButton
-    Left = 496
-    Height = 50
-    Top = 294
-    Width = 96
+    Left = 512
+    Height = 64
+    Top = 392
+    Width = 124
+    Anchors = [akLeft, akBottom]
     Caption = 'Рисовать'
     TabOrder = 1
     OnClick = Btn_DrawClick
   end
   object FloatSpinEdit1: TFloatSpinEdit
-    Left = 80
-    Height = 24
-    Top = 322
-    Width = 70
-    Increment = 0.100000000000000000
-    MinValue = 0.100000000000000000
-    MaxValue = 10.000000000000000000
-    Value = 3.140000000000000000
-    TabOrder = 2
+    Left = 85
+    Height = 26
+    Top = 430
+    Width = 74
+    Anchors = [akLeft, akBottom]
+    Increment = 0.1
+    MaxValue = 10
+    MinValue = 0.1
     OnChange = ScaleChanged
+    TabOrder = 2
+    Value = 3.14
   end
   object FloatSpinEdit2: TFloatSpinEdit
-    Left = 232
-    Height = 24
-    Top = 322
-    Width = 70
-    Increment = 0.100000000000000000
-    MinValue = 0.100000000000000000
-    MaxValue = 10.000000000000000000
-    Value = 3.140000000000000000
-    TabOrder = 3
+    Left = 248
+    Height = 26
+    Top = 430
+    Width = 74
+    Anchors = [akLeft, akBottom]
+    Increment = 0.1
+    MaxValue = 10
+    MinValue = 0.1
     OnChange = ScaleChanged
+    TabOrder = 3
+    Value = 3.14
   end
   object ColorBox1: TColorBox
-    Left = 350
-    Height = 23
-    Top = 322
-    Width = 140
-    ItemHeight = 28
+    Left = 372
+    Height = 28
+    Top = 428
+    Width = 133
     Selected = clRed
+    Anchors = [akLeft, akBottom]
+    ItemHeight = 30
     TabOrder = 4
+  end
+  object PSScript1: TPSScript
+    CompilerOptions = []
+    Plugins = <>
+    UsePreProcessor = False
   end
 end
