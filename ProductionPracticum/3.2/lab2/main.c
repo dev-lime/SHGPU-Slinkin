@@ -96,8 +96,6 @@ static void load_mountinfo() {
     char line[2048];
     while (fgets(line, sizeof(line), f) && mount_count < MAX_MOUNTS) {
         char *p = line;
-        char *token;
-        int space_count = 0;
 
         /* Пропускаем поля до mount_point (5-е поле, индекс 4, после 4 пробелов) */
         /* Формат: id parent major:minor root mount_point options ... - fstype source options */
@@ -295,7 +293,11 @@ static void scan_directory(const char *path) {
 
         /* Рекурсия только в каталоги, не являющиеся симлинками */
         if (S_ISDIR(st.st_mode) && !S_ISLNK(st.st_mode)) {
-            scan_directory(full_path);
+            if (!is_inside_start_dir(full_path)) {
+                fprintf(stderr, "Warning: '%s' is outside the start directory, skipping\n", full_path);
+            } else {
+                scan_directory(full_path);
+            }
         }
     }
     closedir(dir);
@@ -312,8 +314,8 @@ static void print_size_human(unsigned long blocks, unsigned long block_size, con
         printf("    %-20s %lu blocks (%.2f GB)\n", label, blocks, gb);
     } else if (mb >= 1.0) {
         printf("    %-20s %lu blocks (%.2f MB)\n", label, blocks, mb);
-    } else {
-        printf("    %-20s %lu blocks (%lu KB)\n", label, blocks, total_bytes / 1024);
+        } else {
+            printf("    %-20s %lu blocks (%llu KB)\n", label, blocks, total_bytes / 1024);
     }
 }
 
@@ -356,7 +358,7 @@ static void print_results() {
             if (strcmp(found_fs[j].type_name, found_fs[i].type_name) == 0) {
                 printf("\n  [Instance %d]\n", instance_num++);
                 printf("    FS ID:            %d:%d\n", 
-                       found_fs[j].fsid.val[0], found_fs[j].fsid.val[1]);
+                       found_fs[j].fsid.__val[0], found_fs[j].fsid.__val[1]);
                 printf("    Block Size:       %lu bytes\n", found_fs[j].block_size);
                 
                 print_size_human(found_fs[j].total_blocks, found_fs[j].block_size, "Total Space:");

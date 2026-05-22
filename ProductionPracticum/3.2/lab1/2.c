@@ -16,6 +16,7 @@ Task 2: Программа, которая рекурсивно, с исполь
 #include <grp.h>
 #include <errno.h>
 #include <limits.h>
+#include <unistd.h>
 
 const char *get_type_string(mode_t mode)
 {
@@ -95,6 +96,7 @@ void print_special_permissions(mode_t mode)
 
 void print_entry_info(const char *path, const char *name, struct stat *st)
 {
+    (void)name;
     struct passwd *pw = getpwuid(st->st_uid);
     struct group *gr = getgrgid(st->st_gid);
 

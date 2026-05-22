@@ -8,13 +8,29 @@
         <Filename Value="lab2.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="222"/>
-        <CursorPos Y="241"/>
-        <UsageCount Value="20"/>
+        <TopLine Value="190"/>
+        <CursorPos X="27" Y="215"/>
+        <UsageCount Value="21"/>
         <Loaded Value="True"/>
       </Unit>
+      <Unit>
+        <Filename Value="/usr/lib64/lazarus/lcl/forms.pp"/>
+        <UnitName Value="Forms"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="687"/>
+        <CursorPos X="17" Y="706"/>
+        <UsageCount Value="10"/>
+      </Unit>
+      <Unit>
+        <Filename Value="/usr/lib64/lazarus/lcl/extctrls.pp"/>
+        <UnitName Value="ExtCtrls"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="177"/>
+        <CursorPos X="14" Y="197"/>
+        <UsageCount Value="10"/>
+      </Unit>
     </Units>
-    <JumpHistory HistoryIndex="4">
+    <JumpHistory HistoryIndex="21">
       <Position>
         <Filename Value="lab2.lpr"/>
         <Caret Line="16" Column="20"/>
@@ -34,6 +50,74 @@
       <Position>
         <Filename Value="lab2.lpr"/>
         <Caret Line="132" Column="21" TopLine="121"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="182" Column="29" TopLine="164"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="279" Column="45" TopLine="246"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="38" Column="29" TopLine="18"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="196" Column="27" TopLine="176"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="39" Column="32" TopLine="19"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="196" Column="28" TopLine="176"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="213" Column="33" TopLine="196"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="283" Column="35" TopLine="193"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="217" TopLine="193"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="285" Column="5" TopLine="246"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="282" Column="35" TopLine="245"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="275" Column="25" TopLine="246"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="22" Column="5" TopLine="3"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="40" Column="44" TopLine="16"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="215" Column="28" TopLine="199"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="268" Column="52" TopLine="240"/>
+      </Position>
+      <Position>
+        <Filename Value="lab2.lpr"/>
+        <Caret Line="270" Column="64" TopLine="256"/>
       </Position>
     </JumpHistory>
     <RunParams>

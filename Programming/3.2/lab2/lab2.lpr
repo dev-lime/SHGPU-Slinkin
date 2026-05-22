@@ -20,8 +20,6 @@ const
   TIMER_INTERVAL = 50;
 
 type
-  TFormClass = class of TForm;
-
   TMainForm = class(TForm)
     Btn_DemoPlus: TButton;
     Btn_DemoMinus: TButton;
@@ -35,6 +33,7 @@ type
     FLastWidth: Integer;
     FLastHeight: Integer;
     FInitializing: Boolean;
+    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure Edit_EditingDone(Sender: TObject);
     procedure Btn_DemoPlusClick(Sender: TObject);
     procedure Btn_DemoMinusClick(Sender: TObject);
@@ -76,6 +75,11 @@ begin
   Lbl_Height.Top := StartY + 38;
   Edit_Height.Top := StartY + 38;
   Btn_DemoMinus.Top := StartY + 38;
+end;
+
+procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
+begin
+  Application.Terminate;
 end;
 
 procedure TMainForm.SetControlsEnabled(AEnabled: Boolean);
@@ -158,28 +162,41 @@ begin
   begin
     NewW := Width + STEP;
     NewH := Height + STEP;
+
     if NewW > MAX_WIDTH then NewW := MAX_WIDTH;
     if NewH > MAX_HEIGHT then NewH := MAX_HEIGHT;
-    if (NewW >= MAX_WIDTH) and (NewH >= MAX_HEIGHT) then Finished := True;
+
+    Width := NewW;
+    Height := NewH;
+
+    if (NewW >= MAX_WIDTH) and (NewH >= MAX_HEIGHT) then
+      Finished := True;
   end
   else if Direction = -1 then
   begin
     NewW := Width - STEP;
     NewH := Height - STEP;
+
     if NewW < MIN_WIDTH then NewW := MIN_WIDTH;
     if NewH < MIN_HEIGHT then NewH := MIN_HEIGHT;
-    if (NewW <= MIN_WIDTH) and (NewH <= MIN_HEIGHT) then Finished := True;
+
+    Width := NewW;
+    Height := NewH;
+
+    if (NewW <= MIN_WIDTH) and (NewH <= MIN_HEIGHT) then
+      Finished := True;
   end;
 
-  Width := NewW;
-  Height := NewH;
-
-  Left := (Screen.Width - Width) div 2;
-  Top := (Screen.Height - Height) div 2;
+  if Direction <> 0 then
+  begin
+    Left := (Screen.Width - Width) div 2;
+    Top := (Screen.Height - Height) div 2;
+  end;
 
   if Finished then
   begin
     Timer1.Enabled := False;
+    Timer1.Tag := 0;
     SetControlsEnabled(True);
   end;
 end;
@@ -210,8 +227,8 @@ begin
 
   MainForm := TMainForm.CreateNew(Application);
   MainForm.Caption := 'Неваляшка';
-  MainForm.Width := 500;
-  MainForm.Height := 100;
+  MainForm.Width := MIN_WIDTH;
+  MainForm.Height := MIN_HEIGHT;
   MainForm.Left := (Screen.Width - MainForm.Width) div 2;
   MainForm.Top := (Screen.Height - MainForm.Height) div 2;
   MainForm.Constraints.MinWidth := MIN_WIDTH;
@@ -266,13 +283,15 @@ begin
   MainForm.FLastWidth := MainForm.Width;
   MainForm.FLastHeight := MainForm.Height;
 
-  MainForm.OnResize := @MainForm.FormResize;
-  MainForm.OnChangeBounds := @MainForm.FormChangeBounds;
-
   MainForm.UpdateLayout;
   MainForm.UpdateEditFields;
-  MainForm.FInitializing := False;
 
+  MainForm.OnResize := @MainForm.FormResize;
+  MainForm.OnChangeBounds := @MainForm.FormChangeBounds;
+  MainForm.OnClose := @MainForm.FormClose;
+
+  MainForm.FInitializing := False;
   MainForm.Show;
   Application.Run;
 end.
+

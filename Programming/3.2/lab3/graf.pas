@@ -28,8 +28,9 @@ type
     function CurrentChar: Char;
     function IsDigit(c: Char): Boolean;
     function IsLetter(c: Char): Boolean;
+    function IsValid: Boolean;
   public
-    function Evaluate(const expr: string; x: Double): Double;
+    function Evaluate(const expr: string; x: Double; out Valid: Boolean): Double;
   end;
 
   { TForm1 }
@@ -51,15 +52,19 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ScaleChanged(Sender: TObject);
-    procedure UpdateFromControls;
+    procedure Label1Click(Sender: TObject);
+    procedure Label2Click(Sender: TObject);
+    procedure Label3Click(Sender: TObject);
+    procedure FormMouseWheel(Sender: TObject; ShiftState: TShiftState;
+      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
   private
     FFormula: string;
     FScaleX: Double;
     FScaleY: Double;
     FGraphColor: TColor;
-    FNeedDraw: Boolean;
+    FGraphDrawn: Boolean;
     FParser: TFormulaParser;
-    function EvaluateFormula(x: Double): Double;
+    function EvaluateFormula(x: Double; out Valid: Boolean): Double;
     procedure DrawGraph;
     procedure DrawAxes;
   public
@@ -95,6 +100,11 @@ begin
   Result := ((c >= 'a') and (c <= 'z')) or ((c >= 'A') and (c <= 'Z'));
 end;
 
+function TFormulaParser.IsValid: Boolean;
+begin
+  Result := (FPos <= Length(FExpr));
+end;
+
 procedure TFormulaParser.SkipSpaces;
 begin
   while CurrentChar = ' ' do
@@ -126,8 +136,8 @@ end;
 function TFormulaParser.ParseFunctionOrVar: Double;
 var
   funcName: string;
-  arg: Double;
   start: Integer;
+  arg1, arg2: Double;
 begin
   SkipSpaces;
   start := FPos;
@@ -141,29 +151,42 @@ begin
     Exit;
   end;
 
+  if funcName = 'pi' then
+  begin
+    Result := Pi;
+    Exit;
+  end;
+
   SkipSpaces;
   if CurrentChar = '(' then
   begin
     Inc(FPos);
-    arg := ParseExpression;
+    arg1 := ParseExpression;
     SkipSpaces;
+    if CurrentChar = ',' then
+    begin
+      Inc(FPos);
+      arg2 := ParseExpression;
+      SkipSpaces;
+    end;
     if CurrentChar = ')' then
       Inc(FPos);
+
+    if funcName = 'pow' then
+      Result := Power(arg1, arg2)
+    else if funcName = 'sin' then Result := Sin(arg1)
+    else if funcName = 'cos' then Result := Cos(arg1)
+    else if funcName = 'tan' then Result := Tan(arg1)
+    else if funcName = 'exp' then Result := Exp(arg1)
+    else if funcName = 'ln' then Result := Ln(arg1)
+    else if funcName = 'sqrt' then Result := Sqrt(arg1)
+    else if funcName = 'abs' then Result := Abs(arg1)
+    else if funcName = 'arctan' then Result := ArcTan(arg1)
+    else if funcName = 'sqr' then Result := Sqr(arg1)
+    else Result := 0;
   end
   else
-    arg := 0;
-
-  if funcName = 'sin' then Result := Sin(arg)
-  else if funcName = 'cos' then Result := Cos(arg)
-  else if funcName = 'tan' then Result := Tan(arg)
-  else if funcName = 'exp' then Result := Exp(arg)
-  else if funcName = 'ln' then Result := Ln(arg)
-  else if funcName = 'sqrt' then Result := Sqrt(arg)
-  else if funcName = 'abs' then Result := Abs(arg)
-  else if funcName = 'arctan' then Result := ArcTan(arg)
-  else if funcName = 'sqr' then Result := Sqr(arg)
-  else if funcName = 'pi' then Result := Pi
-  else Result := 0;
+    Result := 0;
 end;
 
 function TFormulaParser.ParsePrimary: Double;
@@ -187,7 +210,7 @@ end;
 
 function TFormulaParser.ParsePower: Double;
 var
-  baseVal, exponent: Double;
+  exponent: Double;
 begin
   Result := ParsePrimary;
 
@@ -222,7 +245,7 @@ var
   right: Double;
 begin
   Result := ParseFactor;
-  while True do
+  while IsValid do
   begin
     SkipSpaces;
     if CurrentChar = '*' then
@@ -250,7 +273,7 @@ var
   right: Double;
 begin
   Result := ParseTerm;
-  while True do
+  while IsValid do
   begin
     SkipSpaces;
     if CurrentChar = '+' then
@@ -270,15 +293,17 @@ begin
   end;
 end;
 
-function TFormulaParser.Evaluate(const expr: string; x: Double): Double;
+function TFormulaParser.Evaluate(const expr: string; x: Double; out Valid: Boolean): Double;
 begin
   FExpr := expr;
   FPos := 1;
   FX := x;
   try
     Result := ParseExpression;
+    Valid := True;
   except
     Result := 0;
+    Valid := False;
   end;
 end;
 
@@ -290,7 +315,7 @@ begin
   FScaleX := FloatSpinEdit1.Value;
   FScaleY := FloatSpinEdit2.Value;
   FGraphColor := ColorBox1.Selected;
-  FNeedDraw := False;
+  FGraphDrawn := False;
   FParser := TFormulaParser.Create;
 end;
 
@@ -299,86 +324,16 @@ begin
   FParser.Free;
 end;
 
-procedure TForm1.UpdateFromControls;
+function TForm1.EvaluateFormula(x: Double; out Valid: Boolean): Double;
 begin
-  FFormula := Edit_Formula.Text;
-  FScaleX := FloatSpinEdit1.Value;
-  FScaleY := FloatSpinEdit2.Value;
-  FGraphColor := ColorBox1.Selected;
-  FNeedDraw := True;
-end;
-
-procedure TForm1.ScaleChanged(Sender: TObject);
-begin
-  UpdateFromControls;
-  PaintBox1.Repaint;
-end;
-
-function TForm1.EvaluateFormula(x: Double): Double;
-begin
-  try
-    Result := FParser.Evaluate(FFormula, x);
-  except
-    Result := 0;
-  end;
+  Result := FParser.Evaluate(FFormula, x, Valid);
 end;
 
 procedure TForm1.DrawAxes;
 var
-  cx, cy, i: Integer;
-  w, h: Integer;
-  gridStep: Integer;
-begin
-  w := PaintBox1.Width;
-  h := PaintBox1.Height;
-  cx := w div 2;
-  cy := h div 2;
-
-  PaintBox1.Canvas.Pen.Color := clSilver;
-  PaintBox1.Canvas.Pen.Width := 1;
-
-  gridStep := Round(FScaleX);
-  if gridStep < 20 then gridStep := 20;
-
-  i := cx mod gridStep;
-  while i <= w do
-  begin
-    PaintBox1.Canvas.MoveTo(i, 0);
-    PaintBox1.Canvas.LineTo(i, h);
-    i := i + gridStep;
-  end;
-
-  i := cy mod gridStep;
-  while i <= h do
-  begin
-    PaintBox1.Canvas.MoveTo(0, i);
-    PaintBox1.Canvas.LineTo(w, i);
-    i := i + gridStep;
-  end;
-
-  PaintBox1.Canvas.Pen.Color := clBlack;
-  PaintBox1.Canvas.Pen.Width := 2;
-
-  PaintBox1.Canvas.MoveTo(0, cy);
-  PaintBox1.Canvas.LineTo(w, cy);
-
-  PaintBox1.Canvas.MoveTo(cx, 0);
-  PaintBox1.Canvas.LineTo(cx, h);
-
-  PaintBox1.Canvas.Font.Color := clBlack;
-  PaintBox1.Canvas.Font.Size := 8;
-  PaintBox1.Canvas.TextOut(cx + 5, cy + 5, '0');
-  PaintBox1.Canvas.TextOut(w - 15, cy + 5, 'X');
-  PaintBox1.Canvas.TextOut(cx + 5, 5, 'Y');
-end;
-
-procedure TForm1.DrawGraph;
-var
   w, h, cx, cy: Integer;
-  x, xStart, xEnd, dx: Double;
-  px, py, prevPx, prevPy: Integer;
-  firstPoint: Boolean;
-  val: Double;
+  xStart, xEnd, yStart, yEnd: Double;
+  labelX: string;
 begin
   w := PaintBox1.Width;
   h := PaintBox1.Height;
@@ -388,12 +343,66 @@ begin
   PaintBox1.Canvas.Brush.Color := clWhite;
   PaintBox1.Canvas.FillRect(Rect(0, 0, w, h));
 
-  DrawAxes;
+  PaintBox1.Canvas.Pen.Color := clBlack;
+  PaintBox1.Canvas.Pen.Width := 2;
 
-  if FFormula = '' then Exit;
+  xStart := -cx / (FScaleX * 50);
+  xEnd := cx / (FScaleX * 50);
+  yStart := cy / (FScaleY * 50);
+  yEnd := -cy / (FScaleY * 50);
 
-  xStart := -cx / FScaleX;
-  xEnd := cx / FScaleX;
+  PaintBox1.Canvas.MoveTo(0, cy);
+  PaintBox1.Canvas.LineTo(w, cy);
+
+  PaintBox1.Canvas.MoveTo(cx, 0);
+  PaintBox1.Canvas.LineTo(cx, h);
+
+  PaintBox1.Canvas.Font.Color := clBlack;
+  PaintBox1.Canvas.Font.Size := 8;
+
+  if Abs(xStart) < 1e6 then
+    labelX := Format('%.2f', [xStart])
+  else
+    labelX := Format('%.0e', [xStart]);
+  PaintBox1.Canvas.TextOut(2, cy + 5, labelX);
+
+  if Abs(xEnd) < 1e6 then
+    labelX := Format('%.2f', [xEnd])
+  else
+    labelX := Format('%.0e', [xEnd]);
+  PaintBox1.Canvas.TextOut(w - PaintBox1.Canvas.TextWidth(labelX) - 2, cy + 5, labelX);
+
+  PaintBox1.Canvas.TextOut(cx + 5, cy + 5, '0');
+
+  if Abs(yStart) < 1e6 then
+    labelX := Format('%.2f', [yStart])
+  else
+    labelX := Format('%.0e', [yStart]);
+  PaintBox1.Canvas.TextOut(cx + 5, 2, labelX);
+
+  if Abs(yEnd) < 1e6 then
+    labelX := Format('%.2f', [yEnd])
+  else
+    labelX := Format('%.0e', [yEnd]);
+  PaintBox1.Canvas.TextOut(cx + 5, h - PaintBox1.Canvas.TextHeight('X') - 2, labelX);
+end;
+
+procedure TForm1.DrawGraph;
+var
+  w, h, cx, cy: Integer;
+  x, xStart, xEnd, dx: Double;
+  px, py, prevPx, prevPy: Integer;
+  firstPoint: Boolean;
+  val: Double;
+  valid: Boolean;
+begin
+  w := PaintBox1.Width;
+  h := PaintBox1.Height;
+  cx := w div 2;
+  cy := h div 2;
+
+  xStart := -cx / (FScaleX * 50);
+  xEnd := cx / (FScaleX * 50);
   dx := (xEnd - xStart) / w;
 
   PaintBox1.Canvas.Pen.Color := FGraphColor;
@@ -406,17 +415,17 @@ begin
   x := xStart;
   while x <= xEnd do
   begin
-    val := EvaluateFormula(x);
+    val := EvaluateFormula(x, valid);
 
-    if IsInfinite(val) or IsNan(val) then
+    if not valid or IsInfinite(val) or IsNan(val) then
     begin
       firstPoint := True;
       x := x + dx;
       Continue;
     end;
 
-    px := cx + Round(x * FScaleX);
-    py := cy - Round(val * FScaleY);
+    px := cx + Round(x * FScaleX * 50);
+    py := cy - Round(val * FScaleY * 50);
 
     if py < -10000 then py := -10000;
     if py > h + 10000 then py := h + 10000;
@@ -441,20 +450,131 @@ begin
 end;
 
 procedure TForm1.Btn_DrawClick(Sender: TObject);
+var
+  valid: Boolean;
+  testVal: Double;
 begin
-  UpdateFromControls;
+  FFormula := Edit_Formula.Text;
+  FScaleX := FloatSpinEdit1.Value;
+  FScaleY := FloatSpinEdit2.Value;
+  FGraphColor := ColorBox1.Selected;
+
+  testVal := FParser.Evaluate(FFormula, 0, valid);
+  if not valid then
+  begin
+    ShowMessage('Ошибка в формуле. Проверьте правильность введённого выражения.');
+    FGraphDrawn := False;
+    PaintBox1.Repaint;
+    Exit;
+  end;
+
+  FGraphDrawn := True;
+  PaintBox1.Repaint;
+end;
+
+procedure TForm1.ScaleChanged(Sender: TObject);
+begin
+  FScaleX := FloatSpinEdit1.Value;
+  FScaleY := FloatSpinEdit2.Value;
   PaintBox1.Repaint;
 end;
 
 procedure TForm1.FormResize(Sender: TObject);
 begin
-  if FNeedDraw then
-    PaintBox1.Repaint;
+  PaintBox1.Repaint;
 end;
 
 procedure TForm1.PaintBox1Paint(Sender: TObject);
 begin
-  DrawGraph;
+  DrawAxes;
+  if FGraphDrawn then
+    DrawGraph;
+end;
+
+procedure TForm1.FormMouseWheel(Sender: TObject; ShiftState: TShiftState;
+  WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+var
+  edit: TFloatSpinEdit;
+  pt: TPoint;
+begin
+  pt := FloatSpinEdit1.ScreenToClient(MousePos);
+  if (pt.X >= 0) and (pt.X < FloatSpinEdit1.Width) and
+     (pt.Y >= 0) and (pt.Y < FloatSpinEdit1.Height) then
+    edit := FloatSpinEdit1
+  else
+  begin
+    pt := FloatSpinEdit2.ScreenToClient(MousePos);
+    if (pt.X >= 0) and (pt.X < FloatSpinEdit2.Width) and
+       (pt.Y >= 0) and (pt.Y < FloatSpinEdit2.Height) then
+      edit := FloatSpinEdit2
+    else
+      Exit;
+  end;
+
+  if WheelDelta > 0 then
+    edit.Value := edit.Value + edit.Increment
+  else
+    edit.Value := edit.Value - edit.Increment;
+
+  if edit.Value < edit.MinValue then edit.Value := edit.MinValue;
+  if edit.Value > edit.MaxValue then edit.Value := edit.MaxValue;
+
+  Handled := True;
+end;
+
+procedure TForm1.Label1Click(Sender: TObject);
+begin
+  ShowMessage(
+    'Гэомэтр 1.0: Формулы'#13#10 +
+    #13#10 +
+    'Формула, предназначенная для построения графика, представляет собой ' +
+    'алгебраическое однострочное выражение, сформированное в рамках ' +
+    'синтаксических правил языка программирования Pascal.'#13#10 +
+    #13#10 +
+    'В формуле допускается использовать арифметические операции +,-,*,/, ' +
+    'функции sin, cos, tan, pow, ln, exp, sqrt. Разрешаются группировки ' +
+    'с использованием скобок.'#13#10 +
+    #13#10 +
+    'Разрешается использовать целочисленные и вещественные константы, ' +
+    'а также переменную-координату x.'#13#10 +
+    #13#10 +
+    'С помощью подстановки в формулу значений х производится расчёт ' +
+    'координат y и построение графика функции на основании введенной формулы.'#13#10 +
+    #13#10 +
+    'Построение графика начинается с нажатия на клавишу Enter или кнопку "Рисовать"'#13#10 +
+    #13#10 +
+    'Примеры:'#13#10 +
+    'sin(x)'#13#10 +
+    'cos(sin(x)+1)'#13#10 +
+    'sin(x*x)+cos(pow(x,3))'#13#10 +
+    '1/(sin(x)+cos(x))'
+  );
+end;
+
+procedure TForm1.Label2Click(Sender: TObject);
+begin
+  ShowMessage(
+    'Гэомэтр 1.0: Масштабирование'#13#10 +
+    #13#10 +
+    'Масштабирование используется для изменения масштаба графика ' +
+    'в диапазоне [0.1, 10].'#13#10 +
+    #13#10 +
+    'Масштабирование производится отдельно для осей абсцисс и ординат.'#13#10 +
+    'Изменение масштаба автоматически приводит к перерисовке графика.'
+  );
+end;
+
+procedure TForm1.Label3Click(Sender: TObject);
+begin
+  ShowMessage(
+    'Гэомэтр 1.0: Масштабирование'#13#10 +
+    #13#10 +
+    'Масштабирование используется для изменения масштаба графика ' +
+    'в диапазоне [0.1, 10].'#13#10 +
+    #13#10 +
+    'Масштабирование производится отдельно для осей абсцисс и ординат.'#13#10 +
+    'Изменение масштаба автоматически приводит к перерисовке графика.'
+  );
 end;
 
 end.
