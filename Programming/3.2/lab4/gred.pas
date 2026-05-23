@@ -9,7 +9,7 @@ uses
   ComCtrls, StdCtrls, Buttons, ColorBox, Spin, Contnrs, Math, shapes;
 
 type
-  TToolType = (ttSelect, ttLine, ttRect, ttEllipse, ttTriangle);
+  TToolType = (ttSelect, ttLine, ttRect, ttEllipse, ttTriangle, ttDelete);
 
   { TForm1 }
 
@@ -62,9 +62,7 @@ type
     procedure MenuExitClick(Sender: TObject);
     procedure MenuAboutClick(Sender: TObject);
     procedure PropertyChange(Sender: TObject);
-    procedure SB_DeleteClick(Sender: TObject);
     procedure MIClearClick(Sender: TObject);
-    procedure PaintBox1MouseLeave(Sender: TObject);
   private
     FShapes: TObjectList;
     FCurrentTool: TToolType;
@@ -97,7 +95,7 @@ implementation
 
 const
   ToolShapeMap: array[TToolType] of TShapeClass = (
-    nil, TLineShape, TRectShape, TEllipseShape, TTriangleShape
+    nil, TLineShape, TRectShape, TEllipseShape, TTriangleShape, nil
   );
 
 { TForm1 }
@@ -135,6 +133,7 @@ begin
     ttRect:     ToolName := 'Прямоугольник';
     ttEllipse:  ToolName := 'Эллипс';
     ttTriangle: ToolName := 'Треугольник';
+    ttDelete:   ToolName := 'Удаление';
   end;
   StatusBar1.SimpleText := Format('Инструмент: %s | Фигур: %d', [ToolName, FShapes.Count]);
 end;
@@ -151,7 +150,8 @@ begin
   else if Btn = SpeedBtnLine then FCurrentTool := ttLine
   else if Btn = SpeedBtnRect then FCurrentTool := ttRect
   else if Btn = SpeedBtnEllipse then FCurrentTool := ttEllipse
-  else if Btn = SpeedBtnTriangle then FCurrentTool := ttTriangle;
+   else if Btn = SpeedBtnTriangle then FCurrentTool := ttTriangle
+   else if Btn = SB_Delete then FCurrentTool := ttDelete;
   PaintBox1.Repaint;
   UpdateStatusBar;
 end;
@@ -229,21 +229,23 @@ end;
 procedure TForm1.RenderScene(ACanvas: TCanvas; AWidth, AHeight: Integer);
 var
   I: Integer;
+  HoverWasSelected: Boolean;
 begin
   ACanvas.Brush.Color := clWhite;
   ACanvas.FillRect(Rect(0, 0, AWidth, AHeight));
+
+  HoverWasSelected := False;
+  if (FHoverShape <> nil) and (FHoverShape <> FSelectedShape) then
+  begin
+    HoverWasSelected := FHoverShape.Selected;
+    FHoverShape.Selected := True;
+  end;
+
   for I := 0 to FShapes.Count - 1 do
     TVectorShape(FShapes[I]).Draw(ACanvas);
 
-  if (FHoverShape <> nil) and not FHoverShape.Selected then
-  begin
-    ACanvas.Pen.Color := clGray;
-    ACanvas.Pen.Width := 1;
-    ACanvas.Pen.Style := psDot;
-    ACanvas.Brush.Style := bsClear;
-    ACanvas.Rectangle(FHoverShape.X1 - 2, FHoverShape.Y1 - 2,
-                      FHoverShape.X2 + 2, FHoverShape.Y2 + 2);
-  end;
+  if (FHoverShape <> nil) and (FHoverShape <> FSelectedShape) then
+    FHoverShape.Selected := HoverWasSelected;
 end;
 
 procedure TForm1.PaintBox1Paint(Sender: TObject);
@@ -255,6 +257,7 @@ procedure TForm1.PaintBox1MouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   Shape: TVectorShape;
+  Idx: Integer;
 begin
   if FCurrentTool = ttSelect then
   begin
@@ -267,6 +270,24 @@ begin
     begin
       DeselectAll;
       UpdatePropPanel;
+    end;
+    PaintBox1.Repaint;
+    Exit;
+  end;
+
+  if FCurrentTool = ttDelete then
+  begin
+    if SelectShapeAt(X, Y) then
+    begin
+      FHoverShape := nil;
+      Idx := FShapes.IndexOf(FSelectedShape);
+      if Idx >= 0 then
+      begin
+        FSelectedShape := nil;
+        FShapes.Delete(Idx);
+        FModified := True;
+        UpdateStatusBar;
+      end;
     end;
     PaintBox1.Repaint;
     Exit;
@@ -299,7 +320,7 @@ begin
   StatusBar1.SimpleText := Format('X: %d  Y: %d', [X, Y]);
 
   NewHover := nil;
-  if FCurrentTool = ttSelect then
+  if FCurrentTool in [ttSelect, ttDelete] then
   begin
     for I := FShapes.Count - 1 downto 0 do
     begin
@@ -357,35 +378,6 @@ begin
   begin
     FDragging := False;
     FModified := True;
-  end;
-end;
-
-procedure TForm1.PaintBox1MouseLeave(Sender: TObject);
-begin
-  if FHoverShape <> nil then
-  begin
-    FHoverShape := nil;
-    PaintBox1.Repaint;
-  end;
-  PaintBox1.Cursor := crDefault;
-end;
-
-procedure TForm1.SB_DeleteClick(Sender: TObject);
-var
-  Idx: Integer;
-begin
-  if FSelectedShape <> nil then
-  begin
-    Idx := FShapes.IndexOf(FSelectedShape);
-    if Idx >= 0 then
-    begin
-      FSelectedShape := nil;
-      FHoverShape := nil;
-      FShapes.Delete(Idx);
-      FModified := True;
-      PaintBox1.Repaint;
-      UpdateStatusBar;
-    end;
   end;
 end;
 

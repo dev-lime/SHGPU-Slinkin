@@ -124,8 +124,10 @@ object Form1: TForm1
       Height = 30
       Top = 184
       Width = 40
+      AllowAllUp = False
       Caption = 'X'
-      OnClick = SB_DeleteClick
+      GroupIndex = 1
+      OnClick = SpeedBtnClick
     end
   end
   object PropPanel: TPanel
@@ -196,7 +198,6 @@ object Form1: TForm1
     OnMouseDown = PaintBox1MouseDown
     OnMouseMove = PaintBox1MouseMove
     OnMouseUp = PaintBox1MouseUp
-    OnMouseLeave = PaintBox1MouseLeave
   end
   object StatusBar1: TStatusBar
     Left = 0
