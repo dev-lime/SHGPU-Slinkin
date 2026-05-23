@@ -28,12 +28,15 @@ type
     MenuExit: TMenuItem;
     MenuHelp: TMenuItem;
     MenuAbout: TMenuItem;
+    MenuEdit: TMenuItem;
+    MIClear: TMenuItem;
     ToolPanel: TPanel;
     SpeedBtnSelect: TSpeedButton;
     SpeedBtnLine: TSpeedButton;
     SpeedBtnRect: TSpeedButton;
     SpeedBtnEllipse: TSpeedButton;
     SpeedBtnTriangle: TSpeedButton;
+    SB_Delete: TSpeedButton;
     PropPanel: TPanel;
     LabelPenColor: TLabel;
     ColorBoxPen: TColorBox;
@@ -59,6 +62,9 @@ type
     procedure MenuExitClick(Sender: TObject);
     procedure MenuAboutClick(Sender: TObject);
     procedure PropertyChange(Sender: TObject);
+    procedure SB_DeleteClick(Sender: TObject);
+    procedure MIClearClick(Sender: TObject);
+    procedure PaintBox1MouseLeave(Sender: TObject);
   private
     FShapes: TObjectList;
     FCurrentTool: TToolType;
@@ -66,6 +72,7 @@ type
     FStartPoint: TPoint;
     FCurrentShape: TVectorShape;
     FSelectedShape: TVectorShape;
+    FHoverShape: TVectorShape;
     FDragging: Boolean;
     FDragStart: TPoint;
     FFileName: string;
@@ -102,6 +109,7 @@ begin
   FDrawing := False;
   FDragging := False;
   FSelectedShape := nil;
+  FHoverShape := nil;
   FCurrentShape := nil;
   FModified := False;
   FFileName := '';
@@ -226,6 +234,16 @@ begin
   ACanvas.FillRect(Rect(0, 0, AWidth, AHeight));
   for I := 0 to FShapes.Count - 1 do
     TVectorShape(FShapes[I]).Draw(ACanvas);
+
+  if (FHoverShape <> nil) and not FHoverShape.Selected then
+  begin
+    ACanvas.Pen.Color := clGray;
+    ACanvas.Pen.Width := 1;
+    ACanvas.Pen.Style := psDot;
+    ACanvas.Brush.Style := bsClear;
+    ACanvas.Rectangle(FHoverShape.X1 - 2, FHoverShape.Y1 - 2,
+                      FHoverShape.X2 + 2, FHoverShape.Y2 + 2);
+  end;
 end;
 
 procedure TForm1.PaintBox1Paint(Sender: TObject);
@@ -274,9 +292,36 @@ end;
 procedure TForm1.PaintBox1MouseMove(Sender: TObject; Shift: TShiftState;
   X, Y: Integer);
 var
-  DX, DY: Integer;
+  DX, DY, I: Integer;
+  Shape: TVectorShape;
+  NewHover: TVectorShape;
 begin
   StatusBar1.SimpleText := Format('X: %d  Y: %d', [X, Y]);
+
+  NewHover := nil;
+  if FCurrentTool = ttSelect then
+  begin
+    for I := FShapes.Count - 1 downto 0 do
+    begin
+      Shape := TVectorShape(FShapes[I]);
+      if Shape.HitTest(X, Y) then
+      begin
+        NewHover := Shape;
+        Break;
+      end;
+    end;
+  end;
+
+  if NewHover <> FHoverShape then
+  begin
+    FHoverShape := NewHover;
+    PaintBox1.Repaint;
+  end;
+
+  if FHoverShape <> nil then
+    PaintBox1.Cursor := crHandPoint
+  else
+    PaintBox1.Cursor := crDefault;
 
   if FDragging and (FSelectedShape <> nil) then
   begin
@@ -313,6 +358,46 @@ begin
     FDragging := False;
     FModified := True;
   end;
+end;
+
+procedure TForm1.PaintBox1MouseLeave(Sender: TObject);
+begin
+  if FHoverShape <> nil then
+  begin
+    FHoverShape := nil;
+    PaintBox1.Repaint;
+  end;
+  PaintBox1.Cursor := crDefault;
+end;
+
+procedure TForm1.SB_DeleteClick(Sender: TObject);
+var
+  Idx: Integer;
+begin
+  if FSelectedShape <> nil then
+  begin
+    Idx := FShapes.IndexOf(FSelectedShape);
+    if Idx >= 0 then
+    begin
+      FSelectedShape := nil;
+      FHoverShape := nil;
+      FShapes.Delete(Idx);
+      FModified := True;
+      PaintBox1.Repaint;
+      UpdateStatusBar;
+    end;
+  end;
+end;
+
+procedure TForm1.MIClearClick(Sender: TObject);
+begin
+  FShapes.Clear;
+  DeselectAll;
+  FHoverShape := nil;
+  UpdatePropPanel;
+  PaintBox1.Repaint;
+  UpdateStatusBar;
+  FModified := True;
 end;
 
 { File menu }

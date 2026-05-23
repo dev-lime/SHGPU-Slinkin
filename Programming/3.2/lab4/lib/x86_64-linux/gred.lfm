@@ -7,6 +7,8 @@ object Form1: TForm1
   ClientHeight = 600
   ClientWidth = 800
   Menu = MainMenu1
+  Constraints.MinWidth = 640
+  Constraints.MinHeight = 480
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   LCLVersion = '4.4.0.0'
@@ -42,6 +44,13 @@ object Form1: TForm1
       object MenuExit: TMenuItem
         Caption = 'Выход'
         OnClick = MenuExitClick
+      end
+    end
+    object MenuEdit: TMenuItem
+      Caption = 'Правка'
+      object MIClear: TMenuItem
+        Caption = 'Очистить'
+        OnClick = MIClearClick
       end
     end
     object MenuHelp: TMenuItem
@@ -110,13 +119,21 @@ object Form1: TForm1
       GroupIndex = 1
       OnClick = SpeedBtnClick
     end
+    object SB_Delete: TSpeedButton
+      Left = 8
+      Height = 30
+      Top = 184
+      Width = 40
+      Caption = 'X'
+      OnClick = SB_DeleteClick
+    end
   end
   object PropPanel: TPanel
     Left = 56
     Height = 36
-    Top = 504
+    Top = 0
     Width = 744
-    Align = alBottom
+    Align = alTop
     TabOrder = 1
     object LabelPenColor: TLabel
       Left = 8
@@ -179,6 +196,7 @@ object Form1: TForm1
     OnMouseDown = PaintBox1MouseDown
     OnMouseMove = PaintBox1MouseMove
     OnMouseUp = PaintBox1MouseUp
+    OnMouseLeave = PaintBox1MouseLeave
   end
   object StatusBar1: TStatusBar
     Left = 0
