@@ -6,32 +6,9 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  ColorBox, Spin, uPSComponent;
+  ColorBox, Spin, uPSComponent, uPSRuntime;
 
 type
-
-  { TFormulaParser }
-
-  TFormulaParser = class
-  private
-    FExpr: string;
-    FPos: Integer;
-    FX: Double;
-    function ParseExpression: Double;
-    function ParseTerm: Double;
-    function ParseFactor: Double;
-    function ParsePower: Double;
-    function ParsePrimary: Double;
-    function ParseFunctionOrVar: Double;
-    function ParseNumber: Double;
-    procedure SkipSpaces;
-    function CurrentChar: Char;
-    function IsDigit(c: Char): Boolean;
-    function IsLetter(c: Char): Boolean;
-    function IsValid: Boolean;
-  public
-    function Evaluate(const expr: string; x: Double; out Valid: Boolean): Double;
-  end;
 
   { TForm1 }
 
@@ -54,18 +31,20 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure ScaleChanged(Sender: TObject);
     procedure Label1Click(Sender: TObject);
-    procedure Label2Click(Sender: TObject);
-    procedure Label3Click(Sender: TObject);
+    procedure LabelScaleClick(Sender: TObject);
     procedure FormMouseWheel(Sender: TObject; ShiftState: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+    procedure PSScript1Compile(Sender: TPSScript);
+    procedure PSScript1Execute(Sender: TPSScript);
+    procedure Edit_FormulaEditingDone(Sender: TObject);
   private
-    FFormula: string;
     FScaleX: Double;
     FScaleY: Double;
     FGraphColor: TColor;
     FGraphDrawn: Boolean;
-    FParser: TFormulaParser;
-    function EvaluateFormula(x: Double; out Valid: Boolean): Double;
+    FCompiled: Boolean;
+    FScriptCode: TStringList;
+    function EvaluateFormula(x: Double): Double;
     procedure DrawGraph;
     procedure DrawAxes;
   public
@@ -81,260 +60,86 @@ implementation
 
 uses Math;
 
-{ TFormulaParser }
-
-function TFormulaParser.CurrentChar: Char;
+function WrpTan(x: Double): Double;
 begin
-  if FPos <= Length(FExpr) then
-    Result := FExpr[FPos]
-  else
-    Result := #0;
+  try Result := tan(x); except Result := NaN; end;
 end;
 
-function TFormulaParser.IsDigit(c: Char): Boolean;
+function WrpLn(x: Double): Double;
 begin
-  Result := (c >= '0') and (c <= '9');
+  try Result := ln(x); except Result := NaN; end;
 end;
 
-function TFormulaParser.IsLetter(c: Char): Boolean;
+function WrpExp(x: Double): Double;
 begin
-  Result := ((c >= 'a') and (c <= 'z')) or ((c >= 'A') and (c <= 'Z'));
+  try Result := exp(x); except Result := NaN; end;
 end;
 
-function TFormulaParser.IsValid: Boolean;
+function WrpPow(x, y: Double): Double;
 begin
-  Result := (FPos <= Length(FExpr));
-end;
-
-procedure TFormulaParser.SkipSpaces;
-begin
-  while CurrentChar = ' ' do
-    Inc(FPos);
-end;
-
-function TFormulaParser.ParseNumber: Double;
-var
-  start: Integer;
-  numStr: string;
-  hasDot: Boolean;
-begin
-  SkipSpaces;
-  start := FPos;
-  hasDot := False;
-  while IsDigit(CurrentChar) or (CurrentChar = '.') do
-  begin
-    if CurrentChar = '.' then
-    begin
-      if hasDot then Break;
-      hasDot := True;
-    end;
-    Inc(FPos);
-  end;
-  numStr := Copy(FExpr, start, FPos - start);
-  Result := StrToFloatDef(numStr, 0);
-end;
-
-function TFormulaParser.ParseFunctionOrVar: Double;
-var
-  funcName: string;
-  start: Integer;
-  arg1, arg2: Double;
-begin
-  SkipSpaces;
-  start := FPos;
-  while IsLetter(CurrentChar) do
-    Inc(FPos);
-  funcName := LowerCase(Copy(FExpr, start, FPos - start));
-
-  if funcName = 'x' then
-  begin
-    Result := FX;
-    Exit;
-  end;
-
-  if funcName = 'pi' then
-  begin
-    Result := Pi;
-    Exit;
-  end;
-
-  SkipSpaces;
-  if CurrentChar = '(' then
-  begin
-    Inc(FPos);
-    arg1 := ParseExpression;
-    SkipSpaces;
-    if CurrentChar = ',' then
-    begin
-      Inc(FPos);
-      arg2 := ParseExpression;
-      SkipSpaces;
-    end;
-    if CurrentChar = ')' then
-      Inc(FPos);
-
-    if funcName = 'pow' then
-      Result := Power(arg1, arg2)
-    else if funcName = 'sin' then Result := Sin(arg1)
-    else if funcName = 'cos' then Result := Cos(arg1)
-    else if funcName = 'tan' then Result := Tan(arg1)
-    else if funcName = 'exp' then Result := Exp(arg1)
-    else if funcName = 'ln' then Result := Ln(arg1)
-    else if funcName = 'sqrt' then Result := Sqrt(arg1)
-    else if funcName = 'abs' then Result := Abs(arg1)
-    else if funcName = 'arctan' then Result := ArcTan(arg1)
-    else if funcName = 'sqr' then Result := Sqr(arg1)
-    else Result := 0;
-  end
-  else
-    Result := 0;
-end;
-
-function TFormulaParser.ParsePrimary: Double;
-begin
-  SkipSpaces;
-  if CurrentChar = '(' then
-  begin
-    Inc(FPos);
-    Result := ParseExpression;
-    SkipSpaces;
-    if CurrentChar = ')' then
-      Inc(FPos);
-  end
-  else if IsLetter(CurrentChar) then
-    Result := ParseFunctionOrVar
-  else if IsDigit(CurrentChar) or (CurrentChar = '.') then
-    Result := ParseNumber
-  else
-    Result := 0;
-end;
-
-function TFormulaParser.ParsePower: Double;
-var
-  exponent: Double;
-begin
-  Result := ParsePrimary;
-
-  SkipSpaces;
-  if CurrentChar = '^' then
-  begin
-    Inc(FPos);
-    exponent := ParsePower;
-    Result := Power(Result, exponent);
-  end;
-end;
-
-function TFormulaParser.ParseFactor: Double;
-begin
-  SkipSpaces;
-  if CurrentChar = '-' then
-  begin
-    Inc(FPos);
-    Result := -ParseFactor;
-  end
-  else if CurrentChar = '+' then
-  begin
-    Inc(FPos);
-    Result := ParseFactor;
-  end
-  else
-    Result := ParsePower;
-end;
-
-function TFormulaParser.ParseTerm: Double;
-var
-  right: Double;
-begin
-  Result := ParseFactor;
-  while IsValid do
-  begin
-    SkipSpaces;
-    if CurrentChar = '*' then
-    begin
-      Inc(FPos);
-      right := ParseFactor;
-      Result := Result * right;
-    end
-    else if CurrentChar = '/' then
-    begin
-      Inc(FPos);
-      right := ParseFactor;
-      if right <> 0 then
-        Result := Result / right
-      else
-        Result := 0;
-    end
-    else
-      Break;
-  end;
-end;
-
-function TFormulaParser.ParseExpression: Double;
-var
-  right: Double;
-begin
-  Result := ParseTerm;
-  while IsValid do
-  begin
-    SkipSpaces;
-    if CurrentChar = '+' then
-    begin
-      Inc(FPos);
-      right := ParseTerm;
-      Result := Result + right;
-    end
-    else if CurrentChar = '-' then
-    begin
-      Inc(FPos);
-      right := ParseTerm;
-      Result := Result - right;
-    end
-    else
-      Break;
-  end;
-end;
-
-function TFormulaParser.Evaluate(const expr: string; x: Double; out Valid: Boolean): Double;
-begin
-  FExpr := expr;
-  FPos := 1;
-  FX := x;
-  try
-    Result := ParseExpression;
-    Valid := True;
-  except
-    Result := 0;
-    Valid := False;
-  end;
+  try Result := power(x, y); except Result := NaN; end;
 end;
 
 { TForm1 }
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  FFormula := Edit_Formula.Text;
   FScaleX := FloatSpinEdit1.Value;
   FScaleY := FloatSpinEdit2.Value;
   FGraphColor := ColorBox1.Selected;
   FGraphDrawn := False;
-  FParser := TFormulaParser.Create;
+  FCompiled := False;
+  FScriptCode := TStringList.Create;
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
 begin
-  FParser.Free;
+  FScriptCode.Free;
 end;
 
-function TForm1.EvaluateFormula(x: Double; out Valid: Boolean): Double;
+procedure TForm1.PSScript1Compile(Sender: TPSScript);
 begin
-  Result := FParser.Evaluate(FFormula, x, Valid);
+  Sender.AddFunction(@WrpTan, 'function tan(x: Double): Double;');
+  Sender.AddFunction(@WrpLn, 'function ln(x: Double): Double;');
+  Sender.AddFunction(@WrpExp, 'function exp(x: Double): Double;');
+  Sender.AddFunction(@WrpPow, 'function pow(x, y: Double): Double;');
+end;
+
+procedure TForm1.PSScript1Execute(Sender: TPSScript);
+begin
+  Sender.Exec.RegisterDelphiFunction(@WrpTan, 'tan', cdRegister);
+  Sender.Exec.RegisterDelphiFunction(@WrpLn, 'ln', cdRegister);
+  Sender.Exec.RegisterDelphiFunction(@WrpExp, 'exp', cdRegister);
+  Sender.Exec.RegisterDelphiFunction(@WrpPow, 'pow', cdRegister);
+end;
+
+function TForm1.EvaluateFormula(x: Double): Double;
+begin
+  Result := 0;
+  if FCompiled then
+  begin
+    try
+      Result := PSScript1.ExecuteFunction([x], 'FTPSS');
+    except
+      Result := 0;
+    end;
+  end;
 end;
 
 procedure TForm1.DrawAxes;
 var
   w, h, cx, cy: Integer;
   xStart, xEnd, yStart, yEnd: Double;
-  labelX: string;
+  labelText: string;
+
+  function CoordToStr(val: Double): string;
+  begin
+    if Abs(val) < 1e6 then
+      Result := Format('%.2f', [val])
+    else
+      Result := Format('%.0e', [val]);
+  end;
+
 begin
   w := PaintBox1.Width;
   h := PaintBox1.Height;
@@ -347,10 +152,10 @@ begin
   PaintBox1.Canvas.Pen.Color := clBlack;
   PaintBox1.Canvas.Pen.Width := 1;
 
-  xStart := -FScaleX;//-cx / (FScaleX * 50);
-  xEnd := FScaleX;//cx / (FScaleX * 50);
-  yStart := FScaleY;//cy / (FScaleY * 50);
-  yEnd := -FScaleY;//-cy / (FScaleY * 50);
+  xStart := -FScaleX;
+  xEnd := FScaleX;
+  yStart := FScaleY;
+  yEnd := -FScaleY;
 
   PaintBox1.Canvas.MoveTo(0, cy);
   PaintBox1.Canvas.LineTo(w, cy);
@@ -361,31 +166,19 @@ begin
   PaintBox1.Canvas.Font.Color := clBlack;
   PaintBox1.Canvas.Font.Size := 10;
 
-  if Abs(xStart) < 1e6 then
-    labelX := Format('%.2f', [xStart])
-  else
-    labelX := Format('%.0e', [xStart]);
-  PaintBox1.Canvas.TextOut(2, cy + 5, labelX);
+  labelText := CoordToStr(xStart);
+  PaintBox1.Canvas.TextOut(2, cy + 5, labelText);
 
-  if Abs(xEnd) < 1e6 then
-    labelX := Format('%.2f', [xEnd])
-  else
-    labelX := Format('%.0e', [xEnd]);
-  PaintBox1.Canvas.TextOut(w - PaintBox1.Canvas.TextWidth(labelX) - 2, cy + 5, labelX);
+  labelText := CoordToStr(xEnd);
+  PaintBox1.Canvas.TextOut(w - PaintBox1.Canvas.TextWidth(labelText) - 2, cy + 5, labelText);
 
   PaintBox1.Canvas.TextOut(cx + 5, cy + 5, '(0,0)');
 
-  if Abs(yStart) < 1e6 then
-    labelX := Format('%.2f', [yStart])
-  else
-    labelX := Format('%.0e', [yStart]);
-  PaintBox1.Canvas.TextOut(cx + 5, 2, labelX);
+  labelText := CoordToStr(yStart);
+  PaintBox1.Canvas.TextOut(cx + 5, 2, labelText);
 
-  if Abs(yEnd) < 1e6 then
-    labelX := Format('%.2f', [yEnd])
-  else
-    labelX := Format('%.0e', [yEnd]);
-  PaintBox1.Canvas.TextOut(cx + 5, h - PaintBox1.Canvas.TextHeight('X') - 2, labelX);
+  labelText := CoordToStr(yEnd);
+  PaintBox1.Canvas.TextOut(cx + 5, h - PaintBox1.Canvas.TextHeight('X') - 2, labelText);
 end;
 
 procedure TForm1.DrawGraph;
@@ -395,14 +188,13 @@ var
   px, py, prevPy: Integer;
   firstPoint: Boolean;
   val: Double;
-  valid: Boolean;
   sx, sy: Double;
 begin
   w := PaintBox1.Width;
   h := PaintBox1.Height;
   cx := w div 2;
   cy := h div 2;
-  
+
   xStart := -FScaleX;
   xEnd := FScaleX;
 
@@ -420,9 +212,9 @@ begin
   x := xStart;
   while x <= xEnd do
   begin
-    val := EvaluateFormula(x, valid);
+    val := EvaluateFormula(x);
 
-    if (not valid) or IsInfinite(val) or IsNan(val) then
+    if IsInfinite(val) or IsNan(val) then
     begin
       firstPoint := True;
       x := x + dx;
@@ -451,17 +243,21 @@ begin
 end;
 
 procedure TForm1.Btn_DrawClick(Sender: TObject);
-var
-  valid: Boolean;
-  testVal: Double;
 begin
-  FFormula := Edit_Formula.Text;
   FScaleX := FloatSpinEdit1.Value;
   FScaleY := FloatSpinEdit2.Value;
   FGraphColor := ColorBox1.Selected;
 
-  testVal := FParser.Evaluate(FFormula, 0, valid);
-  if not valid then
+  FScriptCode.Clear;
+  FScriptCode.Add('function FTPSS(x: Double): Double;');
+  FScriptCode.Add('begin');
+  FScriptCode.Add('  Result := ' + Edit_Formula.Text + ';');
+  FScriptCode.Add('end;');
+  FScriptCode.Add('begin end.');
+  PSScript1.Script.Assign(FScriptCode);
+  FCompiled := PSScript1.Compile;
+
+  if not FCompiled then
   begin
     ShowMessage('Ошибка в формуле. Проверьте правильность введённого выражения.');
     FGraphDrawn := False;
@@ -471,6 +267,11 @@ begin
 
   FGraphDrawn := True;
   PaintBox1.Repaint;
+end;
+
+procedure TForm1.Edit_FormulaEditingDone(Sender: TObject);
+begin
+  Btn_DrawClick(Sender);
 end;
 
 procedure TForm1.ScaleChanged(Sender: TObject);
@@ -552,20 +353,7 @@ begin
   );
 end;
 
-procedure TForm1.Label2Click(Sender: TObject);
-begin
-  ShowMessage(
-    'Гэомэтр 1.0: Масштабирование'#13#10 +
-    #13#10 +
-    'Масштабирование используется для изменения масштаба графика ' +
-    'в диапазоне [0.1, 10].'#13#10 +
-    #13#10 +
-    'Масштабирование производится отдельно для осей абсцисс и ординат.'#13#10 +
-    'Изменение масштаба автоматически приводит к перерисовке графика.'
-  );
-end;
-
-procedure TForm1.Label3Click(Sender: TObject);
+procedure TForm1.LabelScaleClick(Sender: TObject);
 begin
   ShowMessage(
     'Гэомэтр 1.0: Масштабирование'#13#10 +

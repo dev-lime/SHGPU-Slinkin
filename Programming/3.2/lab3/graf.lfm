@@ -46,7 +46,7 @@ object Form1: TForm1
     Caption = 'МасштабX'
     ParentShowHint = False
     ShowHint = True
-    OnClick = Label2Click
+    OnClick = LabelScaleClick
   end
   object Label3: TLabel
     Cursor = crHelp
@@ -59,7 +59,7 @@ object Form1: TForm1
     Caption = 'МасштабY'
     ParentShowHint = False
     ShowHint = True
-    OnClick = Label3Click
+    OnClick = LabelScaleClick
   end
   object Label4: TLabel
     Left = 336
@@ -77,6 +77,7 @@ object Form1: TForm1
     Anchors = [akLeft, akBottom]
     TabOrder = 0
     Text = 'sin(x)'
+    OnEditingDone = Edit_FormulaEditingDone
   end
   object Btn_Draw: TButton
     Left = 512
@@ -128,5 +129,7 @@ object Form1: TForm1
     CompilerOptions = []
     Plugins = <>
     UsePreProcessor = False
+    OnCompile = PSScript1Compile
+    OnExecute = PSScript1Execute
   end
 end
