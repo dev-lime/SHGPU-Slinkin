@@ -1,0 +1,26 @@
+object Form1: TForm1
+  Left = 310
+  Height = 520
+  Top = 250
+  Width = 640
+  Caption = 'ГРЭД 1.0'
+  ClientHeight = 520
+  ClientWidth = 640
+  Menu = MainMenu1
+  LCLVersion = '4.4.0.0'
+  object PaintBox1: TPaintBox
+    Left = 64
+    Height = 480
+    Top = 16
+    Width = 576
+  end
+  object StatusBar1: TStatusBar
+    Left = 0
+    Height = 22
+    Top = 498
+    Width = 640
+    Panels = <>
+  end
+  object MainMenu1: TMainMenu
+  end
+end
