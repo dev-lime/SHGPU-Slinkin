@@ -17,15 +17,25 @@
         <Filename Value="gred.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
-        <CursorPos X="5" Y="30"/>
+        <CursorPos X="27" Y="24"/>
         <UsageCount Value="20"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit>
+      <Unit>
+        <Filename Value="shapes.pas"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="220"/>
+        <CursorPos X="43" Y="253"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit>
     </Units>
-    <JumpHistory HistoryIndex="1">
+    <JumpHistory HistoryIndex="3">
       <Position>
         <Filename Value="gred.pas"/>
         <Caret Line="25" Column="5"/>
@@ -33,6 +43,14 @@
       <Position>
         <Filename Value="gred.pas"/>
         <Caret Line="29" Column="5"/>
+      </Position>
+      <Position>
+        <Filename Value="gred.pas"/>
+        <Caret Line="24" Column="27"/>
+      </Position>
+      <Position>
+        <Filename Value="shapes.pas"/>
+        <Caret Line="87" Column="11" TopLine="68"/>
       </Position>
     </JumpHistory>
     <RunParams>
