@@ -1,8 +1,3 @@
-/*
-Task 1: Программа, которая по имени системного пользователя возвращает имена его "одногруппников",
-то есть пользователей, являющихся членами хотя-бы одной из групп, в которую входит исходный пользователь.
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,7 +5,33 @@ Task 1: Программа, которая по имени системного 
 #include <grp.h>
 #include <sys/types.h>
 
-#define MAX_GROUPS 128
+// Функция для динамического получения групп пользователя
+gid_t *get_user_groups(const char *username, gid_t initial_gid, int *final_ngroups)
+{
+    int ngroups = 0;
+    
+    getgrouplist(username, initial_gid, NULL, &ngroups);
+    
+    if (ngroups == 0) 
+    {
+        return NULL;
+    }
+
+    gid_t *groups = malloc(ngroups * sizeof(gid_t));
+    if (groups == NULL) 
+    {
+        return NULL;
+    }
+
+    if (getgrouplist(username, initial_gid, groups, &ngroups) == -1) 
+    {
+        free(groups);
+        return NULL;
+    }
+
+    *final_ngroups = ngroups;
+    return groups;
+}
 
 int main(int argc, char *argv[])
 {
@@ -27,64 +48,78 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    gid_t groups[MAX_GROUPS];
-    int ngroups = MAX_GROUPS;
-    int i, j;
-    struct passwd *entry;
-    int is_classmate;
-    gid_t other_groups[MAX_GROUPS];
-    int other_ngroups;
-    struct group *gr;
-
-    if (getgrouplist(argv[1], pw->pw_gid, groups, &ngroups) == -1)
-    {
-        printf("Error getting groups for user '%s'\n", argv[1]);
-        return 1;
-    }
+    int ngroups = 0;
+    gid_t *groups = get_user_groups(argv[1], pw->pw_gid, &ngroups);
 
     printf("User '%s' belongs to %d groups:\n", argv[1], ngroups);
-    for (i = 0; i < ngroups; i++)
+    size_t max_buffer_size = 1;
+    struct group *gr;
+    
+    for (int i = 0; i < ngroups; i++)
     {
         gr = getgrgid(groups[i]);
         if (gr != NULL)
+        {
+            max_buffer_size += strlen(gr->gr_name) + 2;
             printf("  - %s (gid=%d)\n", gr->gr_name, groups[i]);
+        }
     }
 
     printf("\nClassmates (users sharing at least one group):\n");
 
     setpwent();
+    struct passwd *entry;
 
     while ((entry = getpwent()) != NULL)
     {
         if (strcmp(entry->pw_name, argv[1]) == 0)
             continue;
-
-        other_ngroups = MAX_GROUPS;
-
-        if (getgrouplist(entry->pw_name, entry->pw_gid, other_groups, &other_ngroups) == -1)
+        
+        int other_ngroups = 0;
+        gid_t *other_groups = get_user_groups(entry->pw_name, entry->pw_gid, &other_ngroups);
+        
+        if (other_groups == NULL)
             continue;
 
-        is_classmate = 0;
-        for (i = 0; i < ngroups && !is_classmate; i++)
+        char *shared_groups_str = malloc(max_buffer_size);
+        if (shared_groups_str == NULL)
         {
-            for (j = 0; j < other_ngroups && !is_classmate; j++)
+            free(other_groups);
+            continue;
+        }
+        shared_groups_str[0] = '\0';
+        int has_shared = 0;
+
+        for (int i = 0; i < ngroups; i++)
+        {
+            for (int j = 0; j < other_ngroups; j++)
             {
                 if (groups[i] == other_groups[j])
                 {
-                    is_classmate = 1;
+                    gr = getgrgid(groups[i]);
+                    if (gr != NULL)
+                    {
+                        if (has_shared)
+                        {
+                            strcat(shared_groups_str, ", ");
+                        }
+                        strcat(shared_groups_str, gr->gr_name);
+                        has_shared = 1;
+                    }
                 }
             }
         }
 
-        if (is_classmate)
+        if (has_shared)
         {
-            gr = getgrgid(entry->pw_gid);
-            printf("  - %s (primary group: %s)\n",
-                   entry->pw_name,
-                   gr != NULL ? gr->gr_name : "unknown");
+            printf("  - %s (%s)\n", entry->pw_name, shared_groups_str);
         }
+
+        free(shared_groups_str);
+        free(other_groups);
     }
 
     endpwent();
+    free(groups);
     return 0;
 }
