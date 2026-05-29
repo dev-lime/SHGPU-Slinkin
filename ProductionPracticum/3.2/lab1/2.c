@@ -14,8 +14,6 @@ Task 2: Программа, которая рекурсивно, с исполь
 спецправа: SUID (запуск от имени хозяина), Sticky (пожелание сохранения в ОЗУ после завершения)
 */
 
-// Нужно разделить вывод у каталога и у файлов - у каталогов подробно расписать что означают их чтение, запись исполнение и отдельное описание спецправ (у файлов остается как есть)
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,7 +26,7 @@ Task 2: Программа, которая рекурсивно, с исполь
 #include <limits.h>
 #include <unistd.h>
 
-void print_indent(int depth) 
+void print_indent(int depth)
 {
     for (int i = 0; i < depth; i++) {
         printf("  │ ");
@@ -47,31 +45,55 @@ const char *get_type_string(mode_t mode)
     return "неизвестный тип";
 }
 
-void print_permissions_human(int depth, const char *label, mode_t mode, mode_t r_bit, mode_t w_bit, mode_t x_bit)
+void print_permissions_human(int depth, const char *label, mode_t mode,
+                             mode_t r_bit, mode_t w_bit, mode_t x_bit,
+                             int is_dir)
 {
     print_indent(depth);
     printf("%s: ", label);
 
     const char *rights[3];
+    const char *dir_desc[3] = { NULL, NULL, NULL };
     int count = 0;
 
-    if (mode & r_bit) rights[count++] = "чтение";
-    if (mode & w_bit) rights[count++] = "запись";
-    if (mode & x_bit) rights[count++] = "исполнение";
+    if (mode & r_bit) {
+        rights[count] = "чтение";
+        if (is_dir)
+            dir_desc[count] = "просмотр содержимого каталога";
+        count++;
+    }
+    if (mode & w_bit) {
+        rights[count] = "запись";
+        if (is_dir)
+            dir_desc[count] = "создание, удаление и переименование файлов";
+        count++;
+    }
+    if (mode & x_bit) {
+        rights[count] = "исполнение";
+        if (is_dir)
+            dir_desc[count] = "вход в каталог";
+        count++;
+    }
 
     if (count == 0) {
-        printf("нет прав\n");
+        if (is_dir)
+            printf("нет прав (доступ к каталогу запрещён)\n");
+        else
+            printf("нет прав\n");
         return;
     }
 
     for (int i = 0; i < count; i++) {
         printf("%s", rights[i]);
-        if (i < count - 1) printf(", ");
+        if (is_dir && dir_desc[i])
+            printf(" (%s)", dir_desc[i]);
+        if (i < count - 1)
+            printf(", ");
     }
     printf("\n");
 }
 
-void print_special_permissions(int depth, mode_t mode)
+void print_special_permissions(int depth, mode_t mode, int is_dir)
 {
     print_indent(depth);
     printf("спецправа: ");
@@ -79,17 +101,26 @@ void print_special_permissions(int depth, mode_t mode)
     int has_any = 0;
 
     if (mode & S_ISUID) {
-        printf("SUID (запуск от имени хозяина)");
+        if (is_dir)
+            printf("SUID (игнорируется для каталогов)");
+        else
+            printf("SUID (запуск от имени хозяина)");
         has_any = 1;
     }
     if (mode & S_ISGID) {
         if (has_any) printf(", ");
-        printf("SGID (запуск от имени группы)");
+        if (is_dir)
+            printf("SGID (новые файлы наследуют группу каталога)");
+        else
+            printf("SGID (запуск от имени группы)");
         has_any = 1;
     }
     if (mode & S_ISVTX) {
         if (has_any) printf(", ");
-        printf("Sticky (пожелание сохранения в ОЗУ после завершения)");
+        if (is_dir)
+            printf("Sticky (удалять файлы могут только владельцы)");
+        else
+            printf("Sticky (пожелание сохранения в ОЗУ после завершения)");
         has_any = 1;
     }
 
@@ -99,6 +130,8 @@ void print_special_permissions(int depth, mode_t mode)
 
 void print_entry_info(const char *path, struct stat *st, int depth)
 {
+    int is_dir = S_ISDIR(st->st_mode);
+
     struct passwd *pw = getpwuid(st->st_uid);
     struct group *gr = getgrgid(st->st_gid);
 
@@ -110,7 +143,7 @@ void print_entry_info(const char *path, struct stat *st, int depth)
 
     print_indent(depth);
     printf("имя: %s\n", path);
-    
+
     print_indent(depth);
     printf("тип: %s\n", get_type_string(st->st_mode));
 
@@ -122,16 +155,16 @@ void print_entry_info(const char *path, struct stat *st, int depth)
     if (gr != NULL) printf("группа: %s (%d)\n", gr->gr_name, st->st_gid);
     else            printf("группа: unknown (%d)\n", st->st_gid);
 
-    print_permissions_human(depth, "права хозяина", st->st_mode, S_IRUSR, S_IWUSR, S_IXUSR);
-    print_permissions_human(depth, "права группы", st->st_mode, S_IRGRP, S_IWGRP, S_IXGRP);
-    print_permissions_human(depth, "права остальных", st->st_mode, S_IROTH, S_IWOTH, S_IXOTH);
-    print_special_permissions(depth, st->st_mode);
+    print_permissions_human(depth, "права хозяина", st->st_mode, S_IRUSR, S_IWUSR, S_IXUSR, is_dir);
+    print_permissions_human(depth, "права группы", st->st_mode, S_IRGRP, S_IWGRP, S_IXGRP, is_dir);
+    print_permissions_human(depth, "права остальных", st->st_mode, S_IROTH, S_IWOTH, S_IXOTH, is_dir);
+    print_special_permissions(depth, st->st_mode, is_dir);
 
     if (strlen(link_target) > 0) {
         print_indent(depth);
         printf("ссылка на: %s\n", link_target);
     }
-    
+
     print_indent(depth);
     printf("\n");
 }
@@ -146,7 +179,6 @@ void list_directory(const char *path, int depth)
     }
 
     struct dirent *entry;
-
     while ((entry = readdir(dir)) != NULL) {
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
             continue;
