@@ -257,6 +257,10 @@ static int is_inside_start_dir(const char *path) {
     char real[PATH_MAX];
     if (realpath(path, real) == NULL) return 0;
 
+    if (strcmp(start_dir_real, "/") == 0) {
+        return (real[0] == '/');
+    }
+
     size_t start_len = strlen(start_dir_real);
     while (start_len > 1 && start_dir_real[start_len - 1] == '/') {
         start_len--;
@@ -295,7 +299,10 @@ static void scan_directory(const char *path) {
             continue;
         }
 
-        snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
+        if (strcmp(path, "/") == 0)
+            snprintf(full_path, sizeof(full_path), "/%s", entry->d_name);
+        else
+            snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
 
         if (lstat(full_path, &st) != 0) {
             continue;
