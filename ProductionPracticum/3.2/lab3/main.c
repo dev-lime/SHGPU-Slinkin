@@ -135,19 +135,23 @@ void process_log_file(const char *filename, ServerList *stats) {
 }
 
 void merge_stats_to_target(const char *target, ServerList *local) {
-    FILE *fp = fopen(target, "r+");
-    if (!fp) fp = fopen(target, "w+");
-    if (!fp) {
-        fprintf(stderr, "Невозможно открыть целевой файл: %s\n", target);
+    int fd = open(target, O_RDWR | O_CREAT, 0644);
+    if (fd == -1) {
+        fprintf(stderr, "Невозможно открыть целевой файл: %s\n", strerror(errno));
         return;
     }
 
-    int fd = fileno(fp);
     flock(fd, LOCK_EX);
+
+    FILE *fp = fdopen(fd, "r+");
+    if (!fp) {
+        flock(fd, LOCK_UN);
+        close(fd);
+        return;
+    }
 
     ServerList global;
     sl_init(&global);
-
     char *line = NULL;
     size_t len = 0;
 
@@ -173,9 +177,7 @@ void merge_stats_to_target(const char *target, ServerList *local) {
             fprintf(fp, "%s %d\n", global.servers[i].name, global.servers[i].count);
     }
 
-    flock(fd, LOCK_UN);
     fclose(fp);
-
     sl_free(&global);
 }
 
