@@ -40,290 +40,171 @@ files.shgpi.edu.ru 4321
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/file.h>
-#include <fcntl.h>
 #include <errno.h>
 
-#define MAX_SERVERS 10000
-#define MAX_SERVER_LEN 256
-#define MAX_LINE 4096
-#define MAX_PATH_LEN 1024
-
-typedef struct
-{
-    char name[MAX_SERVER_LEN];
-    int count;
+typedef struct {
+    char *name;
+    int   count;
 } ServerStat;
 
-typedef struct
-{
-    ServerStat servers[MAX_SERVERS];
-    int num_servers;
+typedef struct {
+    ServerStat *servers;
+    int         num;
+    int         cap;
 } ServerList;
 
-int find_or_add_server(ServerList *list, const char *name)
-{
-    int i;
-    for (i = 0; i < list->num_servers; i++)
-    {
-        if (strcmp(list->servers[i].name, name) == 0)
-        {
-            return i;
-        }
-    }
-    if (list->num_servers < MAX_SERVERS)
-    {
-        strncpy(list->servers[list->num_servers].name, name, MAX_SERVER_LEN - 1);
-        list->servers[list->num_servers].name[MAX_SERVER_LEN - 1] = '\0';
-        list->servers[list->num_servers].count = 0;
-        return list->num_servers++;
-    }
-    return -1;
+// Инициализация пустого списка
+void sl_init(ServerList *sl) {
+    sl->servers = NULL;
+    sl->num = 0;
+    sl->cap = 0;
 }
 
-void parse_csv_field(const char *line, int field_num, char *out, int out_size)
-{
-    int i = 0;
-    int current_field = 0;
+// Освобождение памяти списка
+void sl_free(ServerList *sl) {
+    for (int i = 0; i < sl->num; i++)
+        free(sl->servers[i].name);
+    free(sl->servers);
+    sl->servers = NULL;
+    sl->num = sl->cap = 0;
+}
 
-    while (line[i] != '\0' && current_field < field_num)
-    {
-        if (line[i] == ';')
-        {
-            current_field++;
-        }
-        i++;
+// Поиск или добавление сервера
+int sl_find_or_add(ServerList *sl, const char *name) {
+    for (int i = 0; i < sl->num; i++)
+        if (strcmp(sl->servers[i].name, name) == 0)
+            return i;
+
+    if (sl->num == sl->cap) {
+        int newcap = (sl->cap == 0) ? 16 : sl->cap * 2;
+        ServerStat *tmp = realloc(sl->servers, newcap * sizeof(ServerStat));
+        if (!tmp) return -1;
+        sl->servers = tmp;
+        sl->cap = newcap;
     }
 
-    if (line[i] == '"')
-    {
+    sl->servers[sl->num].name = strdup(name);
+    if (!sl->servers[sl->num].name) return -1;
+    sl->servers[sl->num].count = 0;
+    return sl->num++;
+}
+
+// парсер CSV
+void parse_csv_field(const char *line, int field_num, char *out, int out_size) {
+    int i = 0, cur = 0;
+    while (line[i] && cur < field_num) {
+        if (line[i] == ';') cur++;
         i++;
     }
-
+    if (line[i] == '"') i++;
     int j = 0;
-    while (line[i] != '\0' && line[i] != '"' && line[i] != ';' && j < out_size - 1)
-    {
+    while (line[i] && line[i] != '"' && line[i] != ';' && j < out_size - 1)
         out[j++] = line[i++];
-    }
     out[j] = '\0';
 }
 
-void process_log_file(const char *log_file, ServerList *local_stats)
-{
-    FILE *fp = fopen(log_file, "r");
-    if (fp == NULL)
-    {
-        fprintf(stderr, "Error: Cannot open log file '%s': %s\n", log_file, strerror(errno));
+// обработка одного лог-файла
+void process_log_file(const char *filename, ServerList *stats) {
+    FILE *fp = fopen(filename, "r");
+    if (!fp) {
+        fprintf(stderr, "Не могу открыть %s: %s\n", filename, strerror(errno));
         return;
     }
 
-    char line[MAX_LINE];
-    int is_header = 1;
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t nread;
 
-    while (fgets(line, sizeof(line), fp) != NULL)
-    {
-        if (is_header)
-        {
-            is_header = 0;
-            continue;
-        }
-
-        if (strlen(line) < 2)
-        {
-            continue;
-        }
-
-        char server_name[MAX_SERVER_LEN];
-        parse_csv_field(line, 4, server_name, sizeof(server_name));
-
-        if (strlen(server_name) > 0)
-        {
-            int idx = find_or_add_server(local_stats, server_name);
-            if (idx >= 0)
-            {
-                local_stats->servers[idx].count++;
-            }
-        }
+    if ((nread = getline(&line, &len, fp)) == -1) {
+        fclose(fp);
+        free(line);
+        return;
     }
 
+    while ((nread = getline(&line, &len, fp)) != -1) {
+        if (nread < 2) continue;
+        char srv[256];
+        parse_csv_field(line, 4, srv, sizeof(srv));
+        if (srv[0]) {
+            int idx = sl_find_or_add(stats, srv);
+            if (idx >= 0) stats->servers[idx].count++;
+        }
+    }
+    free(line);
     fclose(fp);
 }
 
-void load_target_file(const char *target_file, ServerList *stats)
-{
-    FILE *fp = fopen(target_file, "r");
-    if (fp == NULL)
-    {
+void merge_stats_to_target(const char *target, ServerList *local) {
+    FILE *fp = fopen(target, "r+");
+    if (!fp) fp = fopen(target, "w+");
+    if (!fp) {
+        fprintf(stderr, "Не могу открыть целевой файл: %s\n", target);
         return;
     }
 
-    char line[MAX_LINE];
-    while (fgets(line, sizeof(line), fp) != NULL)
-    {
-        char server_name[MAX_SERVER_LEN];
-        int count = 0;
+    int fd = fileno(fp);
+    flock(fd, LOCK_EX);
 
-        if (sscanf(line, "%s %d", server_name, &count) == 2)
-        {
-            int idx = find_or_add_server(stats, server_name);
-            if (idx >= 0)
-            {
-                stats->servers[idx].count = count;
-            }
+    ServerList global;
+    sl_init(&global);
+
+    char *line = NULL;
+    size_t len = 0;
+
+    while (getline(&line, &len, fp) != -1) {
+        char srv[256];
+        int cnt;
+        if (sscanf(line, "%255s %d", srv, &cnt) == 2) {
+            int idx = sl_find_or_add(&global, srv);
+            if (idx >= 0) global.servers[idx].count = cnt;
         }
     }
+    free(line);
 
-    fclose(fp);
-}
-
-void save_target_file(const char *target_file, ServerList *stats)
-{
-    FILE *fp = fopen(target_file, "w");
-    if (fp == NULL)
-    {
-        fprintf(stderr, "Error: Cannot write to target file '%s': %s\n", target_file, strerror(errno));
-        return;
+    for (int i = 0; i < local->num; i++) {
+        int idx = sl_find_or_add(&global, local->servers[i].name);
+        if (idx >= 0) global.servers[idx].count += local->servers[i].count;
     }
 
-    int i;
-    for (i = 0; i < stats->num_servers; i++)
-    {
-        if (stats->servers[i].count > 0)
-        {
-            fprintf(fp, "%s %d\n", stats->servers[i].name, stats->servers[i].count);
-        }
-    }
-
-    fclose(fp);
-}
-
-void merge_stats_to_target(const char *target_file, ServerList *local_stats)
-{
-    int fd = open(target_file, O_RDWR | O_CREAT, 0644);
-    if (fd == -1)
-    {
-        fprintf(stderr, "Error: Cannot open target file '%s': %s\n", target_file, strerror(errno));
-        return;
-    }
-
-    if (flock(fd, LOCK_EX) == -1)
-    {
-        fprintf(stderr, "Error: Cannot lock target file '%s': %s\n", target_file, strerror(errno));
-        close(fd);
-        return;
-    }
-
-    ServerList global_stats;
-    memset(&global_stats, 0, sizeof(global_stats));
-
-    char *content = malloc(100 * 1024 * 1024);
-    if (content == NULL)
-    {
-        flock(fd, LOCK_UN);
-        close(fd);
-        return;
-    }
-
-    off_t file_size = lseek(fd, 0, SEEK_END);
-    if (file_size > 0)
-    {
-        lseek(fd, 0, SEEK_SET);
-        ssize_t bytes_read = read(fd, content, file_size);
-        if (bytes_read > 0)
-        {
-            content[bytes_read] = '\0';
-
-            FILE *tmp = fmemopen(content, bytes_read, "r");
-            if (tmp != NULL)
-            {
-                char line[MAX_LINE];
-                while (fgets(line, sizeof(line), tmp) != NULL)
-                {
-                    char server_name[MAX_SERVER_LEN];
-                    int count = 0;
-                    if (sscanf(line, "%s %d", server_name, &count) == 2)
-                    {
-                        int idx = find_or_add_server(&global_stats, server_name);
-                        if (idx >= 0)
-                        {
-                            global_stats.servers[idx].count = count;
-                        }
-                    }
-                }
-                fclose(tmp);
-            }
-        }
-    }
-
-    int i;
-    for (i = 0; i < local_stats->num_servers; i++)
-    {
-        int idx = find_or_add_server(&global_stats, local_stats->servers[i].name);
-        if (idx >= 0)
-        {
-            global_stats.servers[idx].count += local_stats->servers[i].count;
-        }
-    }
-
-    lseek(fd, 0, SEEK_SET);
+    fseek(fp, 0, SEEK_SET);
     ftruncate(fd, 0);
-
-    char out_buf[MAX_LINE];
-    for (i = 0; i < global_stats.num_servers; i++)
-    {
-        if (global_stats.servers[i].count > 0)
-        {
-            snprintf(out_buf, sizeof(out_buf), "%s %d\n", global_stats.servers[i].name, global_stats.servers[i].count);
-            write(fd, out_buf, strlen(out_buf));
-        }
+    for (int i = 0; i < global.num; i++) {
+        if (global.servers[i].count > 0)
+            fprintf(fp, "%s %d\n", global.servers[i].name, global.servers[i].count);
     }
 
     flock(fd, LOCK_UN);
-    close(fd);
-    free(content);
+    fclose(fp);
+
+    sl_free(&global);
 }
 
-int main(int argc, char *argv[])
-{
-    if (argc < 3)
-    {
-        printf("Использование: %s <целевой_файл> <файл_журнала1> [файл_журнала2] ...\n", argv[0]);
+int main(int argc, char *argv[]) {
+    if (argc < 3) {
+        printf("Использование: %s целевой_файл журнал1 [журнал2...]\n", argv[0]);
         return 1;
     }
+    const char *target = argv[1];
+    int nlogs = argc - 2;
 
-    const char *target_file = argv[1];
-    int num_logs = argc - 2;
-    int i;
-    pid_t pid;
-
-    for (i = 0; i < num_logs; i++)
-    {
-        pid = fork();
-        if (pid == -1)
-        {
-            fprintf(stderr, "Error: fork() failed: %s\n", strerror(errno));
+    for (int i = 0; i < nlogs; i++) {
+        pid_t pid = fork();
+        if (pid == -1) {
+            perror("fork");
             return 1;
-        }
-        else if (pid == 0)
-        {
-            ServerList local_stats;
-            memset(&local_stats, 0, sizeof(local_stats));
-
-            process_log_file(argv[2 + i], &local_stats);
-            merge_stats_to_target(target_file, &local_stats);
-
-            printf("Процесс %d: обработан файл '%s', найдено %d уникальных серверов\n",
-                   getpid(), argv[2 + i], local_stats.num_servers);
-
+        } else if (pid == 0) {
+            ServerList local;
+            sl_init(&local);
+            process_log_file(argv[2 + i], &local);
+            merge_stats_to_target(target, &local);
+            printf("Процесс %d обработал %s, серверов: %d\n",
+                   getpid(), argv[2 + i], local.num);
+            sl_free(&local);
             exit(0);
         }
     }
 
-    for (i = 0; i < num_logs; i++)
-    {
-        int status;
-        wait(&status);
-    }
-
-    printf("Агрегация завершена. Результат в файле '%s'\n", target_file);
+    for (int i = 0; i < nlogs; i++) wait(NULL);
+    printf("Агрегация завершена. Результат в %s\n", target);
     return 0;
 }
