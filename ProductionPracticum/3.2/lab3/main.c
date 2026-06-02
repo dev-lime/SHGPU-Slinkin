@@ -107,7 +107,7 @@ void parse_csv_field(const char *line, int field_num, char *out, int out_size) {
 void process_log_file(const char *filename, ServerList *stats) {
     FILE *fp = fopen(filename, "r");
     if (!fp) {
-        fprintf(stderr, "Не могу открыть %s: %s\n", filename, strerror(errno));
+        fprintf(stderr, "Невозможно открыть %s: %s\n", filename, strerror(errno));
         return;
     }
 
@@ -138,7 +138,7 @@ void merge_stats_to_target(const char *target, ServerList *local) {
     FILE *fp = fopen(target, "r+");
     if (!fp) fp = fopen(target, "w+");
     if (!fp) {
-        fprintf(stderr, "Не могу открыть целевой файл: %s\n", target);
+        fprintf(stderr, "Невозможно открыть целевой файл: %s\n", target);
         return;
     }
 
