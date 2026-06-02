@@ -44,13 +44,13 @@ files.shgpi.edu.ru 4321
 
 typedef struct {
     char *name;
-    int   count;
+    int count;
 } ServerStat;
 
 typedef struct {
     ServerStat *servers;
-    int         num;
-    int         cap;
+    int num;
+    int cap;
 } ServerList;
 
 // Инициализация пустого списка
