@@ -1,9 +1,26 @@
 /*
-ЛР2. Анализ файловых систем.
-Программа рекурсивно перебирает каталоги от заданного и ниже.
-По завершении выводит полную информацию об уникальных ФС (по f_fsid),
-сгруппированных по типу. Выводятся точки монтирования в пределах заданного каталога.
-Используются: dirent.h, statfs, /proc/self/mountinfo.
+Разработать программу, которая перебирает все каталоги, начиная от заданного и ниже.
+По окончании перебора выводит полную информацию о всех найденных уникальных файловых
+системах в человекочитаемом формате, сгруппированных по типу файловой системы.
+Для решения задачи рекомендуется использовать функции модуля dirent.h,
+системную функцию statfs или ее posix-аналог statvfs.
+Уникальность файловой системы определяется по ее идентификатору
+(например struct statfs.f_fsid).Выход за пределы заданного каталога не допускается.
+
+Вывод должен включать точки монтирования всех найденных файловых систем,
+если они находятся в пределах заданного каталога и ниже.
+Если ни одна точка монтирования конкретной файловой системы
+не находится в пределах каталога, то следует сообщить о данном факте.
+
+Для определения текущих точек монтирования файловых систем рекомендуется использовать
+текстовый файл /etc/mtab, где второе поле в каждой строке содержит абсолютный путь
+к примонтированной файловой системе, либо текстовый файл /proc/self/mountinfo,
+где пятое поле каждой строки содержит ту-же информацию.
+
+Альтернативный способ определения текущих точек монтирования файловых систем:
+получение дескриптора монтирования с помощью системной функции statx и
+обработка текстового файла /proc/self/mountinfo, где первое поле каждой строки -
+дескриптор монтирования, а пятое поле - абсолютный путь к примонтированной файловой системе.
 */
 
 #include <stdio.h>
@@ -21,14 +38,14 @@
 #define MAX_MOUNTS_PER_FS 32
 #define MAX_DEVICES 512
 
-/* Структура для хранения точки монтирования из /proc/self/mountinfo */
+// Структура для хранения точки монтирования из /proc/self/mountinfo
 struct MountEntry {
     char mount_point[PATH_MAX];
     char device[PATH_MAX];
     char fs_type[64];
 };
 
-/* Структура для хранения уникальной ФС */
+// Структура для хранения уникальной ФС
 struct FSData {
     fsid_t fsid;
     long f_type;
@@ -42,7 +59,7 @@ struct FSData {
     char devices[MAX_MOUNTS_PER_FS][PATH_MAX];
     char mount_points[MAX_MOUNTS_PER_FS][PATH_MAX];
     int info_count;
-    int found_in_scope; /* Флаг: найдена ли точка монтирования в пределах каталога */
+    int found_in_scope; // Флаг найдена ли точка монтирования в пределах каталога
 };
 
 static struct FSData found_fs[MAX_FS_ENTRIES];
@@ -54,8 +71,7 @@ static int mount_count = 0;
 static char start_dir[PATH_MAX];
 static char start_dir_real[PATH_MAX];
 
-/* --------------------------------------------------------------- */
-/* Определение имени типа ФС по f_type */
+// Определение имени типа ФС по f_type
 const char *get_fs_type_name(long type) {
     switch (type) {
         case 0xef53:      return "ext2/ext3/ext4";
@@ -84,8 +100,7 @@ const char *get_fs_type_name(long type) {
     }
 }
 
-/* --------------------------------------------------------------- */
-/* Парсинг /proc/self/mountinfo */
+// Парсинг /proc/self/mountinfo
 static void load_mountinfo() {
     FILE *f = fopen("/proc/self/mountinfo", "r");
     if (!f) {
@@ -97,9 +112,9 @@ static void load_mountinfo() {
     while (fgets(line, sizeof(line), f) && mount_count < MAX_MOUNTS) {
         char *p = line;
 
-        /* Пропускаем поля до mount_point (5-е поле, индекс 4, после 4 пробелов) */
-        /* Формат: id parent major:minor root mount_point options ... - fstype source options */
-        /* Пропускаем 4 пробела */
+        /* Пропускаем поля до mount_point (5-е поле, индекс 4, после 4 пробелов)
+           Формат: id parent major:minor root mount_point options ... - fstype source options
+           Пропускаем 4 пробела */
         int skipped = 0;
         while (*p && skipped < 4) {
             if (*p == ' ') skipped++;
@@ -107,7 +122,7 @@ static void load_mountinfo() {
         }
         if (!*p) continue;
         
-        /* Теперь p указывает на mount_point */
+        // p указывает на mount_point
         char *mount_start = p;
         char *mount_end = strchr(p, ' ');
         if (!mount_end) continue;
@@ -115,7 +130,7 @@ static void load_mountinfo() {
         
         strncpy(mount_list[mount_count].mount_point, mount_start, PATH_MAX - 1);
         mount_list[mount_count].mount_point[PATH_MAX - 1] = '\0';
-        /* Нормализация: убираем trailing slash */
+        // Нормализация: убираем trailing slash
         size_t len = strlen(mount_list[mount_count].mount_point);
         if (len > 1 && mount_list[mount_count].mount_point[len - 1] == '/') {
             mount_list[mount_count].mount_point[len - 1] = '\0';
@@ -123,12 +138,12 @@ static void load_mountinfo() {
 
         p = mount_end + 1;
 
-        /* Ищем разделитель ' - ' */
+        // разделитель ' - '
         char *dash = strstr(p, " - ");
         if (!dash) continue;
         dash += 3; /* После ' - ' */
         
-        /* dash теперь указывает на fstype */
+        // dash указывает на fstype
         char *fstype_start = dash;
         char *fstype_end = strchr(fstype_start, ' ');
         if (fstype_end) {
@@ -140,7 +155,7 @@ static void load_mountinfo() {
             continue;
         }
 
-        /* p теперь указывает на source (device) */
+        // p теперь указывает на source (device)
         char *source_start = p;
         char *source_end = strchr(source_start, ' ');
         if (source_end) {
@@ -156,14 +171,12 @@ static void load_mountinfo() {
     fclose(f);
 }
 
-/* --------------------------------------------------------------- */
-/* Сравнение fsid_t */
+// Сравнение fsid_t
 static int compare_fsid(const fsid_t *a, const fsid_t *b) {
     return memcmp(a, b, sizeof(fsid_t));
 }
 
-/* --------------------------------------------------------------- */
-/* Поиск индекса ФС по fsid */
+// Поиск индекса ФС по fsid
 static int find_fs_index(const fsid_t *target_fsid) {
     int i;
     for (i = 0; i < fs_count; i++) {
@@ -174,12 +187,11 @@ static int find_fs_index(const fsid_t *target_fsid) {
     return -1;
 }
 
-/* --------------------------------------------------------------- */
-/* Запись/обновление информации о ФС */
+// Запись/обновление информации о ФС
 static void record_fs(struct statfs *stfs, const char *path) {
     int idx = find_fs_index(&stfs->f_fsid);
     if (idx != -1) {
-        /* Обновляем информацию, если нашли новую точку монтирования или устройство */
+        // Обновляет информацию, если нашли новую точку монтирования или устройство
         int j;
         for (j = 0; j < mount_count; j++) {
             if (strcmp(mount_list[j].mount_point, path) == 0) {
@@ -203,11 +215,11 @@ static void record_fs(struct statfs *stfs, const char *path) {
                 break;
             }
         }
-        /* Если путь не точка монтирования, но ФС уже известна, ничего не делаем. */
+        // Если путь не точка монтирования, но ФС уже известна, ничего не делаем.
         return;
     }
 
-    /* Новая ФС */
+    // Новая ФС
     if (fs_count >= MAX_FS_ENTRIES) return;
 
     idx = fs_count;
@@ -240,35 +252,34 @@ static void record_fs(struct statfs *stfs, const char *path) {
     fs_count++;
 }
 
-/* --------------------------------------------------------------- */
-/* Проверка: находится ли path внутри start_dir */
+// Проверка находится ли path внутри start_dir
 static int is_inside_start_dir(const char *path) {
     char real[PATH_MAX];
     if (realpath(path, real) == NULL) return 0;
-    
+
     size_t start_len = strlen(start_dir_real);
+    while (start_len > 1 && start_dir_real[start_len - 1] == '/') {
+        start_len--;
+    }
+
     if (strncmp(real, start_dir_real, start_len) != 0) return 0;
-    
-    /* Если длины равны, это тот же каталог. Если больше, следующий символ должен быть '/' */
     if (real[start_len] == '\0' || real[start_len] == '/') return 1;
     return 0;
 }
 
-/* --------------------------------------------------------------- */
-/* Рекурсивное сканирование */
+// Рекурсивное сканирование
 static void scan_directory(const char *path) {
     struct statfs stfs;
     
-    /* Проверка ФС для текущего каталога */
+    // Проверка ФС для текущего каталога
     if (statfs(path, &stfs) == 0) {
-        /* Записываем ФС. Функция record_fs сама проверит, является ли path точкой монтирования. */
         record_fs(&stfs, path);
     }
 
     DIR *dir = opendir(path);
     if (!dir) {
         /* Если каталог недоступен (например, нет прав или это mount point другой ФС, к которому нет доступа), 
-           выводим предупреждение, но продолжаем. В задании сказано сообщать о причинах. */
+           то предупреждение и продолжаем */
         if (errno != EACCES && errno != ENOENT && errno != ELOOP) {
             fprintf(stderr, "Warning: Cannot open '%s': %s\n", path, strerror(errno));
         }
@@ -286,12 +297,10 @@ static void scan_directory(const char *path) {
 
         snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
 
-        /* lstat позволяет узнать, является ли элемент каталогом или симлинком */
         if (lstat(full_path, &st) != 0) {
             continue;
         }
 
-        /* Рекурсия только в каталоги, не являющиеся симлинками */
         if (S_ISDIR(st.st_mode) && !S_ISLNK(st.st_mode)) {
             if (!is_inside_start_dir(full_path)) {
                 fprintf(stderr, "Warning: '%s' is outside the start directory, skipping\n", full_path);
@@ -303,8 +312,7 @@ static void scan_directory(const char *path) {
     closedir(dir);
 }
 
-/* --------------------------------------------------------------- */
-/* Форматирование размера */
+// Форматирование размера
 static void print_size_human(unsigned long blocks, unsigned long block_size, const char *label) {
     unsigned long long total_bytes = (unsigned long long)blocks * block_size;
     double gb = (double)total_bytes / (1024.0 * 1024.0 * 1024.0);
@@ -319,8 +327,7 @@ static void print_size_human(unsigned long blocks, unsigned long block_size, con
     }
 }
 
-/* --------------------------------------------------------------- */
-/* Вывод результатов */
+// Вывод результатов
 static void print_results() {
     int i, j, k;
     char *printed_types[MAX_FS_ENTRIES];
@@ -337,7 +344,7 @@ static void print_results() {
     printf("===============================================================\n\n");
 
     for (i = 0; i < fs_count; i++) {
-        /* Проверяем, выводили ли уже этот тип */
+        // выводили ли уже этот тип
         int already_grouped = 0;
         for (k = 0; k < printed_count; k++) {
             if (strcmp(printed_types[k], found_fs[i].type_name) == 0) {
@@ -347,12 +354,12 @@ static void print_results() {
         }
         if (already_grouped) continue;
 
-        /* Выводим заголовок группы */
+        // Выводит заголовок группы
         printf("---------------------------------------------------------------\n");
         printf("Filesystem Type: %s (magic: 0x%lx)\n", found_fs[i].type_name, found_fs[i].f_type);
         printf("---------------------------------------------------------------\n");
 
-        /* Выводим все экземпляры этого типа */
+        // Выводит все экземпляры этого типа
         int instance_num = 1;
         for (j = 0; j < fs_count; j++) {
             if (strcmp(found_fs[j].type_name, found_fs[i].type_name) == 0) {
@@ -387,7 +394,6 @@ static void print_results() {
     }
 }
 
-/* --------------------------------------------------------------- */
 int main(int argc, char *argv[]) {
     if (argc != 2) {
         printf("Usage: %s <directory>\n", argv[0]);
@@ -405,7 +411,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    /* Сохраняем абсолютный путь начального каталога для проверки "выхода за пределы" */
+    // абсолютный путь начального каталога для проверки "выхода за пределы"
     if (realpath(argv[1], start_dir_real) == NULL) {
         fprintf(stderr, "Error: Cannot resolve realpath for '%s': %s\n", argv[1], strerror(errno));
         return 1;
@@ -413,13 +419,8 @@ int main(int argc, char *argv[]) {
     strncpy(start_dir, argv[1], PATH_MAX - 1);
     start_dir[PATH_MAX - 1] = '\0';
 
-    /* Загружаем точки монтирования */
     load_mountinfo();
-
-    /* Рекурсивный обход */
-    scan_directory(start_dir);
-
-    /* Вывод */
+    scan_directory(start_dir_real);
     print_results();
 
     return 0;
