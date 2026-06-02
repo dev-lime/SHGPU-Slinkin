@@ -31,47 +31,103 @@
 #include <sys/stat.h>
 #include <limits.h>
 #include <errno.h>
-#include <ctype.h>
 
-#define MAX_FS_ENTRIES 128
-#define MAX_MOUNTS 512
-#define MAX_MOUNTS_PER_FS 32
-#define MAX_DEVICES 512
+/* Структура для хранения точки монтирования из /proc/self/mountinfo */
+typedef struct {
+    char mount_point[PATH_MAX];   // путь монтирования
+    char device[PATH_MAX];        // устройство
+    char *fs_type;                // тип ФС (динамическая строка)
+} MountEntry;
 
-// Структура для хранения точки монтирования из /proc/self/mountinfo
-struct MountEntry {
-    char mount_point[PATH_MAX];
-    char device[PATH_MAX];
-    char fs_type[64];
-};
-
-// Структура для хранения уникальной ФС
-struct FSData {
+/* Структура для хранения уникальной файловой системы */
+typedef struct {
     fsid_t fsid;
     long f_type;
-    char type_name[64];
+    char *type_name;              // имя типа ФС (динамическая строка)
     unsigned long block_size;
     unsigned long total_blocks;
     unsigned long free_blocks;
     unsigned long avail_blocks;
     unsigned long total_inodes;
     unsigned long free_inodes;
-    char devices[MAX_MOUNTS_PER_FS][PATH_MAX];
-    char mount_points[MAX_MOUNTS_PER_FS][PATH_MAX];
-    int info_count;
-    int found_in_scope; // Флаг найдена ли точка монтирования в пределах каталога
-};
+    char **mount_points;          // динамический массив строк (точек монтирования)
+    char **devices;               // динамический массив строк (устройств)
+    int info_count;               // текущее количество записей
+    int info_capacity;            // выделенная ёмкость
+    int found_in_scope;           // флаг: есть точка в заданном каталоге
+} FSData;
 
-static struct FSData found_fs[MAX_FS_ENTRIES];
-static int fs_count = 0;
+static FSData *found_fs = NULL;      // массив уникальных ФС
+static int fs_count = 0;             // текущее количество ФС
+static int fs_capacity = 0;          // выделенная ёмкость массива found_fs
 
-static struct MountEntry mount_list[MAX_MOUNTS];
-static int mount_count = 0;
+static MountEntry *mount_list = NULL;// массив точек монтирования
+static int mount_count = 0;          // количество записей
+static int mount_capacity = 0;       // ёмкость массива mount_list
 
-static char start_dir[PATH_MAX];
-static char start_dir_real[PATH_MAX];
+static char start_dir[PATH_MAX];     // исходный параметр командной строки
+static char start_dir_real[PATH_MAX];// абсолютный путь (realpath)
 
-// Определение имени типа ФС по f_type
+static void add_mount_point_to_fs(FSData *fs, const char *mount, const char *dev) {
+    if (fs->info_count >= fs->info_capacity) {
+        fs->info_capacity = (fs->info_capacity == 0) ? 4 : fs->info_capacity * 2;
+        fs->mount_points = realloc(fs->mount_points, fs->info_capacity * sizeof(char*));
+        fs->devices = realloc(fs->devices, fs->info_capacity * sizeof(char*));
+        if (!fs->mount_points || !fs->devices) {
+            fprintf(stderr, "Memory allocation error\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    fs->mount_points[fs->info_count] = strdup(mount);
+    fs->devices[fs->info_count] = strdup(dev);
+    if (!fs->mount_points[fs->info_count] || !fs->devices[fs->info_count]) {
+        fprintf(stderr, "Memory allocation error\n");
+        exit(EXIT_FAILURE);
+    }
+    fs->info_count++;
+    fs->found_in_scope = 1;
+}
+
+static void free_fs_data(FSData *fs) {
+    free(fs->type_name);
+    for (int i = 0; i < fs->info_count; i++) {
+        free(fs->mount_points[i]);
+        free(fs->devices[i]);
+    }
+    free(fs->mount_points);
+    free(fs->devices);
+}
+
+static FSData* add_new_fs(void) {
+    if (fs_count >= fs_capacity) {
+        fs_capacity = (fs_capacity == 0) ? 16 : fs_capacity * 2;
+        found_fs = realloc(found_fs, fs_capacity * sizeof(FSData));
+        if (!found_fs) {
+            fprintf(stderr, "Memory allocation error\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    FSData *new_fs = &found_fs[fs_count];
+    memset(new_fs, 0, sizeof(FSData));
+    fs_count++;
+    return new_fs;
+}
+
+static MountEntry* add_mount_entry(void) {
+    if (mount_count >= mount_capacity) {
+        mount_capacity = (mount_capacity == 0) ? 64 : mount_capacity * 2;
+        mount_list = realloc(mount_list, mount_capacity * sizeof(MountEntry));
+        if (!mount_list) {
+            fprintf(stderr, "Memory allocation error\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    MountEntry *entry = &mount_list[mount_count];
+    memset(entry, 0, sizeof(MountEntry));
+    mount_count++;
+    return entry;
+}
+
 const char *get_fs_type_name(long type) {
     switch (type) {
         case 0xef53:      return "ext2/ext3/ext4";
@@ -100,7 +156,6 @@ const char *get_fs_type_name(long type) {
     }
 }
 
-// Парсинг /proc/self/mountinfo
 static void load_mountinfo() {
     FILE *f = fopen("/proc/self/mountinfo", "r");
     if (!f) {
@@ -109,77 +164,71 @@ static void load_mountinfo() {
     }
 
     char line[2048];
-    while (fgets(line, sizeof(line), f) && mount_count < MAX_MOUNTS) {
+    while (fgets(line, sizeof(line), f)) {
         char *p = line;
 
-        /* Пропускаем поля до mount_point (5-е поле, индекс 4, после 4 пробелов)
-           Формат: id parent major:minor root mount_point options ... - fstype source options
-           Пропускаем 4 пробела */
+        /* Пропускает первые 4 пробела, чтобы встать на 5-е поле (mount_point) */
         int skipped = 0;
         while (*p && skipped < 4) {
             if (*p == ' ') skipped++;
             p++;
         }
         if (!*p) continue;
-        
-        // p указывает на mount_point
+
         char *mount_start = p;
         char *mount_end = strchr(p, ' ');
         if (!mount_end) continue;
         *mount_end = '\0';
-        
-        strncpy(mount_list[mount_count].mount_point, mount_start, PATH_MAX - 1);
-        mount_list[mount_count].mount_point[PATH_MAX - 1] = '\0';
-        // Нормализация: убираем trailing slash
-        size_t len = strlen(mount_list[mount_count].mount_point);
-        if (len > 1 && mount_list[mount_count].mount_point[len - 1] == '/') {
-            mount_list[mount_count].mount_point[len - 1] = '\0';
+
+        MountEntry *entry = add_mount_entry();
+
+        strncpy(entry->mount_point, mount_start, PATH_MAX - 1);
+        entry->mount_point[PATH_MAX - 1] = '\0';
+        size_t len = strlen(entry->mount_point);
+        if (len > 1 && entry->mount_point[len - 1] == '/') {
+            entry->mount_point[len - 1] = '\0';
         }
 
         p = mount_end + 1;
 
-        // разделитель ' - '
         char *dash = strstr(p, " - ");
-        if (!dash) continue;
-        dash += 3; /* После ' - ' */
-        
-        // dash указывает на fstype
+        if (!dash) {
+            mount_count--;
+            continue;
+        }
+        dash += 3;
+
         char *fstype_start = dash;
         char *fstype_end = strchr(fstype_start, ' ');
         if (fstype_end) {
             *fstype_end = '\0';
-            strncpy(mount_list[mount_count].fs_type, fstype_start, sizeof(mount_list[mount_count].fs_type) - 1);
+            entry->fs_type = strdup(fstype_start);
             p = fstype_end + 1;
         } else {
-            strncpy(mount_list[mount_count].fs_type, fstype_start, sizeof(mount_list[mount_count].fs_type) - 1);
+            entry->fs_type = strdup(fstype_start);
+            mount_count--;
             continue;
         }
+        if (!entry->fs_type) {
+            fprintf(stderr, "Memory allocation error\n");
+            exit(EXIT_FAILURE);
+        }
 
-        // p теперь указывает на source (device)
         char *source_start = p;
         char *source_end = strchr(source_start, ' ');
-        if (source_end) {
-            *source_end = '\0';
-            strncpy(mount_list[mount_count].device, source_start, PATH_MAX - 1);
-        } else {
-            strncpy(mount_list[mount_count].device, source_start, PATH_MAX - 1);
-        }
-        mount_list[mount_count].device[PATH_MAX - 1] = '\0';
-
-        mount_count++;
+        if (source_end) *source_end = '\0';
+        strncpy(entry->device, source_start, PATH_MAX - 1);
+        entry->device[PATH_MAX - 1] = '\0';
     }
     fclose(f);
 }
 
-// Сравнение fsid_t
 static int compare_fsid(const fsid_t *a, const fsid_t *b) {
     return memcmp(a, b, sizeof(fsid_t));
 }
 
-// Поиск индекса ФС по fsid
 static int find_fs_index(const fsid_t *target_fsid) {
-    int i;
-    for (i = 0; i < fs_count; i++) {
+    for (int i = 0; i < fs_count; i++) {
         if (compare_fsid(&found_fs[i].fsid, target_fsid) == 0) {
             return i;
         }
@@ -187,72 +236,55 @@ static int find_fs_index(const fsid_t *target_fsid) {
     return -1;
 }
 
-// Запись/обновление информации о ФС
 static void record_fs(struct statfs *stfs, const char *path) {
     int idx = find_fs_index(&stfs->f_fsid);
     if (idx != -1) {
-        // Обновляет информацию, если нашли новую точку монтирования или устройство
-        int j;
-        for (j = 0; j < mount_count; j++) {
+        for (int j = 0; j < mount_count; j++) {
             if (strcmp(mount_list[j].mount_point, path) == 0) {
-                int k;
-                int already_added = 0;
-                for (k = 0; k < found_fs[idx].info_count; k++) {
+                int already = 0;
+                for (int k = 0; k < found_fs[idx].info_count; k++) {
                     if (strcmp(found_fs[idx].mount_points[k], path) == 0) {
-                        already_added = 1;
+                        already = 1;
                         break;
                     }
                 }
-                if (!already_added && found_fs[idx].info_count < MAX_MOUNTS_PER_FS) {
-                    int pos = found_fs[idx].info_count;
-                    strncpy(found_fs[idx].mount_points[pos], path, PATH_MAX - 1);
-                    found_fs[idx].mount_points[pos][PATH_MAX - 1] = '\0';
-                    strncpy(found_fs[idx].devices[pos], mount_list[j].device, PATH_MAX - 1);
-                    found_fs[idx].devices[pos][PATH_MAX - 1] = '\0';
-                    found_fs[idx].info_count++;
+                if (!already) {
+                    add_mount_point_to_fs(&found_fs[idx], path, mount_list[j].device);
                 }
-                found_fs[idx].found_in_scope = 1;
                 break;
             }
         }
-        // Если путь не точка монтирования, но ФС уже известна, ничего не делаем.
         return;
     }
 
-    // Новая ФС
-    if (fs_count >= MAX_FS_ENTRIES) return;
+    FSData *new_fs = add_new_fs();
+    new_fs->fsid = stfs->f_fsid;
+    new_fs->f_type = stfs->f_type;
+    new_fs->type_name = strdup(get_fs_type_name(stfs->f_type));
+    if (!new_fs->type_name) {
+        fprintf(stderr, "Memory allocation error\n");
+        exit(EXIT_FAILURE);
+    }
+    new_fs->block_size = stfs->f_bsize;
+    new_fs->total_blocks = stfs->f_blocks;
+    new_fs->free_blocks = stfs->f_bfree;
+    new_fs->avail_blocks = stfs->f_bavail;
+    new_fs->total_inodes = stfs->f_files;
+    new_fs->free_inodes = stfs->f_ffree;
+    new_fs->info_count = 0;
+    new_fs->info_capacity = 0;
+    new_fs->mount_points = NULL;
+    new_fs->devices = NULL;
+    new_fs->found_in_scope = 0;
 
-    idx = fs_count;
-    memset(&found_fs[idx], 0, sizeof(struct FSData));
-    found_fs[idx].fsid = stfs->f_fsid;
-    found_fs[idx].f_type = stfs->f_type;
-    strncpy(found_fs[idx].type_name, get_fs_type_name(stfs->f_type), sizeof(found_fs[idx].type_name) - 1);
-    found_fs[idx].block_size = stfs->f_bsize;
-    found_fs[idx].total_blocks = stfs->f_blocks;
-    found_fs[idx].free_blocks = stfs->f_bfree;
-    found_fs[idx].avail_blocks = stfs->f_bavail;
-    found_fs[idx].total_inodes = stfs->f_files;
-    found_fs[idx].free_inodes = stfs->f_ffree;
-    found_fs[idx].info_count = 0;
-    found_fs[idx].found_in_scope = 0;
-
-    int j;
-    for (j = 0; j < mount_count; j++) {
+    for (int j = 0; j < mount_count; j++) {
         if (strcmp(mount_list[j].mount_point, path) == 0) {
-            strncpy(found_fs[idx].mount_points[0], path, PATH_MAX - 1);
-            found_fs[idx].mount_points[0][PATH_MAX - 1] = '\0';
-            strncpy(found_fs[idx].devices[0], mount_list[j].device, PATH_MAX - 1);
-            found_fs[idx].devices[0][PATH_MAX - 1] = '\0';
-            found_fs[idx].info_count = 1;
-            found_fs[idx].found_in_scope = 1;
+            add_mount_point_to_fs(new_fs, path, mount_list[j].device);
             break;
         }
     }
-
-    fs_count++;
 }
 
-// Проверка находится ли path внутри start_dir
 static int is_inside_start_dir(const char *path) {
     char real[PATH_MAX];
     if (realpath(path, real) == NULL) return 0;
@@ -271,19 +303,14 @@ static int is_inside_start_dir(const char *path) {
     return 0;
 }
 
-// Рекурсивное сканирование
 static void scan_directory(const char *path) {
     struct statfs stfs;
-    
-    // Проверка ФС для текущего каталога
     if (statfs(path, &stfs) == 0) {
         record_fs(&stfs, path);
     }
 
     DIR *dir = opendir(path);
     if (!dir) {
-        /* Если каталог недоступен (например, нет прав или это mount point другой ФС, к которому нет доступа), 
-           то предупреждение и продолжаем */
         if (errno != EACCES && errno != ENOENT && errno != ELOOP) {
             fprintf(stderr, "Warning: Cannot open '%s': %s\n", path, strerror(errno));
         }
@@ -304,9 +331,7 @@ static void scan_directory(const char *path) {
         else
             snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
 
-        if (lstat(full_path, &st) != 0) {
-            continue;
-        }
+        if (lstat(full_path, &st) != 0) continue;
 
         if (S_ISDIR(st.st_mode) && !S_ISLNK(st.st_mode)) {
             if (!is_inside_start_dir(full_path)) {
@@ -319,74 +344,82 @@ static void scan_directory(const char *path) {
     closedir(dir);
 }
 
-// Форматирование размера
 static void print_size_human(unsigned long blocks, unsigned long block_size, const char *label) {
     unsigned long long total_bytes = (unsigned long long)blocks * block_size;
     double gb = (double)total_bytes / (1024.0 * 1024.0 * 1024.0);
     double mb = (double)total_bytes / (1024.0 * 1024.0);
     
-    if (gb >= 1.0) {
+    if (gb >= 1.0)
         printf("    %-20s %lu blocks (%.2f GB)\n", label, blocks, gb);
-    } else if (mb >= 1.0) {
+    else if (mb >= 1.0)
         printf("    %-20s %lu blocks (%.2f MB)\n", label, blocks, mb);
-        } else {
-            printf("    %-20s %lu blocks (%llu KB)\n", label, blocks, total_bytes / 1024);
-    }
+    else
+        printf("    %-20s %lu blocks (%llu KB)\n", label, blocks, total_bytes / 1024);
 }
 
-// Вывод результатов
 static void print_results() {
-    int i, j, k;
-    char *printed_types[MAX_FS_ENTRIES];
-    int printed_count = 0;
-
     if (fs_count == 0) {
         printf("No filesystems found or accessible.\n");
         return;
     }
+
+    char **printed_types = NULL;
+    int printed_count = 0, printed_capacity = 0;
 
     printf("===============================================================\n");
     printf("Filesystem Analysis Results\n");
     printf("Search Directory: %s\n", start_dir);
     printf("===============================================================\n\n");
 
-    for (i = 0; i < fs_count; i++) {
-        // выводили ли уже этот тип
-        int already_grouped = 0;
-        for (k = 0; k < printed_count; k++) {
+    for (int i = 0; i < fs_count; i++) {
+        int already = 0;
+        for (int k = 0; k < printed_count; k++) {
             if (strcmp(printed_types[k], found_fs[i].type_name) == 0) {
-                already_grouped = 1;
+                already = 1;
                 break;
             }
         }
-        if (already_grouped) continue;
+        if (already) continue;
 
-        // Выводит заголовок группы
+        if (printed_count >= printed_capacity) {
+            printed_capacity = (printed_capacity == 0) ? 8 : printed_capacity * 2;
+            printed_types = realloc(printed_types, printed_capacity * sizeof(char*));
+            if (!printed_types) {
+                fprintf(stderr, "Memory allocation error\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+        printed_types[printed_count] = strdup(found_fs[i].type_name);
+        if (!printed_types[printed_count]) {
+            fprintf(stderr, "Memory allocation error\n");
+            exit(EXIT_FAILURE);
+        }
+        printed_count++;
+
         printf("---------------------------------------------------------------\n");
         printf("Filesystem Type: %s (magic: 0x%lx)\n", found_fs[i].type_name, found_fs[i].f_type);
         printf("---------------------------------------------------------------\n");
 
-        // Выводит все экземпляры этого типа
         int instance_num = 1;
-        for (j = 0; j < fs_count; j++) {
+        for (int j = 0; j < fs_count; j++) {
             if (strcmp(found_fs[j].type_name, found_fs[i].type_name) == 0) {
                 printf("\n  [Instance %d]\n", instance_num++);
-                printf("    FS ID:            %d:%d\n", 
+                printf("    FS ID:            %d:%d\n",
                        found_fs[j].fsid.__val[0], found_fs[j].fsid.__val[1]);
                 printf("    Block Size:       %lu bytes\n", found_fs[j].block_size);
-                
+
                 print_size_human(found_fs[j].total_blocks, found_fs[j].block_size, "Total Space:");
                 print_size_human(found_fs[j].free_blocks, found_fs[j].block_size, "Free Space:");
                 print_size_human(found_fs[j].avail_blocks, found_fs[j].block_size, "Avail Space:");
-                
+
                 printf("    Total Inodes:     %lu\n", found_fs[j].total_inodes);
                 printf("    Free Inodes:      %lu\n", found_fs[j].free_inodes);
 
                 printf("    Mount Points (in scope):\n");
                 if (found_fs[j].found_in_scope && found_fs[j].info_count > 0) {
-                    for (k = 0; k < found_fs[j].info_count; k++) {
-                        printf("      - %s (device: %s)\n", 
-                               found_fs[j].mount_points[k], 
+                    for (int k = 0; k < found_fs[j].info_count; k++) {
+                        printf("      - %s (device: %s)\n",
+                               found_fs[j].mount_points[k],
                                found_fs[j].devices[k][0] ? found_fs[j].devices[k] : "unknown");
                     }
                 } else {
@@ -396,9 +429,18 @@ static void print_results() {
             }
         }
         printf("\n");
-
-        printed_types[printed_count++] = found_fs[i].type_name;
     }
+
+    for (int i = 0; i < printed_count; i++) free(printed_types[i]);
+    free(printed_types);
+}
+
+static void cleanup() {
+    for (int i = 0; i < fs_count; i++) free_fs_data(&found_fs[i]);
+    free(found_fs);
+
+    for (int i = 0; i < mount_count; i++) free(mount_list[i].fs_type);
+    free(mount_list);
 }
 
 int main(int argc, char *argv[]) {
@@ -412,13 +454,11 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Error: '%s' does not exist or is inaccessible: %s\n", argv[1], strerror(errno));
         return 1;
     }
-
     if (!S_ISDIR(st.st_mode)) {
         fprintf(stderr, "Error: '%s' is not a directory\n", argv[1]);
         return 1;
     }
 
-    // абсолютный путь начального каталога для проверки "выхода за пределы"
     if (realpath(argv[1], start_dir_real) == NULL) {
         fprintf(stderr, "Error: Cannot resolve realpath for '%s': %s\n", argv[1], strerror(errno));
         return 1;
@@ -430,5 +470,6 @@ int main(int argc, char *argv[]) {
     scan_directory(start_dir_real);
     print_results();
 
+    cleanup();
     return 0;
 }
