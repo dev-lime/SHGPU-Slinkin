@@ -353,6 +353,15 @@ static void cleanup() {
     free(fstype_table);
 }
 
+static void print_fstype_table(void) {
+    for (int i = 0; i < fstype_count; i++) {
+        printf("  0x%lx  ->  %s\n",
+               fstype_table[i].f_type,
+               fstype_table[i].name);
+    }
+    printf("\n");
+}
+
 int main(int argc, char *argv[]) {
     if (argc != 2) {
         printf("Usage: %s <directory>\n", argv[0]);
@@ -380,6 +389,7 @@ int main(int argc, char *argv[]) {
     start_dir_real_len = strlen(start_dir_real);
 
     load_mountinfo();
+    //print_fstype_table();
     scan_directory(start_dir_real);
     print_results();
     cleanup();
