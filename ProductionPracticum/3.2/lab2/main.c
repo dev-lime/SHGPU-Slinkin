@@ -61,38 +61,38 @@ typedef struct FSNode {
     struct FSNode *next;
 } FSNode;
 
+typedef struct {
+    long f_type;
+    char *name;
+} FSTypeEntry;
+
 static FSNode *fs_head = NULL;
 static MountEntry *mount_list = NULL;
 static int mount_count = 0;
+static FSTypeEntry *fstype_table = NULL;
+static int fstype_count = 0;
 static char start_dir[PATH_MAX];
 static char start_dir_real[PATH_MAX];
 
-const char *get_fs_type_name(long type) {
-    switch (type) {
-        case 0xef53:      return "ext2/ext3/ext4";
-        case 0x01021994:  return "tmpfs";
-        case 0x58465342:  return "xfs";
-        case 0x9123683e:  return "btrfs";
-        case 0x6969:      return "nfs";
-        case 0x9fa0:      return "proc";
-        case 0x62656572:  return "sysfs";
-        case 0x64626720:  return "debugfs";
-        case 0x00c0ffee:  return "cgroup";
-        case 0x63677270:  return "cgroup2";
-        case 0x73717368:  return "squashfs";
-        case 0x5346544e:  return "ntfs";
-        case 0x4d44:      return "msdos";
-        case 0x4249:      return "iso9660";
-        case 0xf2f52010:  return "f2fs";
-        case 0x657355cf:  return "erofs";
-        case 0x61756673:  return "aufs";
-        case 0x794c7630:  return "overlayfs";
-        case 0x66756369:  return "cifs/smb";
-        case 0x74726163:  return "tracefs";
-        case 0xcafebabe:  return "befs";
-        case 0x00001234:  return "hfs";
-        default:          return "unknown";
+static void add_fstype(long type, const char *name) {
+    for (int i = 0; i < fstype_count; i++) {
+        if (fstype_table[i].f_type == type)
+            return;
     }
+    fstype_table = realloc(fstype_table, (fstype_count + 1) * sizeof(FSTypeEntry));
+    if (!fstype_table) exit(EXIT_FAILURE);
+    fstype_table[fstype_count].f_type = type;
+    fstype_table[fstype_count].name = strdup(name);
+    if (!fstype_table[fstype_count].name) exit(EXIT_FAILURE);
+    fstype_count++;
+}
+
+static const char *get_fs_type_name(long type) {
+    for (int i = 0; i < fstype_count; i++) {
+        if (fstype_table[i].f_type == type)
+            return fstype_table[i].name;
+    }
+    return "unknown";
 }
 
 static void load_mountinfo() {
@@ -135,12 +135,20 @@ static void load_mountinfo() {
         p = dash + 3;
         char *space = strchr(p, ' ');
         if (!space) { mount_count--; continue; }
+        char *fstype_str = strndup(p, space - p);
+        if (!fstype_str) exit(EXIT_FAILURE);
         p = space + 1;
 
         char *dev_end = strchr(p, ' ');
         if (dev_end) *dev_end = '\0';
         strncpy(entry->device, p, PATH_MAX - 1);
         entry->device[PATH_MAX - 1] = '\0';
+
+        struct statfs stfs;
+        if (statfs(entry->mount_point, &stfs) == 0) {
+            add_fstype(stfs.f_type, fstype_str);
+        }
+        free(fstype_str);
     }
     fclose(f);
 }
@@ -265,10 +273,8 @@ static void print_results() {
         return;
     }
 
-    printf("===============================================================\n");
     printf("Filesystem Analysis Results\n");
     printf("Search Directory: %s\n", start_dir);
-    printf("===============================================================\n\n");
 
     for (FSNode *fn = fs_head; fn; fn = fn->next) {
         int already = 0;
@@ -280,9 +286,10 @@ static void print_results() {
         }
         if (already) continue;
 
+        const char *type_name = get_fs_type_name(fn->data.f_type);
+
         printf("---------------------------------------------------------------\n");
-        printf("Filesystem Type: %s (magic: 0x%lx)\n", get_fs_type_name(fn->data.f_type), fn->data.f_type);
-        printf("---------------------------------------------------------------\n");
+        printf("Filesystem Type: %s\n", type_name);
 
         int instance_num = 1;
         for (FSNode *in = fs_head; in; in = in->next) {
@@ -329,7 +336,12 @@ static void cleanup() {
         free(fn);
         fn = next;
     }
+
     free(mount_list);
+
+    for (int i = 0; i < fstype_count; i++)
+        free(fstype_table[i].name);
+    free(fstype_table);
 }
 
 int main(int argc, char *argv[]) {
