@@ -31,6 +31,7 @@
 #include <sys/stat.h>
 #include <limits.h>
 #include <errno.h>
+#include <stddef.h>
 
 typedef struct {
     char mount_point[PATH_MAX];
@@ -45,6 +46,7 @@ typedef struct MountNode {
 
 typedef struct FSData {
     fsid_t fsid;
+    int initialized;
     long f_type;
     unsigned long block_size;
     unsigned long total_blocks;
@@ -73,7 +75,16 @@ static FSTypeEntry *fstype_table = NULL;
 static int fstype_count = 0;
 static char start_dir[PATH_MAX];
 static char start_dir_real[PATH_MAX];
+static size_t start_dir_real_len = 0;
 
+/* Убирает trailing slash, кроме случая корня */
+static void normalize_path(char *path) {
+    size_t len = strlen(path);
+    if (len > 1 && path[len - 1] == '/')
+        path[len - 1] = '\0';
+}
+
+/* Добавляет пару (f_type, имя) в таблицу, если её там ещё нет */
 static void add_fstype(long type, const char *name) {
     for (int i = 0; i < fstype_count; i++) {
         if (fstype_table[i].f_type == type)
@@ -87,6 +98,7 @@ static void add_fstype(long type, const char *name) {
     fstype_count++;
 }
 
+/* Возвращает имя типа по f_type */
 static const char *get_fs_type_name(long type) {
     for (int i = 0; i < fstype_count; i++) {
         if (fstype_table[i].f_type == type)
@@ -95,6 +107,7 @@ static const char *get_fs_type_name(long type) {
     return "unknown";
 }
 
+/* Загружает /proc/self/mountinfo и строит таблицу имён типов */
 static void load_mountinfo() {
     FILE *f = fopen("/proc/self/mountinfo", "r");
     if (!f) {
@@ -116,18 +129,17 @@ static void load_mountinfo() {
         char *mount_start = p;
         char *mount_end = strchr(p, ' ');
         if (!mount_end) continue;
-        *mount_end = '\0';
 
         mount_list = realloc(mount_list, (mount_count + 1) * sizeof(MountEntry));
         if (!mount_list) exit(EXIT_FAILURE);
         MountEntry *entry = &mount_list[mount_count];
         mount_count++;
 
-        strncpy(entry->mount_point, mount_start, PATH_MAX - 1);
-        entry->mount_point[PATH_MAX - 1] = '\0';
-        size_t len = strlen(entry->mount_point);
-        if (len > 1 && entry->mount_point[len - 1] == '/')
-            entry->mount_point[len - 1] = '\0';
+        ptrdiff_t mount_len = mount_end - mount_start;
+        if (mount_len >= PATH_MAX) mount_len = PATH_MAX - 1;
+        memcpy(entry->mount_point, mount_start, mount_len);
+        entry->mount_point[mount_len] = '\0';
+        normalize_path(entry->mount_point);
 
         p = mount_end + 1;
         char *dash = strstr(p, " - ");
@@ -188,10 +200,11 @@ static void add_mount_to_fs(FSData *fs, const char *mount, const char *device) {
     fs->found_in_scope = 1;
 }
 
-static void record_fs(struct statfs *stfs, const char *path) {
+static void process_statfs(struct statfs *stfs, const char *path) {
     FSData *fs = get_fs(&stfs->f_fsid);
 
-    if (fs->f_type == 0) {
+    if (!fs->initialized) {
+        fs->initialized = 1;
         fs->f_type = stfs->f_type;
         fs->block_size = stfs->f_bsize;
         fs->total_blocks = stfs->f_blocks;
@@ -213,17 +226,16 @@ static int is_inside_start_dir(const char *path) {
     char real[PATH_MAX];
     if (realpath(path, real) == NULL) return 0;
 
-    if (strcmp(start_dir_real, "/") == 0) return 1;
+    if (start_dir_real_len == 1 && start_dir_real[0] == '/') return 1;
 
-    size_t len = strlen(start_dir_real);
-    if (strncmp(real, start_dir_real, len) != 0) return 0;
-    return (real[len] == '\0' || real[len] == '/');
+    if (strncmp(real, start_dir_real, start_dir_real_len) != 0) return 0;
+    return (real[start_dir_real_len] == '\0' || real[start_dir_real_len] == '/');
 }
 
 static void scan_directory(const char *path) {
     struct statfs stfs;
     if (statfs(path, &stfs) == 0)
-        record_fs(&stfs, path);
+        process_statfs(&stfs, path);
 
     DIR *dir = opendir(path);
     if (!dir) {
@@ -288,7 +300,7 @@ static void print_results() {
 
         const char *type_name = get_fs_type_name(fn->data.f_type);
 
-        printf("---------------------------------------------------------------\n");
+        printf("-----------------------------------------------------\n");
         printf("Filesystem Type: %s\n", type_name);
 
         int instance_num = 1;
@@ -315,7 +327,6 @@ static void print_results() {
             } else {
                 printf("      None found within search directory\n");
             }
-            printf("    -----------------------------------------------\n");
         }
         printf("\n");
     }
@@ -367,9 +378,8 @@ int main(int argc, char *argv[]) {
     strncpy(start_dir, argv[1], PATH_MAX - 1);
     start_dir[PATH_MAX - 1] = '\0';
 
-    size_t len = strlen(start_dir_real);
-    if (len > 1 && start_dir_real[len - 1] == '/')
-        start_dir_real[len - 1] = '\0';
+    normalize_path(start_dir_real);
+    start_dir_real_len = strlen(start_dir_real);
 
     load_mountinfo();
     scan_directory(start_dir_real);
