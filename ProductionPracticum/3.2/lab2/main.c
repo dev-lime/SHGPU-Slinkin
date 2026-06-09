@@ -284,8 +284,6 @@ static void print_results() {
         printf("No filesystems found or accessible.\n");
         return;
     }
-
-    printf("Filesystem Analysis Results\n");
     printf("Search Directory: %s\n", start_dir);
 
     for (FSNode *fn = fs_head; fn; fn = fn->next) {
