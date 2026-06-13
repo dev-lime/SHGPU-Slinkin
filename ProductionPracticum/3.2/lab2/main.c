@@ -77,14 +77,14 @@ static char start_dir[PATH_MAX];
 static char start_dir_real[PATH_MAX];
 static size_t start_dir_real_len = 0;
 
-/* Убирает trailing slash, кроме случая корня */
+// Убирает лишний слэш (кроме корня)
 static void normalize_path(char *path) {
     size_t len = strlen(path);
     if (len > 1 && path[len - 1] == '/')
         path[len - 1] = '\0';
 }
 
-/* Добавляет пару (f_type, имя) в таблицу, если её там ещё нет */
+// Добавляет (f_type, имя) в таблицу, если ещё нет
 static void add_fstype(long type, const char *name) {
     for (int i = 0; i < fstype_count; i++) {
         if (fstype_table[i].f_type == type)
@@ -98,7 +98,7 @@ static void add_fstype(long type, const char *name) {
     fstype_count++;
 }
 
-/* Возвращает имя типа по f_type */
+// Возвращает имя типа по f_type
 static const char *get_fs_type_name(long type) {
     for (int i = 0; i < fstype_count; i++) {
         if (fstype_table[i].f_type == type)
@@ -107,7 +107,7 @@ static const char *get_fs_type_name(long type) {
     return "unknown";
 }
 
-/* Загружает /proc/self/mountinfo и строит таблицу имён типов */
+// Загружает /proc/self/mountinfo и строит таблицу имён типов
 static void load_mountinfo() {
     FILE *f = fopen("/proc/self/mountinfo", "r");
     if (!f) {
@@ -130,6 +130,13 @@ static void load_mountinfo() {
         char *mount_end = strchr(p, ' ');
         if (!mount_end) continue;
 
+        p = mount_end + 1;
+        char *dash = strstr(p, " - ");
+        if (!dash) continue;
+        p = dash + 3;
+        char *space = strchr(p, ' ');
+        if (!space) continue;
+
         mount_list = realloc(mount_list, (mount_count + 1) * sizeof(MountEntry));
         if (!mount_list) exit(EXIT_FAILURE);
         MountEntry *entry = &mount_list[mount_count];
@@ -141,12 +148,6 @@ static void load_mountinfo() {
         entry->mount_point[mount_len] = '\0';
         normalize_path(entry->mount_point);
 
-        p = mount_end + 1;
-        char *dash = strstr(p, " - ");
-        if (!dash) { mount_count--; continue; }
-        p = dash + 3;
-        char *space = strchr(p, ' ');
-        if (!space) { mount_count--; continue; }
         char *fstype_str = strndup(p, space - p);
         if (!fstype_str) exit(EXIT_FAILURE);
         p = space + 1;
@@ -225,6 +226,10 @@ static void process_statfs(struct statfs *stfs, const char *path) {
 static int is_inside_start_dir(const char *path) {
     char real[PATH_MAX];
     if (realpath(path, real) == NULL) return 0;
+
+    // Если реальный путь совпадает со стартовым каталогом, но исходный путь отличается
+    if (strcmp(real, start_dir_real) == 0 && strcmp(path, start_dir_real) != 0)
+        return 0;
 
     if (start_dir_real_len == 1 && start_dir_real[0] == '/') return 1;
 
