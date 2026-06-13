@@ -68,6 +68,12 @@ typedef struct {
     char *name;
 } FSTypeEntry;
 
+typedef struct VisitedNode {
+    dev_t dev;
+    ino_t ino;
+    struct VisitedNode *next;
+} VisitedNode;
+
 static FSNode *fs_head = NULL;
 static MountEntry *mount_list = NULL;
 static int mount_count = 0;
@@ -76,6 +82,7 @@ static int fstype_count = 0;
 static char start_dir[PATH_MAX];
 static char start_dir_real[PATH_MAX];
 static size_t start_dir_real_len = 0;
+static VisitedNode *visited = NULL;
 
 // Убирает лишний слэш (кроме корня)
 static void normalize_path(char *path) {
@@ -227,17 +234,37 @@ static int is_inside_start_dir(const char *path) {
     char real[PATH_MAX];
     if (realpath(path, real) == NULL) return 0;
 
-    // Если реальный путь совпадает со стартовым каталогом, но исходный путь отличается
-    if (strcmp(real, start_dir_real) == 0 && strcmp(path, start_dir_real) != 0)
-        return 0;
-
     if (start_dir_real_len == 1 && start_dir_real[0] == '/') return 1;
 
     if (strncmp(real, start_dir_real, start_dir_real_len) != 0) return 0;
     return (real[start_dir_real_len] == '\0' || real[start_dir_real_len] == '/');
 }
 
+static int has_been_visited(dev_t dev, ino_t ino) {
+    VisitedNode *v = visited;
+    while (v) {
+        if (v->dev == dev && v->ino == ino) return 1;
+        v = v->next;
+    }
+    return 0;
+}
+
+static void mark_visited(dev_t dev, ino_t ino) {
+    VisitedNode *v = malloc(sizeof(VisitedNode));
+    if (!v) exit(EXIT_FAILURE);
+    v->dev = dev;
+    v->ino = ino;
+    v->next = visited;
+    visited = v;
+}
+
 static void scan_directory(const char *path) {
+    struct stat st;
+    if (lstat(path, &st) != 0) return;
+
+    if (has_been_visited(st.st_dev, st.st_ino)) return;
+    mark_visited(st.st_dev, st.st_ino);
+
     struct statfs stfs;
     if (statfs(path, &stfs) == 0)
         process_statfs(&stfs, path);
@@ -251,7 +278,6 @@ static void scan_directory(const char *path) {
 
     struct dirent *entry;
     char full_path[PATH_MAX];
-    struct stat st;
     while ((entry = readdir(dir)) != NULL) {
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
             continue;
@@ -356,6 +382,13 @@ static void cleanup() {
     for (int i = 0; i < fstype_count; i++)
         free(fstype_table[i].name);
     free(fstype_table);
+
+    VisitedNode *v = visited;
+    while (v) {
+        VisitedNode *next = v->next;
+        free(v);
+        v = next;
+    }
 }
 
 static void print_fstype_table(void) {
